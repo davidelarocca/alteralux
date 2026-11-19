@@ -1,0 +1,506 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "110" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "110"
+          }
+        }
+      }
+    },
+    "35 mm" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "35 mm"
+          }
+        }
+      }
+    },
+    "Adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Regolazioni"
+          }
+        }
+      }
+    },
+    "Automatic metering" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esposimetro automatico"
+          }
+        }
+      }
+    },
+    "Camera" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotocamera"
+          }
+        }
+      }
+    },
+    "Cancel" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        }
+      }
+    },
+    "Color profile" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profilo colore"
+          }
+        }
+      }
+    },
+    "Developed photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto sviluppata"
+          }
+        }
+      }
+    },
+    "Display P3" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Display P3"
+          }
+        }
+      }
+    },
+    "Double-click to reset" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Doppio clic per ripristinare"
+          }
+        }
+      }
+    },
+    "Drag a RAW file here, or choose Open." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina qui un file RAW oppure scegli Apri."
+          }
+        }
+      }
+    },
+    "Export the developed photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta la foto sviluppata"
+          }
+        }
+      }
+    },
+    "Export…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta…"
+          }
+        }
+      }
+    },
+    "Exposure" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esposizione"
+          }
+        }
+      }
+    },
+    "Film" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola"
+          }
+        }
+      }
+    },
+    "Film Character" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carattere della pellicola"
+          }
+        }
+      }
+    },
+    "Film format" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato della pellicola"
+          }
+        }
+      }
+    },
+    "Format" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato"
+          }
+        }
+      }
+    },
+    "Grain" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grana"
+          }
+        }
+      }
+    },
+    "Grain size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione della grana"
+          }
+        }
+      }
+    },
+    "HEIC (10-bit)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC (10 bit)"
+          }
+        }
+      }
+    },
+    "Halation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alone"
+          }
+        }
+      }
+    },
+    "Halation strength" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intensità dell'alone"
+          }
+        }
+      }
+    },
+    "Include camera metadata" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Includi i metadati della fotocamera"
+          }
+        }
+      }
+    },
+    "JPEG" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPEG"
+          }
+        }
+      }
+    },
+    "Large format" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grande formato"
+          }
+        }
+      }
+    },
+    "Magenta filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtro magenta"
+          }
+        }
+      }
+    },
+    "Materials" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Materiali"
+          }
+        }
+      }
+    },
+    "Medium format" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medio formato"
+          }
+        }
+      }
+    },
+    "OK" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        }
+      }
+    },
+    "Open a Photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri una foto"
+          }
+        }
+      }
+    },
+    "Open a photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri una foto"
+          }
+        }
+      }
+    },
+    "Open…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri…"
+          }
+        }
+      }
+    },
+    "PNG (16-bit)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG (16 bit)"
+          }
+        }
+      }
+    },
+    "Paper" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carta"
+          }
+        }
+      }
+    },
+    "Print" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stampa"
+          }
+        }
+      }
+    },
+    "Print exposure" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esposizione di stampa"
+          }
+        }
+      }
+    },
+    "Quality" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualità"
+          }
+        }
+      }
+    },
+    "Reset Adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina regolazioni"
+          }
+        }
+      }
+    },
+    "Scan" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansione"
+          }
+        }
+      }
+    },
+    "Scan the film directly" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansiona direttamente la pellicola"
+          }
+        }
+      }
+    },
+    "Sharpening" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nitidezza"
+          }
+        }
+      }
+    },
+    "Show or hide the adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra o nascondi le regolazioni"
+          }
+        }
+      }
+    },
+    "Skip the print. The usual choice for slide film." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salta la stampa. È la scelta abituale per le diapositive."
+          }
+        }
+      }
+    },
+    "Smaller formats show more grain and wider halos." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I formati più piccoli mostrano più grana e aloni più ampi."
+          }
+        }
+      }
+    },
+    "Something went wrong" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si è verificato un problema"
+          }
+        }
+      }
+    },
+    "TIFF (16-bit)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TIFF (16 bit)"
+          }
+        }
+      }
+    },
+    "The red glow around bright lights." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bagliore rosso attorno alle luci intense."
+          }
+        }
+      }
+    },
+    "Yellow filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtro giallo"
+          }
+        }
+      }
+    },
+    "sRGB" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "sRGB"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

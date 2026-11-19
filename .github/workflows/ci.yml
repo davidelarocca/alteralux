@@ -19,6 +19,11 @@ jobs:
   engine-linux:
     name: Rust bridge tests (Linux)
     runs-on: ubuntu-latest
+    env:
+      # Runners have different CPUs and the build is cached between them, so
+      # OpenBLAS must not be tuned for the machine that happened to build it.
+      OPENBLAS_TARGET: GENERIC
+      OPENBLAS_DYNAMIC_ARCH: "1"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -33,7 +38,7 @@ jobs:
         run: cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
 
   swift-macos:
-    name: Swift package (macOS, Apple silicon)
+    name: Swift package and app (macOS, Apple silicon)
     # Latest Xcode / Swift / macOS SDK on Apple silicon.
     runs-on: xcode-27
     steps:
@@ -49,3 +54,20 @@ jobs:
         run: scripts/build-engine.sh
       - name: Swift tests
         run: swift test --package-path apple/SpektrafilmKit
+      - name: Generate the Xcode project
+        run: scripts/bootstrap.sh --skip-engine
+      - name: Build the app
+        run: |
+          xcodebuild build \
+            -project apple/Spektrafilm.xcodeproj \
+            -scheme Spektrafilm \
+            -configuration Debug \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath build/DerivedData \
+            -skipPackagePluginValidation
+      - name: Check the app bundle
+        run: |
+          APP=build/DerivedData/Build/Products/Debug/Spektrafilm.app
+          test -d "$APP/Contents/Resources/data/profiles"
+          codesign --verify --deep --strict "$APP"
+          codesign -d --entitlements - "$APP" 2>/dev/null | grep -q app-sandbox
