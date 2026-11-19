@@ -2,8 +2,9 @@ import SwiftUI
 
 /// A labelled slider with its value shown on the right.
 ///
-/// Double-click resets it to its default. With the keyboard, the arrow keys
-/// move a focused slider one step and Delete resets it.
+/// Double-click resets it to its default. It takes the keyboard focus with Tab
+/// whatever the system's "Keyboard navigation" setting: the arrow keys move it
+/// one step and Delete resets it.
 public struct ParameterSlider: View {
     private let title: LocalizedStringKey
     @Binding private var value: Double
@@ -53,19 +54,50 @@ public struct ParameterSlider: View {
                 Text(title)
             }
             .labelsHidden()
-            .onKeyPress(.delete) {
-                reset()
-                return .handled
+            // The keyboard focus is on the whole component, below.
+            .focusable(false)
+            // Assistive technologies adjust by one step too, not by a tenth of the range.
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment: move(by: 1)
+                case .decrement: move(by: -1)
+                @unknown default: break
+                }
             }
         }
         .contentShape(Rectangle())
         .onTapGesture(count: 2, perform: reset)
+        // The system gives a slider the keyboard focus only when "Keyboard navigation" is on in
+        // System Settings. The sliders are the main controls here, so they always take it.
+        .focusable(interactions: .edit)
+        .onKeyPress(keys: [.rightArrow, .upArrow]) { _ in
+            move(by: 1)
+            return .handled
+        }
+        .onKeyPress(keys: [.leftArrow, .downArrow]) { _ in
+            move(by: -1)
+            return .handled
+        }
+        .onKeyPress(keys: Self.deleteKeys) { _ in
+            reset()
+            return .handled
+        }
         .help("Double-click to reset")
         .accessibilityAction(named: "Reset", reset)
     }
 
+    /// The Delete key arrives as U+007F on a Mac keyboard, while `KeyEquivalent.delete` is
+    /// U+0008: match both, and Forward Delete.
+    private static let deleteKeys: Set<KeyEquivalent> = [.delete, .deleteForward, KeyEquivalent("\u{7F}")]
+
     private func reset() {
         value = defaultValue
+    }
+
+    /// Moves the value by whole steps, staying on the grid of steps and inside the range.
+    private func move(by steps: Double) {
+        let moved = ((value / step).rounded() + steps) * step
+        value = min(max(moved, range.lowerBound), range.upperBound)
     }
 
     private var steppedValue: Binding<Double> {

@@ -41,3 +41,10 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   snapshots of `ParameterSlider` in `en` and `it` catch it.
 - **`Text("a") vs Text(condition ? "a" : "b")`.** A ternary of string literals resolves to `String`, which
   is not localized. Build two `Text` values instead.
+- **A system `Slider` takes the keyboard focus only with "Keyboard navigation" on.** With the setting off
+  (the default) Tab skips it, so its arrow keys and any `onKeyPress` never run. A control that must work
+  from the keyboard takes the focus itself with `.focusable(interactions: .edit)`, as `ParameterSlider`
+  does. Its accessibility increment is a tenth of the range unless `accessibilityAdjustableAction` says
+  otherwise. Caught by `ParameterSliderKeyboardTests`.
+- **`.onKeyPress(.delete)` does not match the Delete key.** `KeyEquivalent.delete` is U+0008 and the key
+  arrives as U+007F: match both.
