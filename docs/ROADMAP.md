@@ -66,5 +66,4 @@ These steps need Xcode or the user's own approval, so they were left for a local
 - **RAW highlights.** `CIRAWFilter` is used with its tone curve off. Whether its extended dynamic range
   setting should be raised to keep more highlight detail needs a look at real files.
 - **XcodeGen projects in swift-harness.** The plugin reads build settings from a committed project file;
-  here the project is generated, so the signing settings were moved to an `.xcconfig`. A change to
-  `apple/project.yml` alone is not seen as a build input by the end-of-turn check.
+  here the project is generated, so the signing settings were moved to an `.xcconfig`.
