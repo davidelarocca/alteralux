@@ -46,7 +46,6 @@ draft pull request per step.
      exposure) instead of one step.
    - A black and white negative film keeps the color paper and comes out orange.
    - The export file name carries the film's internal id (`kodak_portra_400`), not its name.
-   - The quality slider of the export sheet has no accessibility label.
    - There is no undo: Reset Adjustments cannot be taken back (solved with step 5).
    - With no photo open, the zoom and previous/next commands are still enabled.
 2. **The inspector redrawn** in the visual direction of the vision: a slider of our own (neutral colors,
