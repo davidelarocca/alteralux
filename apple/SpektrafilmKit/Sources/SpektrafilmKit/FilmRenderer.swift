@@ -28,7 +28,7 @@ public enum RenderQuality: Sendable, Equatable {
 /// the time of the first render.
 public final class FilmRenderer: Sendable {
     private let engine: Engine
-    // The engine blocks while rendering; keep it off Swift's cooperative pool.
+    /// The engine blocks while rendering; keep it off Swift's cooperative pool.
     private let queue = DispatchQueue(label: "spektrafilm.render", qos: .userInitiated)
 
     /// - Parameter dataDirectory: the engine's `data` folder (film and paper
@@ -38,7 +38,9 @@ public final class FilmRenderer: Sendable {
     }
 
     /// The compute backend in use, for diagnostics (e.g. "wgpu" or "cpu").
-    public var backendName: String { engine.backendName() }
+    public var backendName: String {
+        engine.backendName()
+    }
 
     /// All film and paper stocks, films first.
     public func stocks() throws -> [StockInfo] {
@@ -47,56 +49,60 @@ public final class FilmRenderer: Sendable {
 
     /// Develops `image` with `settings`.
     public func render(
-        _ image: LoadedImage, settings: DevelopSettings, quality: RenderQuality
+        _ image: LoadedImage, settings: DevelopSettings, quality: RenderQuality,
     ) async throws -> DevelopedImage {
         try await render(image.source, settings: settings, quality: quality)
     }
 
     /// Develops an engine source image with `settings`.
     public func render(
-        _ source: SourceImage, settings: DevelopSettings, quality: RenderQuality
+        _ source: SourceImage, settings: DevelopSettings, quality: RenderQuality,
     ) async throws -> DevelopedImage {
-        let engine = self.engine
+        let engine = engine
         return try await withCheckedThrowingContinuation { continuation in
             queue.async {
                 continuation.resume(
-                    with: Result { try Self.render(engine, source, settings, quality) })
+                    with: Result { try Self.render(engine, source, settings, quality) },
+                )
             }
         }
     }
 
     private static func render(
         _ engine: Engine, _ source: SourceImage, _ settings: DevelopSettings,
-        _ quality: RenderQuality
+        _ quality: RenderQuality,
     ) throws -> DevelopedImage {
         let maxDimension: Int
         let format: PixelFormat
         switch quality {
-        case .preview(let limit):
+        case let .preview(limit):
             maxDimension = max(0, limit)
             format = .rgbaF16
         case .full:
             maxDimension = 0
             format = .rgbaF32
         }
-        let request = RenderRequest(
+        let request = try RenderRequest(
             film: settings.filmID,
             print: settings.paperID,
-            paramsJson: try settings.enginePatchJSON(),
+            paramsJson: settings.enginePatchJSON(),
             color: RenderColor(input: .rec2020, output: .srgb),
-            maxDimension: UInt32(maxDimension))
+            maxDimension: UInt32(maxDimension),
+        )
         let rendered = try engine.render(source: source, request: request)
         let width = Int(rendered.width())
         let height = Int(rendered.height())
         guard
             let cgImage = makeCGImage(
                 pixels: rendered.pixels(format: format), width: width, height: height,
-                format: format)
+                format: format,
+            )
         else {
             throw SpektrafilmError.invalidEngineOutput
         }
         return DevelopedImage(
-            cgImage: cgImage, width: width, height: height, stats: rendered.stats())
+            cgImage: cgImage, width: width, height: height, stats: rendered.stats(),
+        )
     }
 
     /// Wraps the engine's display-linear sRGB pixels in a `CGImage`.
@@ -127,6 +133,7 @@ public final class FilmRenderer: Sendable {
             width: width, height: height,
             bitsPerComponent: bitsPerComponent, bitsPerPixel: bitsPerComponent * 4,
             bytesPerRow: bytesPerRow, space: colorSpace, bitmapInfo: bitmapInfo,
-            provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
+            provider: provider, decode: nil, shouldInterpolate: true, intent: .defaultIntent,
+        )
     }
 }

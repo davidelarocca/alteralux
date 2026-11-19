@@ -58,10 +58,12 @@ public struct ReduceMotion: DynamicProperty {
 
     public init() {}
 
-    public var wrappedValue: Bool { override ?? system }
+    public var wrappedValue: Bool {
+        override ?? system
+    }
 }
 
-extension EnvironmentValues {
+public extension EnvironmentValues {
     /// Set by tests and previews to check a component with Reduce Motion on or off.
-    @Entry public var reduceMotionOverride: Bool?
+    @Entry var reduceMotionOverride: Bool?
 }

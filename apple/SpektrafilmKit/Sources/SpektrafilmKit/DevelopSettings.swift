@@ -84,7 +84,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         couplersAmount: Double = 1,
         sharpenRadius: Double = 0.7,
         sharpenAmount: Double = 0.7,
-        advancedJSON: String? = nil
+        advancedJSON: String? = nil,
     ) {
         self.filmID = filmID
         self.paperID = paperID
@@ -145,10 +145,10 @@ extension DevelopSettings {
                 ],
             ],
             "scanner": [
-                "unsharp_mask": [sharpenRadius, sharpenAmount]
+                "unsharp_mask": [sharpenRadius, sharpenAmount],
             ],
             "io": [
-                "scan_film": scanFilm
+                "scan_film": scanFilm,
             ],
         ]
         if let advancedJSON, !advancedJSON.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {

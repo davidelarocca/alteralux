@@ -7,7 +7,9 @@ struct PhotoStage: View {
 
     /// The developed photo, or the original while comparing.
     private var displayedImage: CGImage? {
-        if model.showsOriginal, let original = model.original { return original }
+        if model.showsOriginal, let original = model.original {
+            return original
+        }
         return model.preview?.cgImage
     }
 
@@ -22,10 +24,11 @@ struct PhotoStage: View {
                     pixelSize: CGSize(width: loaded.width, height: loaded.height),
                     command: model.zoomCommand,
                     commandID: model.zoomRequestID,
-                    onScaleChange: { model.viewerDidChange(scale: $0) }
+                    onScaleChange: { model.viewerDidChange(scale: $0) },
                 )
                 .accessibilityLabel(
-                    model.showsOriginal ? Text("Original photo") : Text("Developed photo"))
+                    model.showsOriginal ? Text("Original photo") : Text("Developed photo"),
+                )
             } else if model.hasPhoto || model.isLoading || model.isStarting {
                 ProgressView()
                     .controlSize(.large)

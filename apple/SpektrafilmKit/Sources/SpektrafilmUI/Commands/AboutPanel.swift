@@ -13,10 +13,10 @@ enum AboutPanel {
         // One localized string: the backslashes only wrap the source line.
         let localized = AttributedString(
             localized: """
-                Film modeling powered by [spektrafilm](https://github.com/andreavolpato/spektrafilm) by Andrea Volpato. \
-                Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) by turbasvin. \
-                Free software under the GNU GPL v3.
-                """
+            Film modeling powered by [spektrafilm](https://github.com/andreavolpato/spektrafilm) by Andrea Volpato. \
+            Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) by turbasvin. \
+            Free software under the GNU GPL v3.
+            """,
         )
         let credits = NSMutableAttributedString(attributedString: NSAttributedString(localized))
         let everything = NSRange(location: 0, length: credits.length)

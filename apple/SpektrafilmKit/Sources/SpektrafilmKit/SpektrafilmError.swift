@@ -18,7 +18,7 @@ public enum SpektrafilmError: Error, Equatable, Sendable, LocalizedError {
 
     public var errorDescription: String? {
         switch self {
-        case .unreadableImage(let url):
+        case let .unreadableImage(url):
             "“\(url.lastPathComponent)” could not be opened as an image."
         case .renderingFailed:
             "The image could not be prepared for development."
@@ -26,7 +26,7 @@ public enum SpektrafilmError: Error, Equatable, Sendable, LocalizedError {
             "The developed image could not be displayed."
         case .invalidAdvancedParameters:
             "The advanced parameters are not valid JSON."
-        case .exportFailed(let reason):
+        case let .exportFailed(reason):
             "The export failed: \(reason)"
         case .missingEngineData:
             "The film data is missing from the app."

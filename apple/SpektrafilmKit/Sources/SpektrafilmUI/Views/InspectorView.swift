@@ -20,8 +20,9 @@ struct InspectorView: View {
             FilmCharacterSection(settings: $model.settings)
             Section("Scan") {
                 ParameterSlider(
-                    "Sharpening", value: $model.settings.sharpenAmount, in: 0...2,
-                    step: 0.05, defaultValue: 0.7)
+                    "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
+                    step: 0.05, defaultValue: 0.7,
+                )
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
@@ -44,7 +45,7 @@ private struct MaterialsSection: View {
     private var filmSelection: Binding<String> {
         Binding(
             get: { model.settings.filmID },
-            set: { model.chooseFilm($0) }
+            set: { model.chooseFilm($0) },
         )
     }
 
@@ -76,8 +77,9 @@ private struct CameraSection: View {
     var body: some View {
         Section("Camera") {
             ParameterSlider(
-                "Exposure", value: $settings.exposureEV, in: -5...5,
-                step: 0.1, fractionDigits: 1, showsSign: true)
+                "Exposure", value: $settings.exposureEV, in: -5 ... 5,
+                step: 0.1, fractionDigits: 1, showsSign: true,
+            )
             Toggle("Automatic metering", isOn: $settings.autoExposure)
             Picker("Film format", selection: $settings.filmFormatMM) {
                 Text("110").tag(17.0)
@@ -95,13 +97,15 @@ private struct PrintSection: View {
 
     var body: some View {
         Section("Print") {
-            ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2...3, defaultValue: 1)
+            ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2 ... 3, defaultValue: 1)
             ParameterSlider(
-                "Yellow filter", value: $settings.yellowFilterShift, in: -50...50,
-                step: 1, fractionDigits: 0, showsSign: true)
+                "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
+                step: 1, fractionDigits: 0, showsSign: true,
+            )
             ParameterSlider(
-                "Magenta filter", value: $settings.magentaFilterShift, in: -50...50,
-                step: 1, fractionDigits: 0, showsSign: true)
+                "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
+                step: 1, fractionDigits: 0, showsSign: true,
+            )
         }
     }
 }
@@ -113,14 +117,15 @@ private struct FilmCharacterSection: View {
         Section("Film Character") {
             Toggle("Grain", isOn: $settings.grainEnabled)
             if settings.grainEnabled {
-                ParameterSlider("Grain size", value: $settings.grainParticleArea, in: 0.05...1, defaultValue: 0.2)
+                ParameterSlider("Grain size", value: $settings.grainParticleArea, in: 0.05 ... 1, defaultValue: 0.2)
             }
             Toggle("Halation", isOn: $settings.halationEnabled)
                 .help("The red glow around bright lights.")
             if settings.halationEnabled {
                 ParameterSlider(
-                    "Halation strength", value: $settings.halationAmount, in: 0...3,
-                    step: 0.05, defaultValue: 1)
+                    "Halation strength", value: $settings.halationAmount, in: 0 ... 3,
+                    step: 0.05, defaultValue: 1,
+                )
             }
         }
     }

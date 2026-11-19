@@ -36,8 +36,8 @@ public struct SpektrafilmCommands: Commands {
                 "Show Original",
                 isOn: Binding(
                     get: { model.showsOriginal },
-                    set: { model.showsOriginal = $0 }
-                )
+                    set: { model.showsOriginal = $0 },
+                ),
             )
             .keyboardShortcut("\\", modifiers: [])
             .disabled(model.original == nil)

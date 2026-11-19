@@ -5,8 +5,8 @@ import SwiftUI
 // The app is always dark (colors are judged against a neutral dark interface),
 // so each color has a single appearance.
 
-extension Color {
-    public enum DS {
+public extension Color {
+    enum DS {
         /// Names of every color in the catalog, for the tests that check they resolve.
         public static let names = ["viewerSurround", "thumbnailPlaceholder", "hairline"]
 

@@ -24,19 +24,19 @@ let package = Package(
         .library(name: "SpektrafilmEngine", targets: ["SpektrafilmEngine"]),
     ],
     dependencies: [
-        .package(path: "../DesignSystem")
+        .package(path: "../DesignSystem"),
     ],
     targets: [
         .binaryTarget(
             name: "spektrafilm_ffiFFI",
-            path: "Frameworks/spektrafilm_ffiFFI.xcframework"
+            path: "Frameworks/spektrafilm_ffiFFI.xcframework",
         ),
         .target(
             name: "SpektrafilmEngine",
             dependencies: ["spektrafilm_ffiFFI"],
             swiftSettings: [
                 // UniFFI's generated code predates Swift 6 strict concurrency.
-                .swiftLanguageMode(.v5)
+                .swiftLanguageMode(.v5),
             ],
             linkerSettings: [
                 // Native dependencies of the static Rust library:
@@ -46,11 +46,11 @@ let package = Package(
                 .linkedFramework("QuartzCore"),
                 .linkedFramework("CoreGraphics"),
                 .linkedFramework("Foundation"),
-            ]
+            ],
         ),
         .target(
             name: "SpektrafilmKit",
-            dependencies: ["SpektrafilmEngine"]
+            dependencies: ["SpektrafilmEngine"],
         ),
         .target(
             name: "SpektrafilmUI",
@@ -58,20 +58,20 @@ let package = Package(
                 "SpektrafilmKit",
                 "SpektrafilmEngine",
                 .product(name: "DesignSystem", package: "DesignSystem"),
-            ]
+            ],
         ),
         .testTarget(
             name: "SpektrafilmEngineTests",
             dependencies: ["SpektrafilmEngine"],
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            swiftSettings: [.swiftLanguageMode(.v5)],
         ),
         .testTarget(
             name: "SpektrafilmKitTests",
-            dependencies: ["SpektrafilmKit"]
+            dependencies: ["SpektrafilmKit"],
         ),
         .testTarget(
             name: "SpektrafilmUITests",
-            dependencies: ["SpektrafilmUI"]
+            dependencies: ["SpektrafilmUI"],
         ),
-    ]
+    ],
 )

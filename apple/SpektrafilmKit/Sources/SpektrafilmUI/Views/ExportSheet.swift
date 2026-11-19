@@ -25,7 +25,7 @@ struct ExportSheet: View {
                     Text("Display P3").tag(ExportOptions.ColorProfile.displayP3)
                 }
                 if model.exportOptions.format == .jpeg || model.exportOptions.format == .heic {
-                    Slider(value: $model.exportOptions.quality, in: 0.5...1) {
+                    Slider(value: $model.exportOptions.quality, in: 0.5 ... 1) {
                         Text("Quality")
                     }
                 }

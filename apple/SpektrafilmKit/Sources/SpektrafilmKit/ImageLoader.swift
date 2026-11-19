@@ -37,14 +37,16 @@ public enum ImageLoader {
 
         // Normalize the origin, then optionally downscale.
         image = image.transformed(
-            by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY))
+            by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY),
+        )
         if let maxDimension {
             let longSide = max(image.extent.width, image.extent.height)
             if longSide > CGFloat(maxDimension) {
                 let scale = CGFloat(maxDimension) / longSide
                 image = image.applyingFilter(
                     "CILanczosScaleTransform",
-                    parameters: [kCIInputScaleKey: scale, kCIInputAspectRatioKey: 1.0])
+                    parameters: [kCIInputScaleKey: scale, kCIInputAspectRatioKey: 1.0],
+                )
             }
         }
 
@@ -62,11 +64,13 @@ public enum ImageLoader {
             guard let base = buffer.baseAddress else { return }
             context.render(
                 image, toBitmap: base, rowBytes: bytesPerRow, bounds: extent,
-                format: .RGBAf, colorSpace: sceneColorSpace)
+                format: .RGBAf, colorSpace: sceneColorSpace,
+            )
         }
 
         let source = try SourceImage.fromF32Pixels(
-            width: UInt32(width), height: UInt32(height), channels: 4, pixels: pixels)
+            width: UInt32(width), height: UInt32(height), channels: 4, pixels: pixels,
+        )
         return LoadedImage(url: url, source: source, width: width, height: height, isRaw: isRaw)
     }
 

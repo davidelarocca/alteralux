@@ -51,7 +51,7 @@ public struct ExportOptions: Sendable, Equatable, Codable {
 
     public init(
         format: Format = .jpeg, colorProfile: ColorProfile = .sRGB, quality: Double = 0.92,
-        copiesMetadata: Bool = true
+        copiesMetadata: Bool = true,
     ) {
         self.format = format
         self.colorProfile = colorProfile
@@ -70,7 +70,7 @@ public enum ImageExporter {
     /// - Parameter originalURL: the source photo, to copy its metadata from.
     public static func write(
         _ image: DevelopedImage, to url: URL, options: ExportOptions = ExportOptions(),
-        originalURL: URL? = nil
+        originalURL: URL? = nil,
     ) throws {
         var ciImage = CIImage(cgImage: image.cgImage)
         if options.copiesMetadata, let originalURL {
@@ -79,22 +79,27 @@ public enum ImageExporter {
         let colorSpace = cgColorSpace(for: options.colorProfile)
         let quality: [CIImageRepresentationOption: Any] = [
             CIImageRepresentationOption(
-                rawValue: kCGImageDestinationLossyCompressionQuality as String): options.quality
+                rawValue: kCGImageDestinationLossyCompressionQuality as String,
+            ): options.quality,
         ]
         do {
             switch options.format {
             case .jpeg:
                 try context.writeJPEGRepresentation(
-                    of: ciImage, to: url, colorSpace: colorSpace, options: quality)
+                    of: ciImage, to: url, colorSpace: colorSpace, options: quality,
+                )
             case .heic:
                 try context.writeHEIF10Representation(
-                    of: ciImage, to: url, colorSpace: colorSpace, options: quality)
+                    of: ciImage, to: url, colorSpace: colorSpace, options: quality,
+                )
             case .tiff:
                 try context.writeTIFFRepresentation(
-                    of: ciImage, to: url, format: .RGBA16, colorSpace: colorSpace, options: [:])
+                    of: ciImage, to: url, format: .RGBA16, colorSpace: colorSpace, options: [:],
+                )
             case .png:
                 try context.writePNGRepresentation(
-                    of: ciImage, to: url, format: .RGBA16, colorSpace: colorSpace, options: [:])
+                    of: ciImage, to: url, format: .RGBA16, colorSpace: colorSpace, options: [:],
+                )
             }
         } catch {
             throw SpektrafilmError.exportFailed(error.localizedDescription)
@@ -128,7 +133,9 @@ public enum ImageExporter {
             kCGImagePropertyGPSDictionary, kCGImagePropertyIPTCDictionary,
         ]
         for key in copiedDictionaries {
-            if let value = all[key as String] { result[key as String] = value }
+            if let value = all[key as String] {
+                result[key as String] = value
+            }
         }
         if var exif = result[kCGImagePropertyExifDictionary as String] as? [String: Any] {
             exif.removeValue(forKey: kCGImagePropertyExifPixelXDimension as String)
@@ -144,7 +151,9 @@ public enum ImageExporter {
                 kCGImagePropertyTIFFCopyright,
             ]
             for key in copiedKeys {
-                if let value = original[key as String] { tiff[key as String] = value }
+                if let value = original[key as String] {
+                    tiff[key as String] = value
+                }
             }
         }
         tiff[kCGImagePropertyTIFFSoftware as String] = "spektrafilm for macOS"

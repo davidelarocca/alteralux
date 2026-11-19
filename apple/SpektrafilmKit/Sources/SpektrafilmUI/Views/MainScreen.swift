@@ -42,7 +42,8 @@ struct MainScreen: View {
         .inspector(isPresented: $showsInspector) {
             InspectorView()
                 .inspectorColumnWidth(
-                    min: InspectorWidth.minimum, ideal: InspectorWidth.ideal, max: InspectorWidth.maximum)
+                    min: InspectorWidth.minimum, ideal: InspectorWidth.ideal, max: InspectorWidth.maximum,
+                )
         }
         .navigationTitle(model.selection?.name ?? "spektrafilm")
         .navigationSubtitle(model.materialsSummary)
@@ -52,9 +53,11 @@ struct MainScreen: View {
         .fileImporter(
             isPresented: $model.isImporterPresented,
             allowedContentTypes: AppModel.openableTypes,
-            allowsMultipleSelection: true
+            allowsMultipleSelection: true,
         ) { result in
-            if case .success(let urls) = result { model.open(urls) }
+            if case let .success(urls) = result {
+                model.open(urls)
+            }
         }
         .dropDestination(for: URL.self) { urls, _ in
             guard !urls.isEmpty else { return false }
@@ -75,7 +78,11 @@ struct MainScreen: View {
     private var isAlertPresented: Binding<Bool> {
         Binding(
             get: { model.alertMessage != nil },
-            set: { if !$0 { model.alertMessage = nil } }
+            set: {
+                if !$0 {
+                    model.alertMessage = nil
+                }
+            },
         )
     }
 }
