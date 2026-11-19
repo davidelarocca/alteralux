@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "swift-harness": {
+      "source": {
+        "source": "github",
+        "repo": "davidelarocca/swift-harness"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "swift-harness@swift-harness": true
+  }
+}

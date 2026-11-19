@@ -3,7 +3,7 @@ import Foundation
 import SpektrafilmEngine
 
 /// A developed photo, ready to display or export.
-public struct DevelopedImage: @unchecked Sendable {
+public struct DevelopedImage: @unchecked Sendable { // concurrency: CGImage is immutable, the rest are values
     /// Display-linear image tagged with its color space. AppKit, SwiftUI and
     /// ImageIO color-manage it for the screen or the exported file.
     public let cgImage: CGImage

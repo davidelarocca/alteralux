@@ -1,11 +1,9 @@
+import DesignSystem
 import SwiftUI
 
 /// Shows the selected photo on a neutral dark surround, or the empty state.
 struct PhotoStage: View {
     @Environment(AppModel.self) private var model
-
-    /// A fixed neutral grey surround to judge colors against.
-    private static let surround = Color(white: 0.11)
 
     /// The developed photo, or the original while comparing.
     private var displayedImage: CGImage? {
@@ -15,7 +13,8 @@ struct PhotoStage: View {
 
     var body: some View {
         ZStack {
-            Self.surround.ignoresSafeArea()
+            // A fixed neutral grey to judge colors against.
+            Color.DS.viewerSurround.ignoresSafeArea()
 
             if let image = displayedImage, let loaded = model.loaded {
                 ZoomableImageView(
@@ -43,19 +42,15 @@ struct PhotoStage: View {
         }
         .overlay(alignment: .topLeading) {
             if model.showsOriginal, model.original != nil {
-                Text("Original")
-                    .font(.caption.weight(.semibold))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(.regularMaterial, in: .capsule)
-                    .padding(12)
+                StatusBadge("Original")
+                    .padding(Spacing.m)
             }
         }
         .overlay(alignment: .bottomTrailing) {
             if model.isRendering || model.isExporting {
                 ProgressView()
                     .controlSize(.small)
-                    .padding(12)
+                    .padding(Spacing.m)
             }
         }
     }

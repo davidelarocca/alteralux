@@ -6,6 +6,9 @@ struct ExportSheet: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
 
+    /// Width of the sheet, in points.
+    static let width: CGFloat = 420
+
     var body: some View {
         @Bindable var model = model
 
@@ -42,6 +45,6 @@ struct ExportSheet: View {
             }
             .padding()
         }
-        .frame(width: 420)
+        .frame(width: Self.width)
     }
 }

@@ -36,7 +36,7 @@ enum ZoomCommand: Equatable {
 /// the selected one and its latest developed preview.
 @MainActor
 @Observable
-final class AppModel {
+public final class AppModel {
     // MARK: Catalogue
 
     private(set) var films: [StockInfo] = []
@@ -96,6 +96,15 @@ final class AppModel {
     private var needsRender = false
     private var loadGeneration = 0
 
+    /// Where the engine's `data` folder is. `nil` means the app bundle's resources.
+    private let dataDirectory: URL?
+
+    /// - Parameter dataDirectory: the engine's `data` folder; the app passes
+    ///   nothing and ships it in its resources, tests pass the submodule's.
+    public init(dataDirectory: URL? = nil) {
+        self.dataDirectory = dataDirectory
+    }
+
     var selection: PhotoItem? { photos.first { $0.id == selectedID } }
     var hasPhoto: Bool { selection != nil }
     var canExport: Bool { loaded != nil && !isExporting }
@@ -125,7 +134,8 @@ final class AppModel {
         guard renderer == nil else { return }
         defer { isStarting = false }
         do {
-            guard let data = Bundle.main.resourceURL?.appendingPathComponent("data"),
+            guard
+                let data = dataDirectory ?? Bundle.main.resourceURL?.appendingPathComponent("data"),
                 FileManager.default.fileExists(atPath: data.path)
             else { throw SpektrafilmError.missingEngineData }
             let renderer = try await Task.detached(priority: .userInitiated) {
@@ -189,6 +199,11 @@ final class AppModel {
         if let next = photos.indices.contains(index) ? photos[index] : photos.last {
             select(next)
         }
+    }
+
+    /// Removes the selected photo from the strip.
+    func removeSelection() {
+        if let selection { remove(selection) }
     }
 
     func selectAdjacent(offset: Int) {
@@ -380,7 +395,7 @@ final class AppModel {
 }
 
 /// Carries an immutable `CGImage` across tasks.
-private struct SendableImage: @unchecked Sendable {
+private struct SendableImage: @unchecked Sendable { // concurrency: CGImage is immutable once created
     let image: CGImage?
     init(_ image: CGImage?) { self.image = image }
 }

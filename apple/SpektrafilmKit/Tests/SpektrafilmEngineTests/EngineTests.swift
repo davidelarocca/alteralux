@@ -15,10 +15,10 @@ private let dataDirectory: String = URL(fileURLWithPath: #filePath)
 private func chart(width: Int, height: Int) -> [Float] {
     var pixels: [Float] = []
     pixels.reserveCapacity(width * height * 3)
-    for y in 0..<height {
-        for x in 0..<width {
-            let grey = 0.184 * pow(2, 8 * Float(x) / Float(width - 1) - 5)
-            let tint = Float(y) / Float(height - 1)
+    for row in 0..<height {
+        for column in 0..<width {
+            let grey = 0.184 * pow(2, 8 * Float(column) / Float(width - 1) - 5)
+            let tint = Float(row) / Float(height - 1)
             pixels += [grey * (1 + 0.5 * tint), grey, grey * (1 - 0.5 * tint)]
         }
     }
