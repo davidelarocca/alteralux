@@ -1,6 +1,8 @@
 import Foundation
+import ImageIO
 import SpektrafilmKit
 import Testing
+import UniformTypeIdentifiers
 @testable import SpektrafilmUI
 
 /// The upstream data folder, straight from the git submodule.
@@ -62,6 +64,49 @@ struct AppModelTests {
         #expect(model.settings.scanFilm)
         #expect(model.settings.exposureEV == 0)
         #expect(model.settings.grainEnabled)
+    }
+
+    @Test func exportNameUsesTheFilmAsTheUserReadsIt() {
+        let source = URL(fileURLWithPath: "/photos/IMG_0042.CR3")
+        #expect(
+            AppModel.exportFileName(source: source, film: "Kodak Portra 400", format: .jpeg)
+                == "IMG_0042 Kodak Portra 400.jpg",
+        )
+        #expect(
+            AppModel.exportFileName(source: source, film: "Kodak Portra 800 (Push 1)", format: .tiff)
+                == "IMG_0042 Kodak Portra 800 (Push 1).tif",
+        )
+        // Nothing in the name may read as a folder.
+        #expect(
+            AppModel.exportFileName(source: source, film: "A/B: C", format: .png) == "IMG_0042 A-B- C.png",
+        )
+    }
+
+    @Test func commandsThatNeedAPhotoAreOffWithoutOne() throws {
+        let model = AppModel(dataDirectory: dataDirectory)
+        #expect(!model.canZoom)
+        #expect(!model.canStepThroughPhotos)
+
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("spektrafilm-tests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let picture = try #require(WindowedTests.testPicture())
+        let files = try ["One.png", "Two.png"].map { name in
+            let url = folder.appendingPathComponent(name)
+            let destination = try #require(
+                CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil),
+            )
+            CGImageDestinationAddImage(destination, picture, nil)
+            try #require(CGImageDestinationFinalize(destination))
+            return url
+        }
+        model.open([files[0]])
+        #expect(!model.canStepThroughPhotos)
+        model.open([files[1]])
+        #expect(model.canStepThroughPhotos)
+        model.removeSelection()
+        #expect(!model.canStepThroughPhotos)
     }
 
     @Test func zoomRequestsAreDistinctEvenWhenRepeated() {

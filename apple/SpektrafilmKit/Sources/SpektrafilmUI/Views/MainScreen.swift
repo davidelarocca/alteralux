@@ -115,7 +115,7 @@ private struct MainToolbar: ToolbarContent {
                 Button("100%") { model.zoom(.actualSize) }
                     .help("Actual size")
             }
-            .disabled(model.loaded == nil)
+            .disabled(!model.canZoom)
 
             Button {
                 model.isExportPresented = true

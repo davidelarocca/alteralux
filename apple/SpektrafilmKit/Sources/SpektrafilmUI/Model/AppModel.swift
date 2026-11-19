@@ -119,6 +119,16 @@ public final class AppModel {
         loaded != nil && !isExporting
     }
 
+    /// The zoom commands act on a photo that is loaded.
+    var canZoom: Bool {
+        loaded != nil
+    }
+
+    /// Previous and next need another photo to go to.
+    var canStepThroughPhotos: Bool {
+        photos.count > 1
+    }
+
     var selectedFilm: StockInfo? {
         films.first { $0.id == settings.filmID }
     }
@@ -405,14 +415,27 @@ public final class AppModel {
 
     // MARK: - Export
 
+    /// The name proposed for an exported file: the photo's name, the film as the user reads it,
+    /// and the format's extension ("IMG_0042 Kodak Portra 400.jpg").
+    nonisolated static func exportFileName(
+        source: URL, film: String, format: ExportOptions.Format,
+    ) -> String {
+        let baseName = source.deletingPathExtension().lastPathComponent
+        // A film's name must not read as a path in the save panel.
+        let filmName = film.replacing("/", with: "-").replacing(":", with: "-")
+        return "\(baseName) \(filmName).\(format.fileExtension)"
+    }
+
     func export() async {
         guard let loaded, let renderer, !isExporting else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [exportOptions.format.contentType]
         panel.canCreateDirectories = true
-        let baseName = loaded.url.deletingPathExtension().lastPathComponent
-        panel.nameFieldStringValue =
-            "\(baseName) \(settings.filmID).\(exportOptions.format.fileExtension)"
+        panel.nameFieldStringValue = Self.exportFileName(
+            source: loaded.url,
+            film: selectedFilm?.displayName ?? settings.filmID,
+            format: exportOptions.format,
+        )
         guard await panel.begin() == .OK, let destination = panel.url else { return }
 
         isExporting = true
