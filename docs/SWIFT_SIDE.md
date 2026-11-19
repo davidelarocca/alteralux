@@ -31,7 +31,7 @@ parameter mapping.
 
 Its tests (`SpektrafilmUITests`) also draw in real windows, with the helpers
 copied from the swift-harness templates (`LayoutContract.swift`,
-`Screenshot.swift`, `Snapshot.swift`, kept as shipped):
+`Screenshot.swift`, `Snapshot.swift`, `KeyboardCheck.swift`, kept as shipped):
 
 - the layout contract of the main window (`docs/LAYOUT_CONTRACT.md`);
 - snapshots of the shared components, compared with the approved images in
@@ -39,6 +39,7 @@ copied from the swift-harness templates (`LayoutContract.swift`,
   on; elsewhere they are reported as not compared);
 - screenshots of the main window, empty and with a developed photo, saved to
   `.build/swift-harness/screenshots/` for review and never compared.
+- key presses on the shared components that promise keyboard actions.
 
 These suites are nested in `WindowedTests`, which runs them one at a time.
 
