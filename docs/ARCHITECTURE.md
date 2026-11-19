@@ -47,6 +47,7 @@ defaults, and unknown keys are errors.
 - Product map (entities, destinations, relations, actions): [PRODUCT_MAP.md](PRODUCT_MAP.md)
 - Layout contract (window sizes per screen, presented UI): [LAYOUT_CONTRACT.md](LAYOUT_CONTRACT.md)
 - Pitfalls that already cost time: [PITFALLS.md](PITFALLS.md)
+- Vision: what the product is meant to become and what 1.0 means: [VISION.md](VISION.md)
 - Roadmap and next steps: [ROADMAP.md](ROADMAP.md)
 - Decisions: `docs/adr/` (index below)
 

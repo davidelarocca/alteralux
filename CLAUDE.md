@@ -18,6 +18,7 @@ A native macOS app for spectral simulation of analog film: a SwiftUI app around 
 - Entities, their pages, relations and actions: `docs/PRODUCT_MAP.md`
 - Window sizes each main screen must hold, and where popovers open: `docs/LAYOUT_CONTRACT.md`
 - Traps that already cost time: `docs/PITFALLS.md`
+- Where the product is going and what version 1.0 means: `docs/VISION.md`
 - What is done and what comes next: `docs/ROADMAP.md`
 - Decisions already taken, do not reopen without a new ADR: `docs/adr/`
 - Design system code: `apple/DesignSystem/`
