@@ -65,5 +65,10 @@ These steps need Xcode or the user's own approval, so they were left for a local
   region-of-interest rendering yet; rendering only the visible area would make large photos much faster.
 - **RAW highlights.** `CIRAWFilter` is used with its tone curve off. Whether its extended dynamic range
   setting should be raised to keep more highlight detail needs a look at real files.
+- **The app's name.** The app is called spektrafilm, the name of the upstream project it builds on.
+  Whether it keeps that name or takes one of its own is undecided.
+- **Distribution.** The app is signed to run locally, and CI packages it as an artifact. Giving it to other
+  people needs a Developer ID signature and notarization, which need an Apple developer account. The Mac
+  App Store is excluded ([ADR 0001](adr/0001-reuse-the-rust-engine.md)).
 - **XcodeGen projects in swift-harness.** The plugin reads build settings from a committed project file;
   here the project is generated, so the signing settings were moved to an `.xcconfig`.
