@@ -6,7 +6,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-APP="${1:-$ROOT/build/DerivedData/Build/Products/Debug/Spektrafilm.app}"
+APP="${1:-$ROOT/build/DerivedData/Build/Products/Release/Spektrafilm.app}"
 OUT="$ROOT/build/smoke"
 mkdir -p "$OUT"
 

@@ -68,8 +68,8 @@ is deep-merged over the defaults:
 - `Engine.defaultParamsJson()` returns the full tree: it documents every
   tunable and is the starting point for presets.
 
-The Swift app will wrap the parameters it exposes in typed `Codable` structs
-that encode to this JSON.
+The Swift side wraps the parameters the app exposes in `DevelopSettings`, which
+produces this JSON.
 
 ### Pipeline cache
 
@@ -96,6 +96,52 @@ full render.
   instead of unwinding into Swift.
 - `Engine` is thread-safe; renders can overlap.
 
+## The Swift side
+
+### `SpektrafilmKit` (Swift package)
+
+- **`SpektrafilmEngine`**: the generated UniFFI bindings plus the compiled
+  engine as an XCFramework. Nothing else.
+- **`SpektrafilmKit`**: what an app needs, without any UI.
+  - `ImageLoader` decodes a file to scene-linear Rec. 2020 float pixels. RAW
+    files go through `CIRAWFilter` with tone curve, local tone mapping, gamut
+    mapping and sharpening turned off; other formats go through ImageIO. It
+    also provides the system's default rendering of a file, used for
+    thumbnails and for the before/after comparison.
+  - `DevelopSettings` is the app's model of an edit (`Codable`). It converts to
+    the engine's JSON patch; tests check that the engine accepts it and that
+    each value lands on the intended parameter.
+  - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
+    thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
+  - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
+    Core Image, converting to sRGB or Display P3 and embedding the profile,
+    with the original's camera metadata.
+
+The tests of the package run the real engine: they check row order and channel
+order end to end, the bit depth and profile of exported files, and the
+parameter mapping.
+
+### The app (`apple/Spektrafilm`)
+
+A single-window SwiftUI app. `AppModel` (`@Observable`, main actor) owns the
+open photos, the settings of the selected one and its preview.
+
+- **Rendering loop.** A settings change requests a render. Requests made while
+  a render is running collapse into one follow-up render with the latest
+  settings, so dragging a slider never queues stale frames.
+- **Preview resolution.** The preview is rendered at 2048 px on the long side
+  while the whole photo is in view, and at full resolution once the viewer
+  shows more pixels than that. The viewer's zoom is measured against the full
+  photo, so swapping previews does not move the picture.
+- **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
+  `CGImage` through a layer. Core Animation color-manages it for the display.
+- **Memory.** Only the selected photo's decoded pixels are kept; the strip
+  holds small thumbnails.
+- **Sandbox.** Access to opened files is kept for as long as they are in the
+  strip, so their metadata can be copied at export time.
+
+The Xcode project is generated from `apple/project.yml` and is not committed.
+
 ## Roadmap notes
 
 - **Export precision.** Upstream offers an f64 CPU build for exact parity with
@@ -108,4 +154,7 @@ full render.
   PhotoKit). To verify first thing in phase 3.
 - **GPU texture sharing.** Previews currently travel GPU → CPU → GPU. If that
   becomes the bottleneck, wgpu can render into an `IOSurface` shared with the
-  app's Metal view.
+  viewer's layer.
+- **100% view.** Zooming in renders the whole photo at full resolution. The
+  engine has no region-of-interest rendering yet; rendering only the visible
+  area would make large photos much faster at 100%.

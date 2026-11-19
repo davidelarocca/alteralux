@@ -61,18 +61,18 @@ jobs:
           xcodebuild build \
             -project apple/Spektrafilm.xcodeproj \
             -scheme Spektrafilm \
-            -configuration Debug \
+            -configuration Release \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath build/DerivedData \
             -skipPackagePluginValidation
       - name: Check the app bundle
         run: |
-          APP=build/DerivedData/Build/Products/Debug/Spektrafilm.app
+          APP=build/DerivedData/Build/Products/Release/Spektrafilm.app
           test -d "$APP/Contents/Resources/data/profiles"
           codesign --verify --deep --strict "$APP"
           codesign -d --entitlements - "$APP" 2>/dev/null | grep -q app-sandbox
       - name: Smoke test (launch the app, open a test chart, take a screenshot)
-        run: scripts/ci/smoke-test.sh
+        run: scripts/ci/smoke-test.sh build/DerivedData/Build/Products/Release/Spektrafilm.app
       - name: Upload the smoke test screenshot
         if: always()
         uses: actions/upload-artifact@v7
@@ -80,3 +80,27 @@ jobs:
           name: smoke-test
           path: build/smoke
           if-no-files-found: ignore
+      # Debug aid for reviewing the UI from the log alone: add the label
+      # "ci-screenshot" to a pull request to print a small copy of the
+      # screenshot as base64.
+      - name: Print the screenshot into the log
+        if: contains(github.event.pull_request.labels.*.name, 'ci-screenshot')
+        run: |
+          sips -Z 1400 -s format jpeg -s formatOptions 60 \
+            build/smoke/screenshot.png --out build/smoke/screenshot-small.jpg >/dev/null
+          echo "::group::screenshot (base64 JPEG)"
+          echo "-----BEGIN SCREENSHOT-----"
+          base64 -b 76 -i build/smoke/screenshot-small.jpg
+          echo "-----END SCREENSHOT-----"
+          echo "::endgroup::"
+      - name: Package the app
+        run: |
+          mkdir -p build/package
+          ditto -c -k --keepParent \
+            build/DerivedData/Build/Products/Release/Spektrafilm.app \
+            build/package/Spektrafilm.zip
+      - name: Upload the app
+        uses: actions/upload-artifact@v7
+        with:
+          name: Spektrafilm-app
+          path: build/package/Spektrafilm.zip

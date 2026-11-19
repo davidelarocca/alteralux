@@ -17,15 +17,22 @@ Early development. Nothing to download yet.
 
 | Phase | What | State |
 |---|---|---|
-| 1 | Swift bridge to the Rust engine | in progress |
-| 2 | SwiftUI app: open RAW, pick film and paper, live Metal preview, export | planned |
+| 1 | Swift bridge to the Rust engine | done |
+| 2 | SwiftUI app: open RAW, pick film and paper, live preview, export | in progress |
 | 3 | Photos editing extension | planned |
 | 4 | Finder Quick Action and Shortcuts actions for batch processing | planned |
 
+Implemented so far (engine, image decoding and export are covered by automated
+tests; the interface is young and needs testing on real photos): opening RAW,
+TIFF, HEIC, JPEG, PNG and EXR files, choosing
+film and paper, the main adjustments with a live preview, zoom, comparison with
+the original, several photos side by side in a strip, and export to JPEG,
+10-bit HEIC, 16-bit TIFF or PNG with an embedded sRGB or Display P3 profile.
+
 ## Goals
 
-- **Native.** SwiftUI interface, Metal rendering, standard macOS windows,
-  menus, shortcuts, undo, and color management through ColorSync.
+- **Native.** SwiftUI interface, standard macOS windows, menus and shortcuts,
+  and color management through ColorSync. English and Italian.
 - **Faithful.** Same pixels as the reference engine. The bridge has tests that
   compare its output with direct calls to the upstream pipeline.
 - **Fast.** The GPU (Metal) preview updates while you drag the sliders; full
@@ -48,7 +55,7 @@ Early development. Nothing to download yet.
      spektrafilm-rs engine (git submodule): film → enlarger → paper → scanner
                          │  display-linear RGB
                          ▼
-          Metal preview / ColorSync export (JPEG, HEIC, TIFF)
+        color-managed preview / export (JPEG, HEIC, TIFF, PNG)
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the details.
@@ -62,13 +69,25 @@ recent Xcode (26 or later; CI builds with the latest release), and Rust
 ```bash
 git clone --recursive https://github.com/davidelarocca/spektrafilm-macos.git
 cd spektrafilm-macos
-scripts/build-engine.sh
-swift test --package-path apple/SpektrafilmKit
+scripts/bootstrap.sh
+open apple/Spektrafilm.xcodeproj
 ```
 
-`scripts/build-engine.sh` compiles the Rust engine, generates the Swift
-bindings and packages them as `SpektrafilmKit`. Add `--universal` to also build
-for Intel Macs.
+Then press Run in Xcode. `scripts/bootstrap.sh` compiles the Rust engine,
+generates the Swift bindings and creates the Xcode project (with
+[XcodeGen](https://github.com/yonaskolb/XcodeGen), downloaded into `build/`).
+The first run takes a few minutes; afterwards
+`scripts/bootstrap.sh --skip-engine` regenerates only the project.
+
+The app is signed to run locally, so no Apple developer account is needed. It
+is sandboxed: it reads only the photos you open and writes only the files you
+export.
+
+To run the tests of the Swift package:
+
+```bash
+swift test --package-path apple/SpektrafilmKit
+```
 
 ### Engine tests on any platform
 
@@ -83,12 +102,14 @@ cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
 ## Repository layout
 
 ```
-apple/SpektrafilmKit/      Swift package: engine bindings, image I/O, rendering, export
+apple/Spektrafilm/               the app (SwiftUI)
+apple/SpektrafilmKit/            Swift package: engine bindings, image I/O, rendering, export
+apple/project.yml                Xcode project definition (XcodeGen)
 engine/crates/spektrafilm-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)
-scripts/                   build scripts
-docs/                      design notes
+scripts/                         build scripts
+docs/                            design notes
 ```
 
 ## License and credits

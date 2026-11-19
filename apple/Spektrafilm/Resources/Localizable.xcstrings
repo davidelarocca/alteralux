@@ -31,6 +31,16 @@
         }
       }
     },
+    "About spektrafilm" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Informazioni su spektrafilm"
+          }
+        }
+      }
+    },
     "Actual Size" : {
       "localizations" : {
         "it" : {
@@ -217,6 +227,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formato della pellicola"
+          }
+        }
+      }
+    },
+    "Film modeling powered by [spektrafilm](https://github.com/andreavolpato/spektrafilm) by Andrea Volpato. Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) by turbasvin. Free software under the GNU GPL v3." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simulazione della pellicola basata su [spektrafilm](https://github.com/andreavolpato/spektrafilm) di Andrea Volpato. Motore Rust: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) di turbasvin. Software libero con licenza GNU GPL v3."
           }
         }
       }
@@ -591,6 +611,16 @@
         }
       }
     },
+    "The Original spektrafilm Project" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il progetto spektrafilm originale"
+          }
+        }
+      }
+    },
     "The red glow around bright lights." : {
       "localizations" : {
         "it" : {
@@ -657,6 +687,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "sRGB"
+          }
+        }
+      }
+    },
+    "spektrafilm for macOS on GitHub" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spektrafilm per macOS su GitHub"
           }
         }
       }

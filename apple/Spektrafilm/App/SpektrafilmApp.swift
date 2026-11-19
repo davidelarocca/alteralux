@@ -11,6 +11,13 @@ struct SpektrafilmApp: App {
         }
         .defaultSize(width: 1280, height: 820)
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About spektrafilm") { AboutPanel.show() }
+            }
+            CommandGroup(replacing: .help) {
+                Link("spektrafilm for macOS on GitHub", destination: AboutPanel.repositoryURL)
+                Link("The Original spektrafilm Project", destination: AboutPanel.upstreamURL)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Open…") { model.isImporterPresented = true }
                     .keyboardShortcut("o")

@@ -171,6 +171,8 @@ final class AppModel {
         selectedID = item.id
         settings = item.settings
         showsOriginal = false
+        // A newly selected photo starts fitted to the window.
+        zoom(.fit)
         loadSelection()
     }
 
