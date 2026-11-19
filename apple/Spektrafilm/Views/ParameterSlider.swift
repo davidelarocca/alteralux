@@ -20,7 +20,9 @@ struct ParameterSlider: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            Slider(value: $value, in: range, step: step) {
+            // Stepping is done in the binding: a stepped Slider draws a tick
+            // mark for every step.
+            Slider(value: steppedValue, in: range) {
                 Text(title)
             }
             .labelsHidden()
@@ -28,6 +30,12 @@ struct ParameterSlider: View {
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { value = defaultValue }
         .help("Double-click to reset")
+    }
+
+    private var steppedValue: Binding<Double> {
+        Binding(
+            get: { value },
+            set: { value = ($0 / step).rounded() * step })
     }
 
     private var formattedValue: String {

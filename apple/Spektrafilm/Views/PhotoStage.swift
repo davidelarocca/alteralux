@@ -4,8 +4,7 @@ import SwiftUI
 struct PhotoStage: View {
     @Environment(AppModel.self) private var model
 
-    /// A fixed neutral grey: colors are judged against the same surround in
-    /// light and dark appearance.
+    /// A fixed neutral grey surround to judge colors against.
     private static let surround = Color(white: 0.11)
 
     /// The developed photo, or the original while comparing.
@@ -31,7 +30,6 @@ struct PhotoStage: View {
             } else if model.hasPhoto || model.isLoading || model.isStarting {
                 ProgressView()
                     .controlSize(.large)
-                    .environment(\.colorScheme, .dark)
             } else {
                 ContentUnavailableView {
                     Label("Open a Photo", systemImage: "photo.on.rectangle.angled")
@@ -41,7 +39,6 @@ struct PhotoStage: View {
                     Button("Open…") { model.isImporterPresented = true }
                         .buttonStyle(.borderedProminent)
                 }
-                .environment(\.colorScheme, .dark)
             }
         }
         .overlay(alignment: .topLeading) {
@@ -58,7 +55,6 @@ struct PhotoStage: View {
             if model.isRendering || model.isExporting {
                 ProgressView()
                     .controlSize(.small)
-                    .environment(\.colorScheme, .dark)
                     .padding(12)
             }
         }

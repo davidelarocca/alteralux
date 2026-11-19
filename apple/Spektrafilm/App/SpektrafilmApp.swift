@@ -1,8 +1,15 @@
+import AppKit
 import SwiftUI
 
 @main
 struct SpektrafilmApp: App {
     @State private var model = AppModel()
+
+    init() {
+        // Always dark, like a darkroom: colors are judged against a neutral
+        // dark interface, whatever the system appearance.
+        NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
+    }
 
     var body: some Scene {
         Window("spektrafilm", id: "main") {
