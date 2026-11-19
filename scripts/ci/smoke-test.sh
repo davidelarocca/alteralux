@@ -7,6 +7,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 APP="${1:-$ROOT/build/DerivedData/Build/Products/Release/Spektrafilm.app}"
+# `open -a` needs an absolute path.
+APP="$(cd "$(dirname "$APP")" && pwd)/$(basename "$APP")"
 OUT="$ROOT/build/smoke"
 mkdir -p "$OUT"
 
