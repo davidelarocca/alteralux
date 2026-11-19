@@ -6,7 +6,8 @@
     "enabled": true,
     "command": "scripts/verify.sh fast",
     "maxAttempts": 3,
-    "inputs": ["scripts/bootstrap.sh", "scripts/build-engine.sh"]
+    "inputs": ["scripts/bootstrap.sh", "scripts/build-engine.sh"],
+    "watch": ["engine/"]
   },
   "protectedPaths": [
     "apple/Spektrafilm/Spektrafilm.entitlements",
