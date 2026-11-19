@@ -8,5 +8,5 @@
 --self remove
 --importgrouping testable-bottom
 --commas always
---exclude .build,DerivedData,build,engine,apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated,apple/SpektrafilmKit/Tests/SpektrafilmUITests/LayoutContract.swift
+--exclude .build,DerivedData,build,engine,apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated,apple/SpektrafilmKit/Tests/SpektrafilmUITests/LayoutContract.swift,apple/SpektrafilmKit/Tests/SpektrafilmUITests/Screenshot.swift,apple/SpektrafilmKit/Tests/SpektrafilmUITests/Snapshot.swift
 --disable swiftTestingTestCaseNames

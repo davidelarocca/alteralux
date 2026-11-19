@@ -71,7 +71,11 @@ let package = Package(
         ),
         .testTarget(
             name: "SpektrafilmUITests",
-            dependencies: ["SpektrafilmUI"],
+            dependencies: [
+                "SpektrafilmUI",
+                // The shared components are checked here, where the test helpers are.
+                .product(name: "DesignSystem", package: "DesignSystem"),
+            ],
         ),
     ],
 )

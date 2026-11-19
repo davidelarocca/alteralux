@@ -41,7 +41,9 @@ public struct ParameterSlider: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(title)
                 Spacer()
-                Text(formattedValue)
+                // `Text` formats with the environment's locale, so the value follows the
+                // language of the view it is in.
+                Text(value, format: valueFormat)
                     .font(Typography.value)
                     .foregroundStyle(.secondary)
             }
@@ -73,11 +75,10 @@ public struct ParameterSlider: View {
         )
     }
 
-    private var formattedValue: String {
-        let style = FloatingPointFormatStyle<Double>.number
+    private var valueFormat: FloatingPointFormatStyle<Double> {
+        .number
             .precision(.fractionLength(fractionDigits))
             .sign(strategy: showsSign ? .always(includingZero: false) : .automatic)
-        return value.formatted(style)
     }
 }
 

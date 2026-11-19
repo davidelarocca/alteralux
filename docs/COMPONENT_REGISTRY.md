@@ -11,9 +11,9 @@ comma-separated. Write a literal pipe inside a cell as `\|`. Keep the column hea
 
 | ID | Name | Purpose | Use when | Don't use when | API entry point | File | Used by | Tests |
 |---|---|---|---|---|---|---|---|---|
-| UI-001 | ParameterSlider | Labelled slider with its value; double-click or Delete resets it | Adjusting one numeric parameter | Choosing among a few named options (use a `Picker`) | `ParameterSlider(_:value:in:step:defaultValue:fractionDigits:showsSign:)` | apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift | InspectorView | previews |
-| UI-002 | ThumbnailCell | Photo thumbnail with a selection outline and a placeholder | Showing a photo in a strip or grid | Showing the photo itself (use the viewer) | `ThumbnailCell(image:isSelected:)` | apple/DesignSystem/Sources/DesignSystem/Components/ThumbnailCell.swift | FilmstripView | previews |
-| UI-003 | StatusBadge | Short status label over content | Saying which rendering is on screen | Anything the user can click | `StatusBadge(_:)` | apple/DesignSystem/Sources/DesignSystem/Components/StatusBadge.swift | PhotoStage | previews |
+| UI-001 | ParameterSlider | Labelled slider with its value; double-click or Delete resets it | Adjusting one numeric parameter | Choosing among a few named options (use a `Picker`) | `ParameterSlider(_:value:in:step:defaultValue:fractionDigits:showsSign:)` | apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift | InspectorView | previews, snapshots |
+| UI-002 | ThumbnailCell | Photo thumbnail with a selection outline and a placeholder | Showing a photo in a strip or grid | Showing the photo itself (use the viewer) | `ThumbnailCell(image:isSelected:)` | apple/DesignSystem/Sources/DesignSystem/Components/ThumbnailCell.swift | FilmstripView | previews, snapshots |
+| UI-003 | StatusBadge | Short status label over content | Saying which rendering is on screen | Anything the user can click | `StatusBadge(_:)` | apple/DesignSystem/Sources/DesignSystem/Components/StatusBadge.swift | PhotoStage | previews, snapshots |
 
 ## Internal
 

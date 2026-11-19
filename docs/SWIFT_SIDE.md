@@ -29,6 +29,19 @@ parameter mapping.
 - **`SpektrafilmUI`**: the app model and the screens, as a package target so
   they build and test with `swift test`, outside the sandboxed app.
 
+Its tests (`SpektrafilmUITests`) also draw in real windows, with the helpers
+copied from the swift-harness templates (`LayoutContract.swift`,
+`Screenshot.swift`, `Snapshot.swift`, kept as shipped):
+
+- the layout contract of the main window (`docs/LAYOUT_CONTRACT.md`);
+- snapshots of the shared components, compared with the approved images in
+  `snapshots/` (pinned to the macOS version and display scale they were made
+  on; elsewhere they are reported as not compared);
+- screenshots of the main window, empty and with a developed photo, saved to
+  `.build/swift-harness/screenshots/` for review and never compared.
+
+These suites are nested in `WindowedTests`, which runs them one at a time.
+
 ### `DesignSystem` (Swift package)
 
 Tokens (`Spacing`, `Radius`, `Typography`, `Motion`, semantic colors) and the
