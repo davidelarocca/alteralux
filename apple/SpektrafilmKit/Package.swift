@@ -1,6 +1,9 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.2
 //
-// SpektrafilmKit: the Swift side of the engine bridge.
+// SpektrafilmKit: the Swift side of the film engine.
+//
+//   SpektrafilmEngine  the generated bindings to the Rust engine
+//   SpektrafilmKit     image loading (Core Image), rendering, export, settings
 //
 // `spektrafilm_ffiFFI.xcframework` (the compiled Rust engine) and
 // `Sources/SpektrafilmEngine/Generated/` (the UniFFI bindings) are build
@@ -10,8 +13,9 @@ import PackageDescription
 
 let package = Package(
     name: "SpektrafilmKit",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v26)],
     products: [
+        .library(name: "SpektrafilmKit", targets: ["SpektrafilmKit"]),
         .library(name: "SpektrafilmEngine", targets: ["SpektrafilmEngine"]),
     ],
     targets: [
@@ -24,7 +28,7 @@ let package = Package(
             dependencies: ["spektrafilm_ffiFFI"],
             swiftSettings: [
                 // UniFFI's generated code predates Swift 6 strict concurrency.
-                .swiftLanguageMode(.v5),
+                .swiftLanguageMode(.v5)
             ],
             linkerSettings: [
                 // Native dependencies of the static Rust library:
@@ -36,10 +40,18 @@ let package = Package(
                 .linkedFramework("Foundation"),
             ]
         ),
+        .target(
+            name: "SpektrafilmKit",
+            dependencies: ["SpektrafilmEngine"]
+        ),
         .testTarget(
             name: "SpektrafilmEngineTests",
             dependencies: ["SpektrafilmEngine"],
             swiftSettings: [.swiftLanguageMode(.v5)]
+        ),
+        .testTarget(
+            name: "SpektrafilmKitTests",
+            dependencies: ["SpektrafilmKit"]
         ),
     ]
 )

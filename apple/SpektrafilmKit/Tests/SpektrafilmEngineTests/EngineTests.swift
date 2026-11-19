@@ -52,7 +52,7 @@ private func chart(width: Int, height: Int) -> [Float] {
     @Test func rejectsUnknownParameters() throws {
         let engine = try Engine(dataDir: dataDirectory, backend: .cpu)
         #expect(throws: EngineError.self) {
-            try engine.resolveParamsJson(paramsJson: #"{"camera": {"exposure": 1}}"#)
+            _ = try engine.resolveParamsJson(paramsJson: #"{"camera": {"exposure": 1}}"#)
         }
     }
 }

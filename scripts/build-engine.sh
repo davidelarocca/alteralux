@@ -43,7 +43,7 @@ rustup target add "${TARGETS[@]}" >/dev/null
 CARGO_FLAGS=(--manifest-path "$ENGINE/Cargo.toml" -p spektrafilm-ffi)
 [[ $PROFILE == release ]] && CARGO_FLAGS+=(--release)
 # Match the deployment target of the Swift package.
-export MACOSX_DEPLOYMENT_TARGET=15.0
+export MACOSX_DEPLOYMENT_TARGET=26.0
 
 for target in "${TARGETS[@]}"; do
   echo "==> Building engine for $target ($PROFILE)"
@@ -64,11 +64,12 @@ else
 fi
 
 echo "==> Generating Swift bindings"
-cargo run --quiet --release --manifest-path "$ENGINE/Cargo.toml" -p uniffi-bindgen -- \
+# uniffi-bindgen runs `cargo metadata`, so it must start inside the workspace.
+(cd "$ENGINE" && cargo run --quiet --release -p uniffi-bindgen -- \
   generate \
   --library "$ENGINE/target/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.dylib" \
   --language swift \
-  --out-dir "$BUILD/generated"
+  --out-dir "$BUILD/generated")
 
 cp "$BUILD/generated/${MODULE}.h" "$BUILD/headers/"
 cp "$BUILD/generated/${MODULE}.modulemap" "$BUILD/headers/module.modulemap"

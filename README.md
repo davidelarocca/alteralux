@@ -55,8 +55,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the details.
 
 ## Building
 
-Requirements: a Mac with Apple silicon, macOS 15 or later, Xcode 16 or later,
-and Rust (install it from [rustup.rs](https://rustup.rs)).
+Requirements: a Mac with Apple silicon running macOS 26 (Tahoe) or later, a
+recent Xcode (26 or later; CI builds with the latest release), and Rust
+(install it from [rustup.rs](https://rustup.rs)).
 
 ```bash
 git clone --recursive https://github.com/davidelarocca/spektrafilm-macos.git
@@ -82,7 +83,7 @@ cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
 ## Repository layout
 
 ```
-apple/SpektrafilmKit/      Swift package wrapping the engine
+apple/SpektrafilmKit/      Swift package: engine bindings, image I/O, rendering, export
 engine/crates/spektrafilm-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)

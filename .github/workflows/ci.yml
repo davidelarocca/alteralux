@@ -20,7 +20,7 @@ jobs:
     name: Rust bridge tests (Linux)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       # OpenBLAS (CPU matrix maths on Linux) is compiled from source by the
@@ -34,14 +34,17 @@ jobs:
 
   swift-macos:
     name: Swift package (macOS, Apple silicon)
-    runs-on: macos-15
+    # Latest Xcode / Swift / macOS SDK on Apple silicon.
+    runs-on: xcode-27
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: engine
+      - name: Toolchain versions
+        run: sw_vers && xcodebuild -version && swift --version && rustc --version
       - name: Build engine and Swift bindings
         run: scripts/build-engine.sh
       - name: Swift tests
