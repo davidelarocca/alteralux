@@ -23,33 +23,29 @@ What is done, what is being done and what comes next. Keep it current: it is whe
 - Verified on a CI Mac: the app builds, launches, opens an image and shows it developed.
 - **Not verified yet**: interactive behavior on real hardware (zoom and pan, the strip with several
   photos, comparison, export from the interface), real RAW files from a camera, and performance on large
-  photos. Start here when working on a Mac.
+  photos. Being tried by hand now; what it finds goes first in the list below.
 
-## Next: on a Mac, with swift-harness
+## Next, in this order
 
-These steps need Xcode or the user's own approval, so they were left for a local session.
+Decided on 2026-11-19. One branch and one draft pull request per step.
 
-1. `scripts/setup-mac.sh` (tools, engine, Xcode project), then run the app from Xcode on real RAW files.
-2. Install the plugin (`/plugin install swift-harness@swift-harness`), check `scripts/verify.sh`, then
-   `/swift-harness:approve-verify` and `/swift-harness:doctor`.
-3. `/swift-harness:approve-security` after reviewing the recorded baseline (sandbox, hardened runtime).
-4. Layout: measure what the panes hold (see "Exceptions" in `docs/LAYOUT_CONTRACT.md`), add
-   `Screenshot.capture` tests for the main screens and `Snapshot.verify` tests for the components of
-   `docs/COMPONENT_REGISTRY.md`, then `/swift-harness:approve-snapshots`.
-5. `KeyboardCheck` tests for `ParameterSlider` (arrows, Delete to reset).
-6. A UI test target (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`); then set `SCHEME_HAS_TESTS=1` in
-   `scripts/verify.sh`.
-7. `/swift-harness:product-map` to fill `docs/PRODUCT_MAP.md`, and `/swift-harness:audit`.
+1. **UI safety net.** `Snapshot.verify` tests for the components of `docs/COMPONENT_REGISTRY.md`,
+   `Screenshot.capture` tests for the main window, and `KeyboardCheck` tests for `ParameterSlider` (arrows,
+   Delete to reset); then `/swift-harness:approve-snapshots`.
+2. **White balance** (temperature and tint) from the RAW decoder.
+3. **The rest of the harness.** Measure what the panes hold (see "Exceptions" in
+   `docs/LAYOUT_CONTRACT.md`); a UI test target (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`), then
+   `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; `/swift-harness:product-map` to fill `docs/PRODUCT_MAP.md`,
+   and `/swift-harness:audit`.
+4. **Edits that persist**: remember each photo's adjustments between launches.
+5. **Presets**: save and apply a look; copy adjustments between photos. After step 4, because presets store
+   the same adjustments.
+6. **An app icon.**
+7. **More of the engine's parameters**, behind an "advanced" section.
+8. Photos editing extension (phase 3).
+9. Finder Quick Action and Shortcuts actions for batch processing (phase 4).
 
-## Next: features
-
-1. White balance (temperature and tint) from the RAW decoder.
-2. Presets: save and apply a look; copy adjustments between photos.
-3. Edits that persist: remember each photo's adjustments between launches.
-4. An app icon.
-5. More of the engine's parameters, behind an "advanced" section.
-6. Photos editing extension (phase 3).
-7. Finder Quick Action and Shortcuts actions for batch processing (phase 4).
+Defects found while trying the app on real RAW files (see "Not verified yet" above) go before the features.
 
 ## Open questions
 
