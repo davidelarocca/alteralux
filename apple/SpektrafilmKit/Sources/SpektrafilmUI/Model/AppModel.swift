@@ -307,13 +307,22 @@ public final class AppModel {
     }
 
     /// Chooses a film and applies what follows from it: slides are scanned
-    /// directly, negatives are printed on the paper their profile recommends.
+    /// directly, negatives are printed on the paper their profile recommends,
+    /// and black and white negatives on a black and white print stock.
     func chooseFilm(_ id: String) {
         settings.filmID = id
         guard let film = selectedFilm else { return }
         settings.scanFilm = film.isPositive
         if let target = film.targetPrint, papers.contains(where: { $0.id == target }) {
             settings.paperID = target
+            return
+        }
+        // The black and white profiles recommend no paper, and on a color paper they print
+        // orange: a neutral gray comes out as a strong orange. Pair them with a black and white
+        // print stock.
+        let blackAndWhitePaper = papers.first(where: \.isBlackAndWhite)
+        if film.isBlackAndWhite, selectedPaper?.isBlackAndWhite != true, let blackAndWhitePaper {
+            settings.paperID = blackAndWhitePaper.id
         }
     }
 
