@@ -42,19 +42,25 @@ public struct SpektrafilmCommands: Commands {
             .keyboardShortcut("\\", modifiers: [])
             .disabled(model.original == nil)
             Divider()
-            Button("Zoom to Fit") { model.zoom(.fit) }
-                .keyboardShortcut("9")
-            Button("Actual Size") { model.zoom(.actualSize) }
-                .keyboardShortcut("0")
-            Button("Zoom In") { model.zoom(.zoomIn) }
-                .keyboardShortcut("+")
-            Button("Zoom Out") { model.zoom(.zoomOut) }
-                .keyboardShortcut("-")
+            Group {
+                Button("Zoom to Fit") { model.zoom(.fit) }
+                    .keyboardShortcut("9")
+                Button("Actual Size") { model.zoom(.actualSize) }
+                    .keyboardShortcut("0")
+                Button("Zoom In") { model.zoom(.zoomIn) }
+                    .keyboardShortcut("+")
+                Button("Zoom Out") { model.zoom(.zoomOut) }
+                    .keyboardShortcut("-")
+            }
+            .disabled(!model.canZoom)
             Divider()
-            Button("Previous Photo") { model.selectAdjacent(offset: -1) }
-                .keyboardShortcut(.leftArrow)
-            Button("Next Photo") { model.selectAdjacent(offset: 1) }
-                .keyboardShortcut(.rightArrow)
+            Group {
+                Button("Previous Photo") { model.selectAdjacent(offset: -1) }
+                    .keyboardShortcut(.leftArrow)
+                Button("Next Photo") { model.selectAdjacent(offset: 1) }
+                    .keyboardShortcut(.rightArrow)
+            }
+            .disabled(!model.canStepThroughPhotos)
             Button("Remove from Strip") { model.removeSelection() }
                 .keyboardShortcut(.delete)
                 .disabled(!model.hasPhoto)
