@@ -15,7 +15,9 @@ final class PhotoItem: Identifiable {
     /// Whether the app holds a security-scoped access on `url` to release.
     fileprivate let isScoped: Bool
 
-    var name: String { url.lastPathComponent }
+    var name: String {
+        url.lastPathComponent
+    }
 
     fileprivate init(url: URL, settings: DevelopSettings, isScoped: Bool) {
         self.url = url
@@ -105,17 +107,32 @@ public final class AppModel {
         self.dataDirectory = dataDirectory
     }
 
-    var selection: PhotoItem? { photos.first { $0.id == selectedID } }
-    var hasPhoto: Bool { selection != nil }
-    var canExport: Bool { loaded != nil && !isExporting }
+    var selection: PhotoItem? {
+        photos.first { $0.id == selectedID }
+    }
 
-    var selectedFilm: StockInfo? { films.first { $0.id == settings.filmID } }
-    var selectedPaper: StockInfo? { papers.first { $0.id == settings.paperID } }
+    var hasPhoto: Bool {
+        selection != nil
+    }
+
+    var canExport: Bool {
+        loaded != nil && !isExporting
+    }
+
+    var selectedFilm: StockInfo? {
+        films.first { $0.id == settings.filmID }
+    }
+
+    var selectedPaper: StockInfo? {
+        papers.first { $0.id == settings.paperID }
+    }
 
     /// "Portra 400 → Portra Endura", shown under the window title.
     var materialsSummary: String {
         guard hasPhoto, let film = selectedFilm else { return "" }
-        if settings.scanFilm { return film.displayName }
+        if settings.scanFilm {
+            return film.displayName
+        }
         guard let paper = selectedPaper else { return film.displayName }
         return "\(film.displayName) → \(paper.displayName)"
     }
@@ -172,7 +189,9 @@ public final class AppModel {
             firstNew = firstNew ?? item
             loadThumbnail(for: item)
         }
-        if let firstNew { select(firstNew) }
+        if let firstNew {
+            select(firstNew)
+        }
     }
 
     func select(_ item: PhotoItem) {
@@ -190,7 +209,9 @@ public final class AppModel {
     func remove(_ item: PhotoItem) {
         guard let index = photos.firstIndex(where: { $0.id == item.id }) else { return }
         photos.remove(at: index)
-        if item.isScoped { item.url.stopAccessingSecurityScopedResource() }
+        if item.isScoped {
+            item.url.stopAccessingSecurityScopedResource()
+        }
         guard item.id == selectedID else { return }
         selectedID = nil
         loaded = nil
@@ -203,13 +224,17 @@ public final class AppModel {
 
     /// Removes the selected photo from the strip.
     func removeSelection() {
-        if let selection { remove(selection) }
+        if let selection {
+            remove(selection)
+        }
     }
 
     func selectAdjacent(offset: Int) {
         guard let index = photos.firstIndex(where: { $0.id == selectedID }) else { return }
         let target = index + offset
-        if photos.indices.contains(target) { select(photos[target]) }
+        if photos.indices.contains(target) {
+            select(photos[target])
+        }
     }
 
     private func loadSelection() {
@@ -229,7 +254,9 @@ public final class AppModel {
                 async let system = Task.detached(priority: .userInitiated) {
                     SendableImage(
                         ImageLoader.originalPreview(
-                            of: url, maxDimension: Self.standardPreviewDimension))
+                            of: url, maxDimension: Self.standardPreviewDimension,
+                        ),
+                    )
                 }.value
                 let (loadedImage, originalImage) = try await (decoded, system)
                 // Ignore the result if another photo was selected meanwhile.
@@ -251,9 +278,12 @@ public final class AppModel {
         Task {
             let image = await Task.detached(priority: .utility) {
                 SendableImage(
-                    ImageLoader.originalPreview(of: url, maxDimension: Self.thumbnailDimension))
+                    ImageLoader.originalPreview(of: url, maxDimension: Self.thumbnailDimension),
+                )
             }.value
-            if item.thumbnail == nil { item.thumbnail = image.image }
+            if item.thumbnail == nil {
+                item.thumbnail = image.image
+            }
         }
     }
 
@@ -328,9 +358,12 @@ public final class AppModel {
             let generation = loadGeneration
             do {
                 let developed = try await renderer.render(
-                    loaded, settings: settings, quality: .preview(maxDimension: previewDimension))
+                    loaded, settings: settings, quality: .preview(maxDimension: previewDimension),
+                )
                 // Drop the frame if another photo was selected meanwhile.
-                if generation == loadGeneration { preview = developed }
+                if generation == loadGeneration {
+                    preview = developed
+                }
             } catch {
                 alertMessage = error.localizedDescription
             }
@@ -348,7 +381,9 @@ public final class AppModel {
             let thumbnail = await Task.detached(priority: .utility) {
                 SendableImage(image.image.flatMap { Self.downscale($0, to: Self.thumbnailDimension) })
             }.value
-            if let thumbnail = thumbnail.image { item.thumbnail = thumbnail }
+            if let thumbnail = thumbnail.image {
+                item.thumbnail = thumbnail
+            }
         }
     }
 
@@ -360,7 +395,8 @@ public final class AppModel {
             let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
             let context = CGContext(
                 data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+                space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+            )
         else { return nil }
         context.interpolationQuality = .high
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
@@ -386,7 +422,8 @@ public final class AppModel {
             let developed = try await renderer.render(loaded, settings: settings, quality: .full)
             try await Task.detached(priority: .userInitiated) {
                 try ImageExporter.write(
-                    developed, to: destination, options: options, originalURL: loaded.url)
+                    developed, to: destination, options: options, originalURL: loaded.url,
+                )
             }.value
         } catch {
             alertMessage = error.localizedDescription
@@ -397,5 +434,7 @@ public final class AppModel {
 /// Carries an immutable `CGImage` across tasks.
 private struct SendableImage: @unchecked Sendable { // concurrency: CGImage is immutable once created
     let image: CGImage?
-    init(_ image: CGImage?) { self.image = image }
+    init(_ image: CGImage?) {
+        self.image = image
+    }
 }

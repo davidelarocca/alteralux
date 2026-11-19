@@ -11,16 +11,16 @@ let package = Package(
     name: "DesignSystem",
     platforms: [.macOS(.v26)],
     products: [
-        .library(name: "DesignSystem", targets: ["DesignSystem"])
+        .library(name: "DesignSystem", targets: ["DesignSystem"]),
     ],
     targets: [
         .target(
             name: "DesignSystem",
-            resources: [.process("Resources")]
+            resources: [.process("Resources")],
         ),
         .testTarget(
             name: "DesignSystemTests",
-            dependencies: ["DesignSystem"]
+            dependencies: ["DesignSystem"],
         ),
-    ]
+    ],
 )

@@ -16,12 +16,14 @@ guard CommandLine.arguments.count == 2 else {
     FileHandle.standardError.write(Data("usage: make-test-chart.swift <out.png>\n".utf8))
     exit(2)
 }
+
 let output = URL(fileURLWithPath: CommandLine.arguments[1])
 
 let colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
 let context = CGContext(
     data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-    space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
+    space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+)!
 
 struct RGB {
     var red: Double
@@ -48,14 +50,15 @@ let margin = 48.0
 let rowHeight = 176.0
 let rampTop = Double(height) - margin - rowHeight
 let stepWidth = (Double(width) - 2 * margin) / 16
-for step in 0..<16 {
+for step in 0 ..< 16 {
     let level = Double(step) / 15
     fill(
         RGB(level, level, level),
-        CGRect(x: margin + Double(step) * stepWidth, y: rampTop, width: stepWidth, height: rowHeight))
+        CGRect(x: margin + Double(step) * stepWidth, y: rampTop, width: stepWidth, height: rowHeight),
+    )
 }
 
-// Rows 2 and 3: saturated primaries and secondaries, then natural tones.
+/// Rows 2 and 3: saturated primaries and secondaries, then natural tones.
 let saturated = [
     RGB(0.85, 0.10, 0.10), RGB(0.95, 0.55, 0.05), RGB(0.95, 0.90, 0.10), RGB(0.15, 0.65, 0.20),
     RGB(0.10, 0.65, 0.75), RGB(0.10, 0.25, 0.80), RGB(0.50, 0.15, 0.75), RGB(0.85, 0.15, 0.55),
@@ -70,34 +73,39 @@ for (index, color) in saturated.enumerated() {
         color,
         CGRect(
             x: margin + Double(index) * patchWidth + 6, y: rampTop - rowHeight - 24,
-            width: patchWidth - 12, height: rowHeight))
+            width: patchWidth - 12, height: rowHeight,
+        ),
+    )
 }
+
 for (index, color) in natural.enumerated() {
     fill(
         color,
         CGRect(
             x: margin + Double(index) * patchWidth + 6, y: rampTop - 2 * rowHeight - 48,
-            width: patchWidth - 12, height: rowHeight))
+            width: patchWidth - 12, height: rowHeight,
+        ),
+    )
 }
 
 // Row 4 (bottom): hue sweep on the left, lights on black on the right.
 let bottomHeight = rampTop - 2 * rowHeight - 72 - margin
 let sweepWidth = (Double(width) - 2 * margin) * 0.6
-for column in 0..<Int(sweepWidth) {
+for column in 0 ..< Int(sweepWidth) {
     let hue = Double(column) / sweepWidth * 6
     let full = 1.0
     let ramp = 1 - abs(hue.truncatingRemainder(dividingBy: 2) - 1)
-    let color: RGB
-    switch Int(hue) {
-    case 0: color = RGB(full, ramp, 0)
-    case 1: color = RGB(ramp, full, 0)
-    case 2: color = RGB(0, full, ramp)
-    case 3: color = RGB(0, ramp, full)
-    case 4: color = RGB(ramp, 0, full)
-    default: color = RGB(full, 0, ramp)
+    let color = switch Int(hue) {
+    case 0: RGB(full, ramp, 0)
+    case 1: RGB(ramp, full, 0)
+    case 2: RGB(0, full, ramp)
+    case 3: RGB(0, ramp, full)
+    case 4: RGB(ramp, 0, full)
+    default: RGB(full, 0, ramp)
     }
     fill(color, CGRect(x: margin + Double(column), y: margin, width: 1, height: bottomHeight))
 }
+
 let darkX = margin + sweepWidth + 24
 let darkWidth = Double(width) - margin - darkX
 fill(RGB(0.01, 0.01, 0.01), CGRect(x: darkX, y: margin, width: darkWidth, height: bottomHeight))
@@ -106,17 +114,20 @@ for (index, radius) in [6.0, 12.0, 24.0].enumerated() {
     let centerX = darkX + darkWidth * (Double(index) + 0.75) / 3.5
     let centerY = margin + bottomHeight / 2
     context.fillEllipse(
-        in: CGRect(x: centerX - radius, y: centerY - radius, width: 2 * radius, height: 2 * radius))
+        in: CGRect(x: centerX - radius, y: centerY - radius, width: 2 * radius, height: 2 * radius),
+    )
 }
 
 guard
     let image = context.makeImage(),
     let destination = CGImageDestinationCreateWithURL(
-        output as CFURL, UTType.png.identifier as CFString, 1, nil)
+        output as CFURL, UTType.png.identifier as CFString, 1, nil,
+    )
 else {
     FileHandle.standardError.write(Data("could not create the image\n".utf8))
     exit(1)
 }
+
 CGImageDestinationAddImage(destination, image, nil)
 guard CGImageDestinationFinalize(destination) else {
     FileHandle.standardError.write(Data("could not write \(output.path)\n".utf8))

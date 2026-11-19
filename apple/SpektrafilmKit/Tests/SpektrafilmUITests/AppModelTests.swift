@@ -1,20 +1,19 @@
 import Foundation
 import SpektrafilmKit
 import Testing
-
 @testable import SpektrafilmUI
 
 /// The upstream data folder, straight from the git submodule.
 private let dataDirectory = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent()  // SpektrafilmUITests
-    .deletingLastPathComponent()  // Tests
-    .deletingLastPathComponent()  // SpektrafilmKit
-    .deletingLastPathComponent()  // apple
-    .deletingLastPathComponent()  // repository root
+    .deletingLastPathComponent() // SpektrafilmUITests
+    .deletingLastPathComponent() // Tests
+    .deletingLastPathComponent() // SpektrafilmKit
+    .deletingLastPathComponent() // apple
+    .deletingLastPathComponent() // repository root
     .appendingPathComponent("engine/vendor/spektrafilm-rs/data")
 
 @MainActor
-@Suite struct AppModelTests {
+struct AppModelTests {
     private func startedModel() async -> AppModel {
         let model = AppModel(dataDirectory: dataDirectory)
         await model.start()

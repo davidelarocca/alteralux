@@ -25,7 +25,7 @@ public struct ParameterSlider: View {
         step: Double = 0.01,
         defaultValue: Double = 0,
         fractionDigits: Int = 2,
-        showsSign: Bool = false
+        showsSign: Bool = false,
     ) {
         self.title = title
         _value = value
@@ -69,7 +69,7 @@ public struct ParameterSlider: View {
     private var steppedValue: Binding<Double> {
         Binding(
             get: { value },
-            set: { value = ($0 / step).rounded() * step }
+            set: { value = ($0 / step).rounded() * step },
         )
     }
 
@@ -87,12 +87,13 @@ public struct ParameterSlider: View {
     @Previewable @State var filter = -12.0
 
     VStack(alignment: .leading, spacing: Spacing.l) {
-        ParameterSlider("Exposure", value: $exposure, in: -5...5, step: 0.1, fractionDigits: 1, showsSign: true)
-        ParameterSlider("Print exposure", value: $printExposure, in: 0.2...3, defaultValue: 1)
-        ParameterSlider("Yellow filter", value: $filter, in: -50...50, step: 1, fractionDigits: 0, showsSign: true)
+        ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
+        ParameterSlider("Print exposure", value: $printExposure, in: 0.2 ... 3, defaultValue: 1)
+        ParameterSlider("Yellow filter", value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0, showsSign: true)
         ParameterSlider(
             "A long parameter name that has to share the row with its value",
-            value: $filter, in: -50...50, step: 1, fractionDigits: 0)
+            value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0,
+        )
     }
     .padding(Spacing.l)
     .frame(width: 320)

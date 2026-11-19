@@ -11,8 +11,8 @@ public struct GalleryView: View {
     public var body: some View {
         Form {
             Section("ParameterSlider") {
-                ParameterSlider("Exposure", value: $exposure, in: -5...5, step: 0.1, fractionDigits: 1, showsSign: true)
-                ParameterSlider("Yellow filter", value: $filter, in: -50...50, step: 1, fractionDigits: 0, showsSign: true)
+                ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
+                ParameterSlider("Yellow filter", value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0, showsSign: true)
             }
             Section("ThumbnailCell") {
                 HStack(spacing: Spacing.s) {
