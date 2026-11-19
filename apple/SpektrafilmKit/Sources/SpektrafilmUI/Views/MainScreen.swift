@@ -64,7 +64,6 @@ struct MainScreen: View {
             model.open(urls)
             return true
         }
-        .onOpenURL { model.open([$0]) }
         .onChange(of: model.settings) { model.settingsDidChange() }
         .sheet(isPresented: $model.isExportPresented) { ExportSheet() }
         .alert("Something went wrong", isPresented: isAlertPresented) {

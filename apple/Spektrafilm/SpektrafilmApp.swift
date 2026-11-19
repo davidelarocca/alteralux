@@ -6,6 +6,8 @@ import SwiftUI
 /// the app model so they can be built and tested as a package.
 @main
 struct SpektrafilmApp: App {
+    /// Takes the files opened from the Finder, the Dock or `open`.
+    @NSApplicationDelegateAdaptor(OpenFilesDelegate.self) private var openFiles
     @State private var model = AppModel()
 
     init() {
@@ -18,6 +20,7 @@ struct SpektrafilmApp: App {
         Window("spektrafilm", id: "main") {
             MainWindow()
                 .environment(model)
+                .onAppear { openFiles.attach(model) }
         }
         .defaultSize(MainWindow.defaultSize)
         .windowResizability(.contentMinSize)
