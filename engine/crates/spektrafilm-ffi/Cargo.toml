@@ -1,0 +1,27 @@
+[package]
+name = "spektrafilm-ffi"
+description = "Swift-facing API (via UniFFI) over the spektrafilm-rs spectral film engine."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+
+[lib]
+name = "spektrafilm_ffi"
+# lib: Rust tests. staticlib: linked into the macOS app via an XCFramework.
+# cdylib: only used by uniffi-bindgen to read the interface metadata.
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[dependencies]
+spektrafilm-core.workspace = true
+spektrafilm-gpu.workspace = true
+spektrafilm-math.workspace = true
+uniffi.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+rayon.workspace = true
+half.workspace = true
+image.workspace = true
+tracing.workspace = true

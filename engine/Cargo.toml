@@ -1,0 +1,36 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/spektrafilm-ffi",
+    "crates/uniffi-bindgen",
+]
+# The upstream engine is a git submodule with its own workspace; we only
+# depend on its crates by path.
+exclude = ["vendor/spektrafilm-rs"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+rust-version = "1.85"
+publish = false
+repository = "https://github.com/davidelarocca/spektrafilm-macos"
+
+[workspace.dependencies]
+spektrafilm-core = { path = "vendor/spektrafilm-rs/crates/spektrafilm-core" }
+spektrafilm-gpu = { path = "vendor/spektrafilm-rs/crates/spektrafilm-gpu" }
+spektrafilm-math = { path = "vendor/spektrafilm-rs/crates/spektrafilm-math" }
+
+uniffi = "0.32"
+serde_json = "1"
+thiserror = "2"
+rayon = "1.10"
+half = "2.7"
+image = { version = "0.25", default-features = false }
+tracing = "0.1"
+
+# Same settings as upstream so the numerical output matches its release builds.
+[profile.release]
+lto = "thin"
+codegen-units = 1
+opt-level = 3
