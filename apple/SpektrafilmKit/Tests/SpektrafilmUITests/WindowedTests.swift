@@ -1,8 +1,10 @@
 import CoreGraphics
 import DesignSystem
 import Foundation
+import ImageIO
 import SwiftUI
 import Testing
+import UniformTypeIdentifiers
 
 /// Parent of the suites that draw in a real window (snapshots, screenshots, key presses).
 ///
@@ -40,6 +42,24 @@ enum WindowedTests {
             context.fill(CGRect(origin: origin, size: half))
         }
         return context.makeImage()
+    }
+
+    /// Writes `count` test pictures as PNG files into a new temporary folder and returns their
+    /// URLs. The caller removes the folder (the parent of the files).
+    static func writeTestPictures(count: Int) throws -> [URL] {
+        let folder = FileManager.default.temporaryDirectory
+            .appendingPathComponent("spektrafilm-tests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let picture = try #require(testPicture())
+        return try (1 ... count).map { index in
+            let url = folder.appendingPathComponent("Picture \(index).png")
+            let destination = try #require(
+                CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil),
+            )
+            CGImageDestinationAddImage(destination, picture, nil)
+            try #require(CGImageDestinationFinalize(destination))
+            return url
+        }
     }
 }
 
