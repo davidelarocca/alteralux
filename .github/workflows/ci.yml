@@ -64,6 +64,13 @@ jobs:
       # SwiftLint in strict mode.
       - name: Verify (scripts/verify.sh full)
         run: scripts/verify.sh full
+      # verify.sh shows only the end of each test run: list every test here.
+      - name: Test summary
+        run: |
+          for package in apple/DesignSystem apple/SpektrafilmKit; do
+            echo "== $package"
+            swift test --package-path "$package" --skip-build 2>&1 | grep -E "^(✔|✘) (Test|Suite)|Test run with" || true
+          done
       # Informational: the files SwiftFormat would change. Formatting is applied
       # by the developer's tools, not enforced here.
       - name: Formatting report

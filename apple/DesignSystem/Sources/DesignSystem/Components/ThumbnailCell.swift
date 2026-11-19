@@ -22,7 +22,7 @@ public struct ThumbnailCell: View {
             if let image {
                 Image(decorative: image, scale: 1)
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
+                    .scaledToFill()
             }
         }
         .frame(width: Self.size.width, height: Self.size.height)
