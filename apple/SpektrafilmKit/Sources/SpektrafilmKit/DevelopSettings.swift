@@ -153,15 +153,17 @@ extension DevelopSettings {
         ]
         if let advancedJSON, !advancedJSON.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             guard
-                let data = advancedJSON.data(using: .utf8),
-                let advanced = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                let advanced = try JSONSerialization.jsonObject(with: Data(advancedJSON.utf8)) as? [String: Any]
             else {
                 throw SpektrafilmError.invalidAdvancedParameters
             }
             patch = Self.deepMerge(patch, advanced)
         }
         let data = try JSONSerialization.data(withJSONObject: patch, options: [.sortedKeys])
-        return String(decoding: data, as: UTF8.self)
+        guard let json = String(data: data, encoding: .utf8) else {
+            throw SpektrafilmError.invalidAdvancedParameters
+        }
+        return json
     }
 
     private static func deepMerge(_ base: [String: Any], _ overlay: [String: Any]) -> [String: Any] {

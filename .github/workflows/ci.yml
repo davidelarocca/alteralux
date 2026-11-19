@@ -38,9 +38,12 @@ jobs:
         run: cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
 
   swift-macos:
-    name: Swift package and app (macOS, Apple silicon)
+    name: Swift packages and app (macOS, Apple silicon)
     # Latest Xcode / Swift / macOS SDK on Apple silicon.
     runs-on: xcode-27
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -48,15 +51,31 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: engine
+      - name: Install SwiftLint and SwiftFormat
+        run: brew install swiftlint swiftformat
       - name: Toolchain versions
-        run: sw_vers && xcodebuild -version && swift --version && rustc --version
-      - name: Build engine and Swift bindings
-        run: scripts/build-engine.sh
-      - name: Swift tests
-        run: swift test --package-path apple/SpektrafilmKit
-      - name: Generate the Xcode project
-        run: scripts/bootstrap.sh --skip-engine
-      - name: Build the app
+        run: |
+          sw_vers && xcodebuild -version && swift --version && rustc --version
+          swiftlint version && swiftformat --version
+      - name: Build the engine and generate the Xcode project
+        run: scripts/bootstrap.sh
+      # The project's own verification, the same command a developer runs
+      # before merging: tests of the Swift packages, a build of the app and
+      # SwiftLint in strict mode.
+      - name: Verify (scripts/verify.sh full)
+        run: scripts/verify.sh full
+      # verify.sh shows only the end of each test run: list every test here.
+      - name: Test summary
+        run: |
+          for package in apple/DesignSystem apple/SpektrafilmKit; do
+            echo "== $package"
+            swift test --package-path "$package" --skip-build 2>&1 | grep -E "^(✔|✘) (Test|Suite)|Test run with" || true
+          done
+      # Informational: the files SwiftFormat would change. Formatting is applied
+      # by the developer's tools, not enforced here.
+      - name: Formatting report
+        run: swiftformat --lint . || true
+      - name: Build the app (Release)
         run: |
           xcodebuild build \
             -project apple/Spektrafilm.xcodeproj \

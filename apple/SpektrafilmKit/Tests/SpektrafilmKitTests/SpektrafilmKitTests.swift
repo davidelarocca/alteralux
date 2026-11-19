@@ -54,9 +54,18 @@ private func srgbBytes(of image: CGImage) throws -> [UInt8] {
     return bytes
 }
 
-private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: Int, b: Int) {
-    let i = (y * width + x) * 4
-    return (Int(bytes[i]), Int(bytes[i + 1]), Int(bytes[i + 2]))
+private struct Pixel: CustomStringConvertible {
+    var red: Int
+    var green: Int
+    var blue: Int
+
+    var description: String { "(\(red), \(green), \(blue))" }
+}
+
+/// The pixel at `column`, `row` (from the top left) of RGBA bytes.
+private func pixel(_ bytes: [UInt8], width: Int, column: Int, row: Int) -> Pixel {
+    let offset = (row * width + column) * 4
+    return Pixel(red: Int(bytes[offset]), green: Int(bytes[offset + 1]), blue: Int(bytes[offset + 2]))
 }
 
 @Suite struct DevelopSettingsTests {
@@ -81,11 +90,11 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         let film = try #require(tree["film_render"] as? [String: Any])
         let grain = try #require(film["grain"] as? [String: Any])
         let scanner = try #require(tree["scanner"] as? [String: Any])
-        let io = try #require(tree["io"] as? [String: Any])
+        let inputOutput = try #require(tree["io"] as? [String: Any])
         #expect(camera["exposure_compensation_ev"] as? Double == 1.5)
         #expect(enlarger["y_filter_shift"] as? Double == -4)
         #expect(grain["active"] as? Bool == false)
-        #expect(io["scan_film"] as? Bool == true)
+        #expect(inputOutput["scan_film"] as? Bool == true)
         #expect((scanner["unsharp_mask"] as? [Double])?.last == 0.25)
     }
 
@@ -120,10 +129,10 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         let image = try #require(
             FilmRenderer.makeCGImage(pixels: data, width: 1, height: 2, format: .rgbaF32))
         let bytes = try srgbBytes(of: image)
-        let top = pixel(bytes, width: 1, x: 0, y: 0)
-        let bottom = pixel(bytes, width: 1, x: 0, y: 1)
-        #expect(top.r == 255 && top.g == 0 && top.b == 0, "top: \(top)")
-        #expect(bottom.r == 0 && bottom.g == 0 && bottom.b == 255, "bottom: \(bottom)")
+        let top = pixel(bytes, width: 1, column: 0, row: 0)
+        let bottom = pixel(bytes, width: 1, column: 0, row: 1)
+        #expect(top.red == 255 && top.green == 0 && top.blue == 0, "top: \(top)")
+        #expect(bottom.red == 0 && bottom.green == 0 && bottom.blue == 255, "bottom: \(bottom)")
     }
 
     @Test func wrongBufferSizeIsRejected() {
@@ -151,10 +160,10 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         // Film changes the colors, but red stays warmer than blue and the
         // halves must not be flipped or channel-swapped on the way.
         let bytes = try srgbBytes(of: developed.cgImage)
-        let top = pixel(bytes, width: 96, x: 48, y: 8)
-        let bottom = pixel(bytes, width: 96, x: 48, y: 56)
-        #expect(top.r > top.b, "top half should stay red: \(top)")
-        #expect(bottom.b > bottom.r, "bottom half should stay blue: \(bottom)")
+        let top = pixel(bytes, width: 96, column: 48, row: 8)
+        let bottom = pixel(bytes, width: 96, column: 48, row: 56)
+        #expect(top.red > top.blue, "top half should stay red: \(top)")
+        #expect(bottom.blue > bottom.red, "bottom half should stay blue: \(bottom)")
     }
 
     @Test func previewIsLimitedToTheRequestedSize() async throws {
@@ -181,9 +190,9 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         let image = try #require(ImageLoader.originalPreview(of: url, maxDimension: 48))
         #expect(image.width == 48 && image.height == 32)
         let bytes = try srgbBytes(of: image)
-        let top = pixel(bytes, width: 48, x: 24, y: 4)
-        let bottom = pixel(bytes, width: 48, x: 24, y: 28)
-        #expect(top.r > top.b && bottom.b > bottom.r, "top: \(top), bottom: \(bottom)")
+        let top = pixel(bytes, width: 48, column: 24, row: 4)
+        let bottom = pixel(bytes, width: 48, column: 24, row: 28)
+        #expect(top.red > top.blue && bottom.blue > bottom.red, "top: \(top), bottom: \(bottom)")
         #expect(ImageLoader.originalPreview(of: URL(fileURLWithPath: "/nonexistent.png"), maxDimension: 48) == nil)
     }
 
@@ -209,15 +218,22 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         return (developed, url)
     }
 
-    private func readBack(_ url: URL) throws -> (width: Int, height: Int, profile: String, depth: Int) {
+    private struct ExportedFile {
+        var width: Int
+        var height: Int
+        var profile: String
+        var depth: Int
+    }
+
+    private func readBack(_ url: URL) throws -> ExportedFile {
         let source = try #require(CGImageSourceCreateWithURL(url as CFURL, nil))
         let properties = try #require(
             CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any])
-        return (
-            properties[kCGImagePropertyPixelWidth as String] as? Int ?? 0,
-            properties[kCGImagePropertyPixelHeight as String] as? Int ?? 0,
-            properties[kCGImagePropertyProfileName as String] as? String ?? "",
-            properties[kCGImagePropertyDepth as String] as? Int ?? 0
+        return ExportedFile(
+            width: properties[kCGImagePropertyPixelWidth as String] as? Int ?? 0,
+            height: properties[kCGImagePropertyPixelHeight as String] as? Int ?? 0,
+            profile: properties[kCGImagePropertyProfileName as String] as? String ?? "",
+            depth: properties[kCGImagePropertyDepth as String] as? Int ?? 0
         )
     }
 

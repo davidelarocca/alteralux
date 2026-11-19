@@ -69,12 +69,14 @@ recent Xcode (26 or later; CI builds with the latest release), and Rust
 ```bash
 git clone --recursive https://github.com/davidelarocca/spektrafilm-macos.git
 cd spektrafilm-macos
-scripts/bootstrap.sh
+scripts/setup-mac.sh
 open apple/Spektrafilm.xcodeproj
 ```
 
-Then press Run in Xcode. `scripts/bootstrap.sh` compiles the Rust engine,
-generates the Swift bindings and creates the Xcode project (with
+Then press Run in Xcode. `scripts/setup-mac.sh` checks the tools (add
+`--install` to install what is missing: Rust, and with Homebrew jq, SwiftLint
+and SwiftFormat), then runs `scripts/bootstrap.sh`, which compiles the Rust
+engine, generates the Swift bindings and creates the Xcode project (with
 [XcodeGen](https://github.com/yonaskolb/XcodeGen), downloaded into `build/`).
 The first run takes a few minutes; afterwards
 `scripts/bootstrap.sh --skip-engine` regenerates only the project.
@@ -83,11 +85,20 @@ The app is signed to run locally, so no Apple developer account is needed. It
 is sandboxed: it reads only the photos you open and writes only the files you
 export.
 
-To run the tests of the Swift package:
+To check everything from the command line (tests of the Swift packages and a
+build of the app; `full` adds SwiftLint):
 
 ```bash
-swift test --package-path apple/SpektrafilmKit
+scripts/verify.sh fast
 ```
+
+### Working with Claude Code
+
+The repository is set up for [swift-harness](https://github.com/davidelarocca/swift-harness),
+a Claude Code plugin that keeps the design system, the layout contract and the
+documentation true while the app grows, and runs `scripts/verify.sh fast` at the
+end of each turn. `CLAUDE.md` and `.claude/rules/` hold the project's rules;
+`docs/ROADMAP.md` says what comes next.
 
 ### Engine tests on any platform
 
@@ -102,14 +113,15 @@ cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
 ## Repository layout
 
 ```
-apple/Spektrafilm/               the app (SwiftUI)
-apple/SpektrafilmKit/            Swift package: engine bindings, image I/O, rendering, export
+apple/Spektrafilm/               the app shell (scene, resources, entitlements)
+apple/SpektrafilmKit/            Swift package: engine bindings, image I/O and rendering, screens
+apple/DesignSystem/              Swift package: design tokens and shared components
 apple/project.yml                Xcode project definition (XcodeGen)
 engine/crates/spektrafilm-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)
-scripts/                         build scripts
-docs/                            design notes
+scripts/                         setup, build and verification scripts
+docs/                            architecture, design system, decisions, roadmap
 ```
 
 ## License and credits

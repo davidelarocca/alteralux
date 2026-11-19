@@ -1,0 +1,20 @@
+{
+  "format": "swiftformat",
+  "lint": "swiftlint",
+  "lintBlocking": false,
+  "verify": {
+    "enabled": true,
+    "command": "scripts/verify.sh fast",
+    "maxAttempts": 3,
+    "inputs": ["scripts/bootstrap.sh", "scripts/build-engine.sh"]
+  },
+  "protectedPaths": [
+    "apple/Spektrafilm/Spektrafilm.entitlements",
+    "apple/Spektrafilm/Info.plist",
+    "apple/Spektrafilm/Signing.xcconfig"
+  ],
+  "registry": {
+    "sources": ["apple/DesignSystem/Sources"]
+  },
+  "guardPbxproj": true
+}

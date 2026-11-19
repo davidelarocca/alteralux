@@ -21,6 +21,8 @@ settings:
 packages:
   SpektrafilmKit:
     path: SpektrafilmKit
+  DesignSystem:
+    path: DesignSystem
 
 targets:
   Spektrafilm:
@@ -32,16 +34,20 @@ targets:
         excludes:
           - Info.plist
           - "*.entitlements"
+          - "*.xcconfig"
       # Film and paper profiles and spectral tables, straight from the engine
       # submodule. Copied as a folder to Contents/Resources/data.
       - path: ../engine/vendor/spektrafilm-rs/data
         type: folder
         buildPhase: resources
     dependencies:
+      # The screens and the app model. The app target itself is only a shell.
       - package: SpektrafilmKit
-        product: SpektrafilmKit
-      - package: SpektrafilmKit
-        product: SpektrafilmEngine
+        product: SpektrafilmUI
+    # Code signing, sandbox entitlements and hardened runtime.
+    configFiles:
+      Debug: Spektrafilm/Signing.xcconfig
+      Release: Spektrafilm/Signing.xcconfig
     settings:
       base:
         PRODUCT_NAME: Spektrafilm
@@ -52,11 +58,5 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: spektrafilm
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.photography
         INFOPLIST_KEY_NSHumanReadableCopyright: "Free software under the GNU GPL v3. Film modeling powered by spektrafilm."
-        CODE_SIGN_ENTITLEMENTS: Spektrafilm/Spektrafilm.entitlements
-        # "Sign to Run Locally": no Apple developer account needed to build.
-        CODE_SIGN_STYLE: Manual
-        CODE_SIGN_IDENTITY: "-"
-        DEVELOPMENT_TEAM: ""
-        ENABLE_HARDENED_RUNTIME: YES
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SWIFT_EMIT_LOC_STRINGS: YES

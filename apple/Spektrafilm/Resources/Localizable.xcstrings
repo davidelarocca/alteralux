@@ -511,6 +511,16 @@
         }
       }
     },
+    "Reset" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina"
+          }
+        }
+      }
+    },
     "Reset Adjustments" : {
       "localizations" : {
         "it" : {

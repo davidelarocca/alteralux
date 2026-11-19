@@ -36,6 +36,17 @@ if [[ ! -f "$ENGINE/vendor/spektrafilm-rs/Cargo.toml" ]]; then
   git -C "$ROOT" submodule update --init --recursive
 fi
 
+# Linked git worktrees reuse the main checkout's Cargo target folder, so a new
+# worktree compiles only what differs instead of the whole engine.
+if [[ -z "${CARGO_TARGET_DIR:-}" ]]; then
+  COMMON_GIT_DIR="$(git -C "$ROOT" rev-parse --path-format=absolute --git-common-dir 2>/dev/null || true)"
+  MAIN_CHECKOUT="${COMMON_GIT_DIR%/.git}"
+  if [[ "$COMMON_GIT_DIR" == */.git && "$MAIN_CHECKOUT" != "$ROOT" && -d "$MAIN_CHECKOUT/engine" ]]; then
+    export CARGO_TARGET_DIR="$MAIN_CHECKOUT/engine/target"
+  fi
+fi
+TARGET_DIR="${CARGO_TARGET_DIR:-$ENGINE/target}"
+
 TARGETS=(aarch64-apple-darwin)
 [[ $UNIVERSAL == 1 ]] && TARGETS+=(x86_64-apple-darwin)
 rustup target add "${TARGETS[@]}" >/dev/null
@@ -56,18 +67,18 @@ mkdir -p "$BUILD/headers" "$BUILD/generated"
 STATIC_LIB="$BUILD/lib${CRATE_LIB}.a"
 if [[ $UNIVERSAL == 1 ]]; then
   lipo -create \
-    "$ENGINE/target/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" \
-    "$ENGINE/target/x86_64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" \
+    "$TARGET_DIR/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" \
+    "$TARGET_DIR/x86_64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" \
     -output "$STATIC_LIB"
 else
-  cp "$ENGINE/target/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" "$STATIC_LIB"
+  cp "$TARGET_DIR/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.a" "$STATIC_LIB"
 fi
 
 echo "==> Generating Swift bindings"
 # uniffi-bindgen runs `cargo metadata`, so it must start inside the workspace.
 (cd "$ENGINE" && cargo run --quiet --release -p uniffi-bindgen -- \
   generate \
-  --library "$ENGINE/target/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.dylib" \
+  --library "$TARGET_DIR/aarch64-apple-darwin/$PROFILE/lib${CRATE_LIB}.dylib" \
   --language swift \
   --out-dir "$BUILD/generated")
 

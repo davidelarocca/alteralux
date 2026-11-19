@@ -1,4 +1,5 @@
 import AppKit
+import DesignSystem
 import SwiftUI
 
 /// A zoomable, scrollable photo viewer.
@@ -46,7 +47,7 @@ final class ImageScrollView: NSScrollView {
     private var reportedScale = -1.0
 
     /// Space left around a fitted photo, in points.
-    private static let padding: CGFloat = 24
+    private static let padding = Spacing.xl
 
     init() {
         super.init(frame: .zero)

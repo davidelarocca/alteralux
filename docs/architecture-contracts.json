@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "packages": {
+    "apple/DesignSystem": {
+      "DesignSystem": []
+    },
+    "apple/SpektrafilmKit": {
+      "SpektrafilmEngine": ["spektrafilm_ffiFFI"],
+      "SpektrafilmKit": ["SpektrafilmEngine"],
+      "SpektrafilmUI": ["SpektrafilmKit", "SpektrafilmEngine", "DesignSystem/DesignSystem"],
+      "spektrafilm_ffiFFI": []
+    }
+  }
+}
