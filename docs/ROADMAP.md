@@ -39,15 +39,13 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 Decided on 2026-11-19, towards version 1.0 as described in [VISION.md](VISION.md). One branch and one
 draft pull request per step.
 
-1. **Defects found by driving the app** (each with a test that fails on the old code):
-   - Several files opened at once (Finder, `open`) add only the first to the strip; one at a time works.
-   - `ParameterSlider`: no keyboard focus unless the system's "Keyboard navigation" is on, so the arrow
-     keys and Delete do nothing; the accessibility increment moves a tenth of the range (1 EV for
-     exposure) instead of one step.
-   - A black and white negative film keeps the color paper and comes out orange.
-   - The export file name carries the film's internal id (`kodak_portra_400`), not its name.
+1. **Defects found by driving the app.** Fixed on 2026-11-19, each with tests and checked again on the
+   built app: several files opened at once, the keyboard and accessibility steps of `ParameterSlider`,
+   black and white films printed on a color paper, the export file name, and commands enabled with
+   nothing to act on. Still open:
    - There is no undo: Reset Adjustments cannot be taken back (solved with step 5).
-   - With no photo open, the zoom and previous/next commands are still enabled.
+   - With a black and white print the yellow and magenta filters stay visible, and the development
+     times the black and white profiles carry are not offered.
 2. **The inspector redrawn** in the visual direction of the vision: a slider of our own (neutral colors,
    fill from the neutral point, keyboard and accessibility by step), the film as the heading, spacing and
    type. Snapshots and `KeyboardCheck` tests with it.

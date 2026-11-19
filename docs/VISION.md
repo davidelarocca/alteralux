@@ -110,5 +110,3 @@ neutral point, and numbers set in tabular or monospaced digits.
   designing the feature.
 - **Photos.** As far as we know, an editing extension receives a rendered image, not the RAW original
   (see `docs/ROADMAP.md`). Reading originals through PhotoKit from the app is the alternative.
-- **Black and white films.** With the paper the app selects today they come out with an orange cast. What
-  the right pairing is, and whether the upstream profiles name one.

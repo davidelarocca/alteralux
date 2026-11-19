@@ -1,8 +1,6 @@
 import Foundation
-import ImageIO
 import SpektrafilmKit
 import Testing
-import UniformTypeIdentifiers
 @testable import SpektrafilmUI
 
 /// The upstream data folder, straight from the git submodule.
@@ -87,20 +85,8 @@ struct AppModelTests {
         #expect(!model.canZoom)
         #expect(!model.canStepThroughPhotos)
 
-        let folder = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spektrafilm-tests-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let picture = try #require(WindowedTests.testPicture())
-        let files = try ["One.png", "Two.png"].map { name in
-            let url = folder.appendingPathComponent(name)
-            let destination = try #require(
-                CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil),
-            )
-            CGImageDestinationAddImage(destination, picture, nil)
-            try #require(CGImageDestinationFinalize(destination))
-            return url
-        }
+        let files = try WindowedTests.writeTestPictures(count: 2)
+        defer { try? FileManager.default.removeItem(at: files[0].deletingLastPathComponent()) }
         model.open([files[0]])
         #expect(!model.canStepThroughPhotos)
         model.open([files[1]])
