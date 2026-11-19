@@ -175,6 +175,18 @@ private func pixel(_ bytes: [UInt8], width: Int, x: Int, y: Int) -> (r: Int, g: 
         #expect(loaded.width == 48 && loaded.height == 32)
     }
 
+    @Test func originalPreviewKeepsOrientationAndSize() throws {
+        let url = try writeTestChart()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let image = try #require(ImageLoader.originalPreview(of: url, maxDimension: 48))
+        #expect(image.width == 48 && image.height == 32)
+        let bytes = try srgbBytes(of: image)
+        let top = pixel(bytes, width: 48, x: 24, y: 4)
+        let bottom = pixel(bytes, width: 48, x: 24, y: 28)
+        #expect(top.r > top.b && bottom.b > bottom.r, "top: \(top), bottom: \(bottom)")
+        #expect(ImageLoader.originalPreview(of: URL(fileURLWithPath: "/nonexistent.png"), maxDimension: 48) == nil)
+    }
+
     @Test func unreadableFilesThrow() {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("missing.png")
         #expect(throws: SpektrafilmError.self) { _ = try ImageLoader.load(url) }

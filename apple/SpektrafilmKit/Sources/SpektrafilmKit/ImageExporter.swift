@@ -108,8 +108,7 @@ public enum ImageExporter {
         }
     }
 
-    // CIContext is documented as thread-safe.
-    private nonisolated(unsafe) static let context = CIContext(options: [
+    private static let context = CIContext(options: [
         .workingColorSpace: CGColorSpace(name: CGColorSpace.extendedLinearSRGB)!,
         .workingFormat: NSNumber(value: CIFormat.RGBAf.rawValue),
         .cacheIntermediates: false,

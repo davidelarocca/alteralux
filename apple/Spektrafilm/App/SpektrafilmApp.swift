@@ -23,7 +23,31 @@ struct SpektrafilmApp: App {
             CommandGroup(after: .undoRedo) {
                 Button("Reset Adjustments") { model.resetAdjustments() }
                     .keyboardShortcut("r", modifiers: [.command, .shift])
-                    .disabled(model.photo == nil)
+                    .disabled(!model.hasPhoto)
+            }
+            CommandGroup(before: .toolbar) {
+                Toggle(
+                    "Show Original",
+                    isOn: Binding(
+                        get: { model.showsOriginal },
+                        set: { model.showsOriginal = $0 }))
+                    .keyboardShortcut("\\", modifiers: [])
+                    .disabled(model.original == nil)
+                Divider()
+                Button("Zoom to Fit") { model.zoom(.fit) }
+                    .keyboardShortcut("9")
+                Button("Actual Size") { model.zoom(.actualSize) }
+                    .keyboardShortcut("0")
+                Button("Zoom In") { model.zoom(.zoomIn) }
+                    .keyboardShortcut("+")
+                Button("Zoom Out") { model.zoom(.zoomOut) }
+                    .keyboardShortcut("-")
+                Divider()
+                Button("Previous Photo") { model.selectAdjacent(offset: -1) }
+                    .keyboardShortcut(.leftArrow)
+                Button("Next Photo") { model.selectAdjacent(offset: 1) }
+                    .keyboardShortcut(.rightArrow)
+                Divider()
             }
         }
     }

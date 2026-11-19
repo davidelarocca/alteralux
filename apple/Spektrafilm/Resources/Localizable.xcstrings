@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "100%" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "100%"
+          }
+        }
+      }
+    },
     "110" : {
       "localizations" : {
         "it" : {
@@ -17,6 +27,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "35 mm"
+          }
+        }
+      }
+    },
+    "Actual Size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni reali"
+          }
+        }
+      }
+    },
+    "Actual size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensioni reali"
+          }
+        }
+      }
+    },
+    "Add photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi foto"
           }
         }
       }
@@ -71,6 +111,16 @@
         }
       }
     },
+    "Compare with the original" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confronta con l'originale"
+          }
+        }
+      }
+    },
     "Developed photo" : {
       "localizations" : {
         "it" : {
@@ -101,12 +151,12 @@
         }
       }
     },
-    "Drag a RAW file here, or choose Open." : {
+    "Drag RAW files here, or choose Open." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trascina qui un file RAW oppure scegli Apri."
+            "value" : "Trascina qui i file RAW oppure scegli Apri."
           }
         }
       }
@@ -167,6 +217,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formato della pellicola"
+          }
+        }
+      }
+    },
+    "Fit" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adatta"
           }
         }
       }
@@ -291,6 +351,16 @@
         }
       }
     },
+    "Next Photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto successiva"
+          }
+        }
+      }
+    },
     "OK" : {
       "localizations" : {
         "it" : {
@@ -311,12 +381,12 @@
         }
       }
     },
-    "Open a photo" : {
+    "Open photos" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Apri una foto"
+            "value" : "Apri foto"
           }
         }
       }
@@ -327,6 +397,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri…"
+          }
+        }
+      }
+    },
+    "Original" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Originale"
+          }
+        }
+      }
+    },
+    "Original photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto originale"
           }
         }
       }
@@ -347,6 +437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Carta"
+          }
+        }
+      }
+    },
+    "Previous Photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto precedente"
           }
         }
       }
@@ -377,6 +477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qualità"
+          }
+        }
+      }
+    },
+    "Remove from Strip" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi dalla striscia"
           }
         }
       }
@@ -417,6 +527,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nitidezza"
+          }
+        }
+      }
+    },
+    "Show Original" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra originale"
           }
         }
       }
@@ -487,6 +607,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filtro giallo"
+          }
+        }
+      }
+    },
+    "Zoom In" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingrandisci"
+          }
+        }
+      }
+    },
+    "Zoom Out" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduci"
+          }
+        }
+      }
+    },
+    "Zoom to Fit" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adatta alla finestra"
+          }
+        }
+      }
+    },
+    "Zoom to fit" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adatta alla finestra"
           }
         }
       }

@@ -1,6 +1,7 @@
 import CoreGraphics
 import CoreImage
 import Foundation
+import ImageIO
 import SpektrafilmEngine
 import UniformTypeIdentifiers
 
@@ -24,8 +25,7 @@ public struct LoadedImage: Sendable {
 /// linearized by Core Image.
 public enum ImageLoader {
     /// The color space of the pixels handed to the engine.
-    public nonisolated(unsafe) static let sceneColorSpace =
-        CGColorSpace(name: CGColorSpace.extendedLinearITUR_2020)!
+    public static let sceneColorSpace = CGColorSpace(name: CGColorSpace.extendedLinearITUR_2020)!
 
     /// Decodes `url`.
     ///
@@ -70,6 +70,20 @@ public enum ImageLoader {
         return LoadedImage(url: url, source: source, width: width, height: height, isRaw: isRaw)
     }
 
+    /// The photo as the system renders it by default, for thumbnails and the
+    /// before/after comparison. RAW files get Apple's standard RAW rendering.
+    ///
+    /// - Parameter maxDimension: long side of the result, in pixels.
+    public static func originalPreview(of url: URL, maxDimension: Int) -> CGImage? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension,
+        ]
+        return CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+    }
+
     /// Whether `url` looks like a camera RAW file (by its file type).
     public static func isRawFile(_ url: URL) -> Bool {
         guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
@@ -78,8 +92,7 @@ public enum ImageLoader {
 
     // MARK: - Decoding
 
-    // CIContext is documented as thread-safe.
-    private nonisolated(unsafe) static let context = CIContext(options: [
+    private static let context = CIContext(options: [
         .workingColorSpace: sceneColorSpace,
         .workingFormat: NSNumber(value: CIFormat.RGBAf.rawValue),
         .cacheIntermediates: false,

@@ -14,8 +14,8 @@ public struct DevelopedImage: @unchecked Sendable {
 
 /// Output quality of a render.
 public enum RenderQuality: Sendable, Equatable {
-    /// Half-float pixels, limited to `maxDimension` on the long side. For the
-    /// live preview while adjusting.
+    /// Half-float pixels, limited to `maxDimension` on the long side (`0` =
+    /// full resolution). For the live preview while adjusting.
     case preview(maxDimension: Int)
     /// Full resolution, 32-bit float pixels. For export.
     case full

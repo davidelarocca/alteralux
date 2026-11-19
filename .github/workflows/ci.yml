@@ -71,3 +71,12 @@ jobs:
           test -d "$APP/Contents/Resources/data/profiles"
           codesign --verify --deep --strict "$APP"
           codesign -d --entitlements - "$APP" 2>/dev/null | grep -q app-sandbox
+      - name: Smoke test (launch the app, open a test chart, take a screenshot)
+        run: scripts/ci/smoke-test.sh
+      - name: Upload the smoke test screenshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test
+          path: build/smoke
+          if-no-files-found: ignore

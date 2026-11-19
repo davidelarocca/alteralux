@@ -7,12 +7,19 @@ import SwiftUI
 struct InspectorView: View {
     @Environment(AppModel.self) private var model
 
+    /// Choosing a film also applies its defaults (paper, direct scan).
+    private var filmSelection: Binding<String> {
+        Binding(
+            get: { model.settings.filmID },
+            set: { model.chooseFilm($0) })
+    }
+
     var body: some View {
         @Bindable var model = model
 
         Form {
             Section("Materials") {
-                Picker("Film", selection: $model.settings.filmID) {
+                Picker("Film", selection: filmSelection) {
                     ForEach(model.films, id: \.id) { film in
                         Text(film.displayName).tag(film.id)
                     }
