@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  engine-linux:
+    name: Rust bridge tests (Linux)
+    runs-on: ubuntu-latest
+    env:
+      # Runners have different CPUs and the build is cached between them, so
+      # OpenBLAS must not be tuned for the machine that happened to build it.
+      OPENBLAS_TARGET: GENERIC
+      OPENBLAS_DYNAMIC_ARCH: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      # OpenBLAS (CPU matrix maths on Linux) is compiled from source by the
+      # openblas-src crate; rust-cache keeps it between runs.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+      - name: Test
+        # Release mode: the tests run real renders, which are slow unoptimized.
+        run: cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
+
+  swift-macos:
+    name: Swift package and app (macOS, Apple silicon)
+    # Latest Xcode / Swift / macOS SDK on Apple silicon.
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+      - name: Toolchain versions
+        run: sw_vers && xcodebuild -version && swift --version && rustc --version
+      - name: Build engine and Swift bindings
+        run: scripts/build-engine.sh
+      - name: Swift tests
+        run: swift test --package-path apple/SpektrafilmKit
+      - name: Generate the Xcode project
+        run: scripts/bootstrap.sh --skip-engine
+      - name: Build the app
+        run: |
+          xcodebuild build \
+            -project apple/Spektrafilm.xcodeproj \
+            -scheme Spektrafilm \
+            -configuration Release \
+            -destination 'platform=macOS,arch=arm64' \
+            -derivedDataPath build/DerivedData \
+            -skipPackagePluginValidation
+      - name: Check the app bundle
+        run: |
+          APP=build/DerivedData/Build/Products/Release/Spektrafilm.app
+          test -d "$APP/Contents/Resources/data/profiles"
+          codesign --verify --deep --strict "$APP"
+          codesign -d --entitlements - "$APP" 2>/dev/null | grep -q app-sandbox
+      - name: Smoke test (launch the app, open a test chart, take a screenshot)
+        run: scripts/ci/smoke-test.sh build/DerivedData/Build/Products/Release/Spektrafilm.app
+      - name: Upload the smoke test screenshot
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test
+          path: build/smoke
+          if-no-files-found: ignore
+      # Debug aid for reviewing the UI from the log alone: add the label
+      # "ci-screenshot" to a pull request to print a small copy of the
+      # screenshot as base64.
+      - name: Print the screenshot into the log
+        if: contains(github.event.pull_request.labels.*.name, 'ci-screenshot')
+        run: |
+          sips -Z 1400 -s format jpeg -s formatOptions 60 \
+            build/smoke/screenshot.png --out build/smoke/screenshot-small.jpg >/dev/null
+          echo "::group::screenshot (base64 JPEG)"
+          echo "-----BEGIN SCREENSHOT-----"
+          base64 -b 76 -i build/smoke/screenshot-small.jpg
+          echo "-----END SCREENSHOT-----"
+          echo "::endgroup::"
+      - name: Package the app
+        run: |
+          mkdir -p build/package
+          ditto -c -k --keepParent \
+            build/DerivedData/Build/Products/Release/Spektrafilm.app \
+            build/package/Spektrafilm.zip
+      - name: Upload the app
+        uses: actions/upload-artifact@v7
+        with:
+          name: Spektrafilm-app
+          path: build/package/Spektrafilm.zip

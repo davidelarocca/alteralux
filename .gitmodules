@@ -1,0 +1,3 @@
+[submodule "engine/vendor/spektrafilm-rs"]
+	path = engine/vendor/spektrafilm-rs
+	url = https://github.com/turbasvin/spektrafilm-rs.git

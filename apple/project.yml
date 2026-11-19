@@ -1,0 +1,62 @@
+# Xcode project definition (https://github.com/yonaskolb/XcodeGen).
+# Run scripts/bootstrap.sh to generate apple/Spektrafilm.xcodeproj from it.
+name: Spektrafilm
+
+options:
+  bundleIdPrefix: io.github.davidelarocca
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEAD_CODE_STRIPPING: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+
+packages:
+  SpektrafilmKit:
+    path: SpektrafilmKit
+
+targets:
+  Spektrafilm:
+    type: application
+    platform: macOS
+    sources:
+      - path: Spektrafilm
+        # Referenced through build settings, not compiled or copied.
+        excludes:
+          - Info.plist
+          - "*.entitlements"
+      # Film and paper profiles and spectral tables, straight from the engine
+      # submodule. Copied as a folder to Contents/Resources/data.
+      - path: ../engine/vendor/spektrafilm-rs/data
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - package: SpektrafilmKit
+        product: SpektrafilmKit
+      - package: SpektrafilmKit
+        product: SpektrafilmEngine
+    settings:
+      base:
+        PRODUCT_NAME: Spektrafilm
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.davidelarocca.spektrafilm
+        # Document types live in Info.plist; everything else is generated.
+        INFOPLIST_FILE: Spektrafilm/Info.plist
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: spektrafilm
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.photography
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Free software under the GNU GPL v3. Film modeling powered by spektrafilm."
+        CODE_SIGN_ENTITLEMENTS: Spektrafilm/Spektrafilm.entitlements
+        # "Sign to Run Locally": no Apple developer account needed to build.
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
+        DEVELOPMENT_TEAM: ""
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SWIFT_EMIT_LOC_STRINGS: YES
