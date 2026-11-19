@@ -4,19 +4,19 @@ import Testing
 
 /// The upstream data folder, straight from the git submodule.
 private let dataDirectory: String = URL(fileURLWithPath: #filePath)
-    .deletingLastPathComponent()  // SpektrafilmEngineTests
-    .deletingLastPathComponent()  // Tests
-    .deletingLastPathComponent()  // SpektrafilmKit
-    .deletingLastPathComponent()  // apple
-    .deletingLastPathComponent()  // repository root
+    .deletingLastPathComponent() // SpektrafilmEngineTests
+    .deletingLastPathComponent() // Tests
+    .deletingLastPathComponent() // SpektrafilmKit
+    .deletingLastPathComponent() // apple
+    .deletingLastPathComponent() // repository root
     .appendingPathComponent("engine/vendor/spektrafilm-rs/data")
     .path
 
 private func chart(width: Int, height: Int) -> [Float] {
     var pixels: [Float] = []
     pixels.reserveCapacity(width * height * 3)
-    for row in 0..<height {
-        for column in 0..<width {
+    for row in 0 ..< height {
+        for column in 0 ..< width {
             let grey = 0.184 * pow(2, 8 * Float(column) / Float(width - 1) - 5)
             let tint = Float(row) / Float(height - 1)
             pixels += [grey * (1 + 0.5 * tint), grey, grey * (1 - 0.5 * tint)]
@@ -25,7 +25,7 @@ private func chart(width: Int, height: Int) -> [Float] {
     return pixels
 }
 
-@Suite struct EngineTests {
+struct EngineTests {
     @Test func listsStocks() throws {
         let engine = try Engine(dataDir: dataDirectory, backend: .cpu)
         let stocks = try engine.stocks()
@@ -39,7 +39,7 @@ private func chart(width: Int, height: Int) -> [Float] {
         let source = try SourceImage.fromFloats(chart(width: 64, height: 40), width: 64, height: 40, channels: 3)
         let image = try engine.render(
             source: source,
-            request: RenderRequest(film: "kodak_portra_400", print: "kodak_portra_endura")
+            request: RenderRequest(film: "kodak_portra_400", print: "kodak_portra_endura"),
         )
         #expect(image.width() == 64 && image.height() == 40)
         let bytes = image.pixels(format: .rgbaF32)

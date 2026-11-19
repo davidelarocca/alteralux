@@ -17,7 +17,7 @@ struct ZoomableImageView: NSViewRepresentable {
     /// Reports the scale relative to actual pixels (1 = 100%).
     let onScaleChange: @MainActor (Double) -> Void
 
-    func makeNSView(context: Context) -> ImageScrollView {
+    func makeNSView(context _: Context) -> ImageScrollView {
         ImageScrollView()
     }
 
@@ -30,7 +30,9 @@ struct ZoomableImageView: NSViewRepresentable {
         }
     }
 
-    func makeCoordinator() -> Coordinator { Coordinator() }
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
 
     final class Coordinator {
         var lastCommandID = -1
@@ -66,10 +68,12 @@ final class ImageScrollView: NSScrollView {
         let center = NotificationCenter.default
         center.addObserver(
             self, selector: #selector(willStartMagnify),
-            name: NSScrollView.willStartLiveMagnifyNotification, object: self)
+            name: NSScrollView.willStartLiveMagnifyNotification, object: self,
+        )
         center.addObserver(
             self, selector: #selector(didEndMagnify),
-            name: NSScrollView.didEndLiveMagnifyNotification, object: self)
+            name: NSScrollView.didEndLiveMagnifyNotification, object: self,
+        )
 
         let doubleClick = NSClickGestureRecognizer(target: self, action: #selector(didDoubleClick))
         doubleClick.numberOfClicksRequired = 2
@@ -77,7 +81,7 @@ final class ImageScrollView: NSScrollView {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) is not supported")
     }
 
@@ -111,19 +115,25 @@ final class ImageScrollView: NSScrollView {
 
     override func layout() {
         super.layout()
-        if fitsView { zoomToFit() }
+        if fitsView {
+            zoomToFit()
+        }
     }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
         updateDocumentSize()
-        if fitsView { zoomToFit() }
+        if fitsView {
+            zoomToFit()
+        }
     }
 
     override func viewDidChangeBackingProperties() {
         super.viewDidChangeBackingProperties()
         updateDocumentSize()
-        if fitsView { zoomToFit() }
+        if fitsView {
+            zoomToFit()
+        }
     }
 
     /// Sizes the document so that magnification 1 shows one photo pixel per
@@ -131,7 +141,8 @@ final class ImageScrollView: NSScrollView {
     private func updateDocumentSize() {
         let backingScale = window?.backingScaleFactor ?? 2
         imageView.setFrameSize(
-            NSSize(width: pixelSize.width / backingScale, height: pixelSize.height / backingScale))
+            NSSize(width: pixelSize.width / backingScale, height: pixelSize.height / backingScale),
+        )
     }
 
     private func zoomToFit() {
@@ -141,11 +152,14 @@ final class ImageScrollView: NSScrollView {
         }
         let available = NSSize(
             width: max(bounds.width - 2 * Self.padding, 1),
-            height: max(bounds.height - 2 * Self.padding, 1))
+            height: max(bounds.height - 2 * Self.padding, 1),
+        )
         // Never enlarge a small photo beyond its actual size.
         let fit = min(available.width / document.width, available.height / document.height, 1)
         minMagnification = min(fit, 0.1)
-        if abs(magnification - fit) > 0.0001 { magnification = fit }
+        if abs(magnification - fit) > 0.0001 {
+            magnification = fit
+        }
         reportScale()
     }
 
@@ -158,11 +172,11 @@ final class ImageScrollView: NSScrollView {
 
     // MARK: Events
 
-    @objc private func willStartMagnify(_ notification: Notification) {
+    @objc private func willStartMagnify(_: Notification) {
         fitsView = false
     }
 
-    @objc private func didEndMagnify(_ notification: Notification) {
+    @objc private func didEndMagnify(_: Notification) {
         reportScale()
     }
 
@@ -190,11 +204,20 @@ final class ImageScrollView: NSScrollView {
 /// image for the display from its embedded color space.
 private final class ImageLayerView: NSView {
     var image: CGImage? {
-        didSet { if image !== oldValue { needsDisplay = true } }
+        didSet {
+            if image !== oldValue {
+                needsDisplay = true
+            }
+        }
     }
+
     /// Above 100%, show the photo's pixels (and its grain) unsmoothed.
     var showsRealPixels = false {
-        didSet { if showsRealPixels != oldValue { needsDisplay = true } }
+        didSet {
+            if showsRealPixels != oldValue {
+                needsDisplay = true
+            }
+        }
     }
 
     override init(frame frameRect: NSRect) {
@@ -204,11 +227,13 @@ private final class ImageLayerView: NSView {
     }
 
     @available(*, unavailable)
-    required init?(coder: NSCoder) {
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) is not supported")
     }
 
-    override var wantsUpdateLayer: Bool { true }
+    override var wantsUpdateLayer: Bool {
+        true
+    }
 
     override func updateLayer() {
         guard let layer else { return }

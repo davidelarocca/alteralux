@@ -31,7 +31,7 @@ public struct ThumbnailCell: View {
             RoundedRectangle(cornerRadius: Radius.thumbnail)
                 .strokeBorder(
                     isSelected ? Color.accentColor : Color.DS.hairline,
-                    lineWidth: isSelected ? Self.selectedLineWidth : Self.lineWidth
+                    lineWidth: isSelected ? Self.selectedLineWidth : Self.lineWidth,
                 )
         }
     }

@@ -11,6 +11,8 @@ What is done, what is being done and what comes next. Keep it current: it is whe
 - **The app**: one window with the viewer (zoom, fit, 100%), the strip of open photos, comparison with the
   original, the adjustments inspector and export. English and Italian. Sandboxed.
 - **Structure**: design system and screens in Swift packages, the app target as a shell.
+- **Formatting**: the Swift code is formatted with `swiftformat` (`.swiftformat`). `LayoutContract.swift`, copied
+  from the swift-harness templates, is excluded so it can still be compared with the plugin's copy.
 - **CI**: Rust tests on Linux; on macOS the engine build, the checks of `scripts/verify.sh full`, a launch
   smoke test with a screenshot, and the packaged app as an artifact.
 
@@ -30,15 +32,14 @@ These steps need Xcode or the user's own approval, so they were left for a local
 1. `scripts/setup-mac.sh` (tools, engine, Xcode project), then run the app from Xcode on real RAW files.
 2. Install the plugin (`/plugin install swift-harness@swift-harness`), check `scripts/verify.sh`, then
    `/swift-harness:approve-verify` and `/swift-harness:doctor`.
-3. `swiftformat .` once and commit the result on its own: the code was written without a formatter.
-4. `/swift-harness:approve-security` after reviewing the recorded baseline (sandbox, hardened runtime).
-5. Layout: measure what the panes hold (see "Exceptions" in `docs/LAYOUT_CONTRACT.md`), add
+3. `/swift-harness:approve-security` after reviewing the recorded baseline (sandbox, hardened runtime).
+4. Layout: measure what the panes hold (see "Exceptions" in `docs/LAYOUT_CONTRACT.md`), add
    `Screenshot.capture` tests for the main screens and `Snapshot.verify` tests for the components of
    `docs/COMPONENT_REGISTRY.md`, then `/swift-harness:approve-snapshots`.
-6. `KeyboardCheck` tests for `ParameterSlider` (arrows, Delete to reset).
-7. A UI test target (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`); then set `SCHEME_HAS_TESTS=1` in
+5. `KeyboardCheck` tests for `ParameterSlider` (arrows, Delete to reset).
+6. A UI test target (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`); then set `SCHEME_HAS_TESTS=1` in
    `scripts/verify.sh`.
-8. `/swift-harness:product-map` to fill `docs/PRODUCT_MAP.md`, and `/swift-harness:audit`.
+7. `/swift-harness:product-map` to fill `docs/PRODUCT_MAP.md`, and `/swift-harness:audit`.
 
 ## Next: features
 
