@@ -11,7 +11,7 @@ enum AboutPanel {
             localized:
                 "Film modeling powered by [spektrafilm](https://github.com/andreavolpato/spektrafilm) by Andrea Volpato. Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) by turbasvin. Free software under the GNU GPL v3."
         )
-        let credits = NSMutableAttributedString(localized)
+        let credits = NSMutableAttributedString(attributedString: NSAttributedString(localized))
         let everything = NSRange(location: 0, length: credits.length)
         credits.addAttribute(
             .font, value: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), range: everything)
