@@ -1,0 +1,17 @@
+{
+  "appearance": "light",
+  "captured": "2026-11-19T20:34:45Z",
+  "contractSize": "116x88",
+  "locale": "",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "ThumbnailCell",
+  "size": "116x88",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/ThumbnailCell.swift",
+  "state": "photo-selected",
+  "test": "apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-19T21:09:31Z",
+  "approvedFrom": "missing"
+}

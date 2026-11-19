@@ -1,0 +1,17 @@
+{
+  "appearance": "light",
+  "captured": "2026-11-19T20:34:45Z",
+  "contractSize": "320x60",
+  "locale": "",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "StatusBadge",
+  "size": "320x60",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/StatusBadge.swift",
+  "state": "short",
+  "test": "apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-19T21:09:31Z",
+  "approvedFrom": "missing"
+}
