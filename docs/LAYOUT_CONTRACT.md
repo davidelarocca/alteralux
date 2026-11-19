@@ -53,5 +53,6 @@ Deliberate departures from the rules above, with the reason.
   View and Window, so the row checks the window's sizes.
 - The panes of the main window have no rows of their own yet. `PhotoStage` and `FilmstripView` scroll or
   scale their content and `InspectorView` is a scrolling `Form`: each takes any width, so
-  `LayoutContract.check` cannot measure them. What they hold is measured through the shared components
-  (`ParameterSlider` at the inspector's minimum width of 280 pt), which is still to be done.
+  `LayoutContract.check` cannot measure them. What they hold is checked through the shared components:
+  `ParameterSlider` has snapshots at 280 pt, the inspector's minimum width, with a long title too. The
+  screenshots of the main window at Min and Default show the panes together, for review.

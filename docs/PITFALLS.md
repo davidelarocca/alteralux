@@ -31,5 +31,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 
 - **The window follows the system appearance unless told otherwise.** With a dark viewer and a light
   system the title was unreadable and the photo strip white. The app sets the dark appearance at launch.
+- **`value.formatted()` follows the Mac's language, not the view's.** A number formatted into a `String`
+  ignores the `\.locale` of the environment, so a view shown in another language keeps the system's
+  decimal separator, and a snapshot changes from one Mac to the next. Use `Text(value, format:)`. The
+  snapshots of `ParameterSlider` in `en` and `it` catch it.
 - **`Text("a") vs Text(condition ? "a" : "b")`.** A ternary of string literals resolves to `String`, which
   is not localized. Build two `Text` values instead.
