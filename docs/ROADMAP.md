@@ -61,14 +61,17 @@ draft pull request per step.
 6. **Looks**: save and apply, copy between photos, export several photos, adaptive application.
 7. **Crop and straighten.**
 8. **Camera and lens corrections**, after the open question on their source.
-9. **The rest of the harness**, spread over the steps above where it helps: a UI test target
+9. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a look and
+   return the files, so the shortcut saves them (for example in a subfolder beside the originals) and can
+   run as a Finder Quick Action. Needs steps 6 and 8.
+10. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;
    `/swift-harness:product-map` and `/swift-harness:audit`.
-10. **Version 1.0**: the icon, the name, the notarized release.
+11. **Version 1.0**: the icon, the name, the notarized release.
 
-After 1.0, in an order still to decide: Finder Quick Action and Shortcuts actions, collections, the Photos
-integration, more of the engine's parameters behind an "advanced" section.
+After 1.0, in an order still to decide: collections, the Photos integration, more of the engine's
+parameters behind an "advanced" section.
 
 Defects found on real RAW files go to step 1.
 

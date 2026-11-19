@@ -54,7 +54,8 @@ and do not want another library to maintain.
   optional, pleasant to use; never a requirement for developing a photo.
 - **From the Finder.** Select photos, choose a workflow the user has defined (a look, the automatic
   corrections, an export format, a destination such as a subfolder beside the originals), and get the
-  developed files without opening the app.
+  developed files without opening the app. The app provides the actions for Shortcuts; the shortcut the
+  user builds from them saves the files, so the app needs no access to the folder.
 - **With Photos.** For people whose archive is the Photos library: developing photos from it and saving
   back to it.
 - **Distribution.** A signed and notarized download from the project's releases. The project is GPLv3,
@@ -71,10 +72,12 @@ What the first public version needs on top of what exists today:
 5. Looks: save, apply, copy between photos, export several photos at once, with adaptive application.
 6. Crop and straighten.
 7. Camera and lens corrections.
-8. An icon, a decision on the name, and the notarized release.
+8. Workflows from the Finder: actions for Shortcuts that develop the selected photos with a look and hand
+   the results back for saving.
+9. An icon, a decision on the name, and the notarized release.
 
-After 1.0, in an order still to decide: the Finder workflows, collections, the Photos integration, more
-of the engine's parameters.
+After 1.0, in an order still to decide: collections, the Photos integration, more of the engine's
+parameters.
 
 ## Visual direction
 
@@ -102,9 +105,6 @@ neutral point, and numbers set in tabular or monospaced digits.
 
 ## Open questions
 
-- **Writing beside the originals from the Finder.** A sandboxed app receives the selected files, not
-  their folder. Creating a subfolder next to them needs the user's permission for that folder once, or
-  the result is handed back to Shortcuts to save. The sandbox is not relaxed for this.
 - **Camera and lens profiles: the source.** What Core Image already applies when decoding RAW files, and
   whether an open database of lens corrections can be used and shipped under the GPL. To verify before
   designing the feature.
