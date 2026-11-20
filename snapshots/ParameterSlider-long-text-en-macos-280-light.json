@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-19T20:34:41Z",
+  "captured": "2026-11-20T07:51:09Z",
   "contractSize": "280",
   "locale": "en",
   "os": "27.2",
@@ -11,7 +11,7 @@
   "size": "280x74",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift",
   "state": "long-text",
-  "test": "apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-19T21:09:31Z",
-  "approvedFrom": "missing"
+  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-20T07:51:38Z",
+  "approvedFrom": "failed"
 }
