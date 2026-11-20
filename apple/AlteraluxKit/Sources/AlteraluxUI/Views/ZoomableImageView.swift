@@ -5,7 +5,8 @@ import SwiftUI
 /// A zoomable, scrollable photo viewer.
 ///
 /// Built on `NSScrollView`, so pinch to zoom, smart zoom, scrolling and
-/// rubber-banding behave like every other Mac app.
+/// rubber-banding behave like every other Mac app. Its scroll bars are always the thin ones
+/// that show while scrolling.
 struct ZoomableImageView: NSViewRepresentable {
     let image: CGImage
     /// Size of the full-resolution photo in pixels. Zoom is measured against
@@ -63,6 +64,9 @@ final class ImageScrollView: NSScrollView {
         hasHorizontalScroller = true
         hasVerticalScroller = true
         autohidesScrollers = true
+        scrollerStyle = .overlay
+        // The photo sits on the viewer's dark surround in light and dark appearance alike.
+        scrollerKnobStyle = .light
         allowsMagnification = true
         minMagnification = 0.01
         maxMagnification = 8
@@ -85,6 +89,17 @@ final class ImageScrollView: NSScrollView {
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) is not supported")
+    }
+
+    /// Thin scroll bars that show only while the photo moves, as with a trackpad, even with a
+    /// mouse connected: wide bars that stay would take a band off the photo. The system sets
+    /// the style again when its preference changes, so every style it sets is kept overlay.
+    override var scrollerStyle: NSScroller.Style {
+        didSet {
+            if scrollerStyle != .overlay {
+                scrollerStyle = .overlay
+            }
+        }
     }
 
     func setImage(_ image: CGImage, pixelSize newSize: CGSize) {
