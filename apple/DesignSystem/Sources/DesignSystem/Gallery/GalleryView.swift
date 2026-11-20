@@ -21,10 +21,8 @@ public struct GalleryView: View {
             Section("HeadingButton") {
                 HeadingButton(caption: Text("Film · color negative · ISO 400"), title: "Kodak Portra 400") {}
             }
-            Section("InspectorSection") {
-                InspectorSection("Camera", isExpanded: $showsSection, summary: "+0.3 · 35 mm") {
-                    ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
-                }
+            InspectorSection("InspectorSection", isExpanded: $showsSection, summary: "+0.3 · 35 mm") {
+                ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
             }
             Section("FilmEmblem") {
                 HStack(spacing: Spacing.s) {
@@ -47,7 +45,6 @@ public struct GalleryView: View {
                 swatch("viewerSurround", Color.DS.viewerSurround)
                 swatch("thumbnailPlaceholder", Color.DS.thumbnailPlaceholder)
                 swatch("hairline", Color.DS.hairline)
-                swatch("controlTint", Color.DS.controlTint)
             }
         }
         .formStyle(.grouped)

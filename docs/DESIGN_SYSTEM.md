@@ -5,17 +5,15 @@ Code: `apple/DesignSystem/`. Gallery: `GalleryView`, shown from its Xcode previe
 
 ## Principles
 
-1. Native first: controls are the system's (`Slider`, `Toggle`, `Picker`, `DisclosureGroup`, `List`,
-   `Form`). A component wraps one to add what the app needs around it, never to redraw it
+1. Native first: controls are the system's (`Slider`, `Toggle`, `Picker`, collapsible `Section`s, `List`,
+   `Form`), drawn and laid out as the system does: its accent color, its margins, the window's own title.
+   A component wraps one to add what the app needs around it, never to redraw it
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). The mockups guide structure, not the drawing of
    controls.
 2. One behavior, one component. Things that look alike but behave differently stay separate.
 3. Intent over values: callers say what (`Spacing.m`, `Radius.thumbnail`), the design system decides how.
 4. Always dark: photos are judged against a neutral dark interface, so the app forces the dark
    appearance and each semantic color has a single value.
-5. Gray controls: the window sets `Color.DS.controlTint` as its tint, so a switch that is on and the
-   filled part of a slider are gray. The label of a button in a form would be tinted too and read as
-   disabled: such a button takes the label color as its tint (`.tint(.primary)`).
 
 ## Tokens
 
@@ -23,9 +21,9 @@ Code: `apple/DesignSystem/`. Gallery: `GalleryView`, shown from its Xcode previe
 |---|---|---|---|
 | `Spacing` | `CGFloat` | `xxs`, `xs`, `s`, `m`, `l`, `xl` | 2, 4, 8, 12, 16, 24 pt |
 | `Radius` | `CGFloat` | `thumbnail`, `control`, `emblem` | |
-| `Typography` | `Font` | `body`, `title`, `heading`, `caption`, `sectionHeader`, `emblem`, `value`, `badge`, `technical` | built on system text styles |
+| `Typography` | `Font` | `body`, `heading`, `caption`, `emblem`, `value`, `badge`, `technical` | built on system text styles |
 | `Motion` | `Animation` | `quick`, `standard`, `moving(_:reduced:)` | durations live only here |
-| Colors | `Color` | `Color.DS.viewerSurround`, `thumbnailPlaceholder`, `hairline`, `controlTint` | in `Colors.xcassets` |
+| Colors | `Color` | `Color.DS.viewerSurround`, `thumbnailPlaceholder`, `hairline` | in `Colors.xcassets` |
 | Emblem inks | `FilmEmblem.Ink` | `violet`, `gold`, `petrol`, ... | the colors film emblems are made of; used only there |
 
 Keep this table in sync with the code. The code wins if they differ.

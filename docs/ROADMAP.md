@@ -60,8 +60,8 @@ draft pull request per step.
    2026-11-20 settled, built from the system's controls
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
    neutral point, with keyboard and accessibility by step), the film as the heading and its list with
-   an emblem per film, collapsible sections that show their values, previous and next around the
-   photo's name in the toolbar, the zoom controls under the photo, with snapshots and `KeyboardCheck`
+   an emblem per film, collapsible sections that show their values, previous and next in the toolbar
+   beside the window's title, the zoom controls under the photo, with snapshots and `KeyboardCheck`
    tests. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open

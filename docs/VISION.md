@@ -95,9 +95,10 @@ After 1.0, in an order still to decide: the Photos integration, more of the engi
 
 ## Visual direction
 
-A neutral darkroom made of the system's controls: sliders, switches, pop-up buttons, disclosure groups,
-lists and forms are macOS's own, tinted gray, with the system typeface and numbers in tabular digits.
-No saturated color on the controls. The direction was chosen on 2026-11-20 on mockups of every step of
+A neutral darkroom made of the system's controls: sliders, switches, pop-up buttons, collapsible
+sections, lists, forms and the toolbar are macOS's own, drawn as the system draws them, with the system
+typeface and numbers in tabular digits. The accent color shows only where the system puts it, on small
+things: a switch that is on, the selected segment. The direction was chosen on 2026-11-20 on mockups of every step of
 the roadmap (the black and red variant was set aside); the same day, seen in the running app, the
 hand-drawn controls of the mockups were dropped for the system's
 ([ADR 0006](adr/0006-use-the-systems-controls.md)). The mockups stay the guide to what is where:
@@ -110,8 +111,8 @@ hand-drawn controls of the mockups were dropped for the system's
   small emblem of its own: a ground, a band and the speed, in colors suggested by the film's character.
   The emblems are original, they copy no brand's packaging. No rendered previews: they would cost a
   render per film.
-- **Toolbar.** On the left the way back to the folder, then previous and next around the file name. On
-  the right undo and redo, crop, the original, Recipe and export. Icons alone wherever the icon is
+- **Toolbar.** On the left the way back to the folder, then previous and next, beside the window's title
+  (the file name over its film and paper). On the right undo and redo, crop, the original, Recipe and export. Icons alone wherever the icon is
   clear, always with an accessible label.
 - **Zoom** controls sit under the photo on the right, above the strip: fit, 100% and a slider, whose
   neutral point is the fitted photo.

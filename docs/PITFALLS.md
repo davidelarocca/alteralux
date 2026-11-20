@@ -51,13 +51,18 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   against 0.1 ms with `.linear`, and the sliders stuttered. The viewer asks for mipmaps only when the
   image is shown below half its size (`ImageScrollView.needsMipmaps`, covered by `ViewerTests`).
 - **A form's content runs under a scroll bar that is always shown.** With "Show scroll bars: Always" the
-  switches of the inspector touched the scroll bar. The form keeps a trailing margin for it
-  (`.contentMargins(.trailing, _, for: .scrollContent)`).
+  switches of the inspector touched the scroll bar. The form has a wider margin on both sides
+  (`.contentMargins(.horizontal, _, for: .scrollContent)`, added to the form's own): a margin on the
+  trailing side only left the form off center whenever the scroll bar was not there.
 - **A text field does not take the focus in a test process.** `@FocusState` set in `onAppear` works in
   the app and not under `swift test`, where the process is not the active app: keys sent to the window
   go nowhere. A keyboard test makes the field first responder itself, as `FilmPickerTests` does.
-- **A gray tint makes a button in a form look disabled.** Its label takes the tint, and
-  `.foregroundStyle` on the label does not change it. Give the button the label color as its tint,
-  `.tint(.primary)` (the Reset button of the inspector).
+- **A gray tint on the system's controls reads as disabled.** A switch that is on looks off, and the
+  label of a button in a form takes the tint. The controls keep the accent color
+  ([ADR 0006](adr/0006-use-the-systems-controls.md)).
+- **A view of our own in the toolbar replaces what the system lays out.** The photo's name between two
+  arrows, with the window's title removed, sat in one capsule with the Open button and read as badly
+  made. The window keeps `navigationTitle` and `navigationSubtitle`; previous and next are plain toolbar
+  buttons beside them.
 - **`.onKeyPress(.delete)` does not match the Delete key.** `KeyEquivalent.delete` is U+0008 and the key
   arrives as U+007F: match both.
