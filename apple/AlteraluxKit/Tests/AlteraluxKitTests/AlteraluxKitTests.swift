@@ -105,6 +105,27 @@ struct DevelopSettingsTests {
         #expect((scanner["unsharp_mask"] as? [Double])?.last == 0.25)
     }
 
+    /// The development times reach the engine for the film and the paper, and are left out,
+    /// for the engine's own middle time, when none was chosen.
+    @Test func developmentTimesReachTheEngine() throws {
+        let engine = try Engine(dataDir: dataDirectory.path, backend: .cpu)
+        var settings = DevelopSettings(filmDevelopmentTime: 9, printDevelopmentTime: 2)
+        var tree = try #require(
+            try JSONSerialization.jsonObject(with: Data(engine.resolveParamsJson(paramsJson: settings.enginePatchJSON()).utf8)) as? [String: Any],
+        )
+        #expect((tree["film_render"] as? [String: Any])?["development_time"] as? Double == 9)
+        #expect((tree["print_render"] as? [String: Any])?["development_time"] as? Double == 2)
+
+        settings = DevelopSettings()
+        tree = try #require(
+            try JSONSerialization.jsonObject(with: Data(engine.resolveParamsJson(paramsJson: settings.enginePatchJSON()).utf8)) as? [String: Any],
+        )
+        #expect((tree["film_render"] as? [String: Any])?["development_time"] is NSNull)
+        // Settings saved before the times existed read as the middle time.
+        let old = try JSONDecoder().decode(DevelopSettings.self, from: Data(#"{"filmID": "kodak_tri_x_400"}"#.utf8))
+        #expect(old.filmDevelopmentTime == nil && old.printDevelopmentTime == nil)
+    }
+
     @Test func advancedJSONOverridesAndIsValidated() throws {
         let engine = try Engine(dataDir: dataDirectory.path, backend: .cpu)
         var settings = DevelopSettings()

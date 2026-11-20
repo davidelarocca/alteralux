@@ -17,7 +17,9 @@ struct InspectorView: View {
 
     var body: some View {
         @Bindable var model = model
-        let summary = InspectorSummary(settings: model.settings, locale: locale)
+        let summary = InspectorSummary(
+            settings: model.settings, locale: locale, blackAndWhitePrint: model.selectedPaper?.isBlackAndWhite == true,
+        )
 
         Form {
             MaterialsHeading()
@@ -30,11 +32,14 @@ struct InspectorView: View {
                 ),
             ) {
                 WhiteBalanceControls()
-                CameraControls(settings: $model.settings)
+                CameraControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
             }
             if !model.settings.scanFilm {
                 InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
-                    PrintControls(settings: $model.settings)
+                    PrintControls(
+                        settings: $model.settings, isBlackAndWhite: model.selectedPaper?.isBlackAndWhite == true,
+                        developmentTimes: model.printDevelopmentTimes,
+                    )
                 }
             }
             InspectorSection(
@@ -84,7 +89,7 @@ private struct MaterialsHeading: View {
                 FilmPicker()
             }
             if !model.settings.scanFilm {
-                Picker("Paper", selection: $model.settings.paperID) {
+                Picker("Paper", selection: Binding(get: { model.settings.paperID }, set: { model.choosePaper($0) })) {
                     ForEach(model.papers, id: \.id) { paper in
                         Text(paper.displayName).tag(paper.id)
                     }
@@ -140,6 +145,8 @@ private struct WhiteBalanceControls: View {
 
 private struct CameraControls: View {
     @Binding var settings: DevelopSettings
+    /// The times the film was measured at, when it can be developed for longer or shorter.
+    let developmentTimes: [Double]
 
     var body: some View {
         ParameterSlider(
@@ -153,22 +160,58 @@ private struct CameraControls: View {
             }
         }
         .help("Smaller formats show more grain and wider halos.")
+        if !developmentTimes.isEmpty {
+            DevelopmentTimePicker("Development", time: $settings.filmDevelopmentTime, times: developmentTimes)
+                .help("Developed longer, the film gains contrast; shorter, it loses it.")
+        }
     }
 }
 
 private struct PrintControls: View {
     @Binding var settings: DevelopSettings
+    /// A black and white paper has no color to filter.
+    let isBlackAndWhite: Bool
+    /// The times the paper was measured at, when it can be developed for longer or shorter.
+    let developmentTimes: [Double]
 
     var body: some View {
         ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2 ... 3, defaultValue: 1)
-        ParameterSlider(
-            "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
-            step: 1, fractionDigits: 0, showsSign: true,
-        )
-        ParameterSlider(
-            "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
-            step: 1, fractionDigits: 0, showsSign: true,
-        )
+        if !isBlackAndWhite {
+            ParameterSlider(
+                "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
+                step: 1, fractionDigits: 0, showsSign: true,
+            )
+            ParameterSlider(
+                "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
+                step: 1, fractionDigits: 0, showsSign: true,
+            )
+        }
+        if !developmentTimes.isEmpty {
+            DevelopmentTimePicker("Paper development", time: $settings.printDevelopmentTime, times: developmentTimes)
+        }
+    }
+}
+
+/// The time a black and white material is developed for, among those it was measured at. With
+/// none chosen the engine takes the middle one, which the picker shows.
+private struct DevelopmentTimePicker: View {
+    private let title: LocalizedStringKey
+    @Binding private var time: Double?
+    private let times: [Double]
+
+    init(_ title: LocalizedStringKey, time: Binding<Double?>, times: [Double]) {
+        self.title = title
+        _time = time
+        self.times = times
+    }
+
+    var body: some View {
+        Picker(title, selection: Binding(get: { time ?? times[(times.count - 1) / 2] }, set: { time = $0 })) {
+            ForEach(times, id: \.self) { minutes in
+                Text(Measurement(value: minutes, unit: UnitDuration.minutes).formatted(.measurement(width: .abbreviated)))
+                    .tag(minutes)
+            }
+        }
     }
 }
 

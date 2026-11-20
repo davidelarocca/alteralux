@@ -37,6 +37,26 @@ struct MaterialsTests {
         #expect(model.selectedPaper?.isBlackAndWhite == false)
     }
 
+    /// A black and white film or paper measured at several development times offers them; a
+    /// time chosen goes back to the middle one when the material changes, and a color film
+    /// offers none.
+    @Test func developmentTimesAreOfferedForTheMaterialsMeasuredAtSeveral() async throws {
+        let model = await startedModel()
+        let film = try #require(model.films.first { $0.isBlackAndWhite && !$0.isPositive && $0.developmentTimesMin.count > 1 })
+        model.chooseFilm(film.id)
+        #expect(model.filmDevelopmentTimes == film.developmentTimesMin)
+
+        model.settings.filmDevelopmentTime = film.developmentTimesMin.last
+        model.settings.printDevelopmentTime = model.printDevelopmentTimes.last
+        if let otherPaper = model.papers.first(where: { $0.isBlackAndWhite && $0.id != model.settings.paperID }) {
+            model.choosePaper(otherPaper.id)
+            #expect(model.settings.printDevelopmentTime == nil)
+            #expect(model.settings.filmDevelopmentTime == film.developmentTimesMin.last)
+        }
+        model.chooseFilm("kodak_portra_400")
+        #expect(model.settings.filmDevelopmentTime == nil && model.filmDevelopmentTimes.isEmpty)
+    }
+
     /// The reason for the pairing: on the paper the app picks, a neutral gray stays neutral. On
     /// a color paper it came out orange (about 178, 124, 61 in sRGB).
     @Test func aGrayDevelopedOnBlackAndWhiteFilmStaysNeutral() async throws {

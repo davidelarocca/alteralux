@@ -105,9 +105,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
 1. **Defects found by driving the app.** Fixed on 2026-11-19, each with tests and checked again on the
    built app: several files opened at once, the keyboard and accessibility steps of `ParameterSlider`,
    black and white films printed on a color paper, the export file name, and commands enabled with
-   nothing to act on. Still open:
-   - With a black and white print the yellow and magenta filters stay visible, and the development
-     times the black and white profiles carry are not offered.
+   nothing to act on. Fixed on 2026-11-20: a black and white paper no longer shows the yellow and
+   magenta filters, and the film and the paper measured at several development times (Kodak
+   Double-X, Kodak 2302) offer them, the middle one first; checked in the built app, where 12 minutes
+   gives a brighter, harder print than 4.
 2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
    2026-11-20 settled, built from the system's controls
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
@@ -154,8 +155,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - A sidecar beside the photo, for services that drop extended attributes: possible only inside
      folders the user adds, so with the library.
    - Undo steps are not kept between launches.
-   - In Italian the Edit menu shows "Ripristina" (Redo) just above "Ripristina regolazioni" (Reset
-     Adjustments): the second needs another word.
+   - Fixed on 2026-11-20: in Italian Redo read "Ripristina", just above "Ripristina regolazioni"; it is
+     "Ripeti", as macOS says it.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
    the actions on a selection (move, copy, tag with the Finder's tags, discard). Done, the first part:
    folders added from a panel, the File menu, a drop or the Finder, and remembered between launches;

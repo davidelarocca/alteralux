@@ -922,6 +922,16 @@
         }
       }
     },
+    "Developed longer, the film gains contrast; shorter, it loses it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppata più a lungo, la pellicola guadagna contrasto; più in breve, lo perde."
+          }
+        }
+      }
+    },
     "Developed photo" : {
       "localizations" : {
         "it" : {
@@ -938,6 +948,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppo in corso"
+          }
+        }
+      }
+    },
+    "Development" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo"
           }
         }
       }
@@ -1672,6 +1692,16 @@
         }
       }
     },
+    "Paper development" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo della carta"
+          }
+        }
+      }
+    },
     "Paste Adjustments" : {
       "localizations" : {
         "it" : {
@@ -1807,7 +1837,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristina"
+            "value" : "Ripeti"
           }
         }
       }
@@ -1817,7 +1847,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristina la modifica"
+            "value" : "Ripeti la modifica"
           }
         }
       }

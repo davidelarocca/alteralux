@@ -39,6 +39,9 @@ extension AppModel {
     /// and black and white negatives on a black and white print stock.
     func chooseFilm(_ id: String) {
         settings.filmID = id
+        // A time chosen for another film may not be one this film was measured at.
+        settings.filmDevelopmentTime = nil
+        settings.printDevelopmentTime = nil
         guard let film = selectedFilm else { return }
         settings.scanFilm = film.isPositive
         if let target = film.targetPrint, papers.contains(where: { $0.id == target }) {
@@ -52,6 +55,25 @@ extension AppModel {
         if film.isBlackAndWhite, selectedPaper?.isBlackAndWhite != true, let blackAndWhitePaper {
             settings.paperID = blackAndWhitePaper.id
         }
+    }
+
+    /// Chooses the paper the film is printed on, with its own middle development time.
+    func choosePaper(_ id: String) {
+        guard id != settings.paperID else { return }
+        settings.paperID = id
+        settings.printDevelopmentTime = nil
+    }
+
+    /// The development times the selected film was measured at, when it is more than one.
+    var filmDevelopmentTimes: [Double] {
+        let times = selectedFilm?.developmentTimesMin ?? []
+        return times.count > 1 ? times : []
+    }
+
+    /// The development times the selected paper was measured at, when it is more than one.
+    var printDevelopmentTimes: [Double] {
+        let times = selectedPaper?.developmentTimesMin ?? []
+        return times.count > 1 ? times : []
     }
 
     /// Restores the default adjustments, keeping the chosen film and paper.
