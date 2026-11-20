@@ -195,8 +195,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      Recipe files cannot be imported or handed to someone else yet.
    - The export's progress is the system's bar, not the print coming up in the developer of the
      vision. Photos opened one by one, outside the library, are exported one at a time.
-   - A photo of the strip that receives a recipe from the library keeps its old thumbnail in the
-     strip until it is shown.
+   - Fixed on 2026-11-20: a photo of the strip that receives a recipe from the library showed its
+     old look in the strip until it was opened; it is developed small at once.
 8. **Crop and straighten.**
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe

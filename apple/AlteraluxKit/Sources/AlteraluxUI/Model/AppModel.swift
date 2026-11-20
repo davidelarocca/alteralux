@@ -405,7 +405,11 @@ public final class AppModel {
     func put(_ new: DevelopSettings, on item: PhotoItem) {
         item.settings = new
         item.keptSettings = new
-        guard item.id == selectedID else { return }
+        guard item.id == selectedID else {
+            // A photo of the strip that is not on screen shows its new look at once.
+            redrawThumbnail(of: item)
+            return
+        }
         settle?.cancel()
         settle = nil
         isAdjusting = false
@@ -519,6 +523,29 @@ public final class AppModel {
             return PreviewSize.standard
         }
         return dimension
+    }
+
+    /// Develops a photo of the strip that is not on screen at the size of its thumbnail, with its
+    /// settings, and shows it in the strip. Decoded small, a RAW included, it takes a fraction of
+    /// a second; a newer change to the photo's settings wins.
+    private func redrawThumbnail(of item: PhotoItem) {
+        guard let renderer else { return }
+        let url = item.url
+        let settings = item.settings
+        let dimension = Self.thumbnailDimension
+        Task {
+            let developed = await Task.detached(priority: .utility) { () -> SendableImage in
+                guard let decoder = try? PhotoDecoder(url: url) else { return SendableImage(nil) }
+                let whiteBalance = decoder.asShotWhiteBalance.map { settings.whiteBalance(asShot: $0) }
+                guard
+                    let loaded = try? await decoder.decode(maxDimension: dimension, whiteBalance: whiteBalance),
+                    let image = try? await renderer.render(loaded, settings: settings, quality: .preview(maxDimension: dimension))
+                else { return SendableImage(nil) }
+                return SendableImage(image.cgImage)
+            }.value
+            guard item.settings == settings, let image = developed.image else { return }
+            item.thumbnail = image
+        }
     }
 
     /// Updates the strip thumbnail with the developed look.

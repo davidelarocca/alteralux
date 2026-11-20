@@ -1,4 +1,5 @@
 import AlteraluxKit
+import CoreGraphics
 import Foundation
 import Testing
 @testable import AlteraluxUI
@@ -126,6 +127,52 @@ struct RecipeTests {
         model.undo()
         #expect(model.settings.temperature == nil)
         try await wait("nothing left to undo") { !model.canUndo }
+    }
+
+    /// A photo of the strip that is not on screen shows the look it is given from the library at
+    /// once, not the one it had when it was last seen.
+    @Test func aPhotoOfTheStripNotOnScreenShowsTheLookItIsGiven() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        await model.start()
+        await model.addFolder(fixture.shoot)
+        let photos = model.library.photos
+        model.develop(photos[0])
+        let second = photos[1]
+        let strip = model.photos
+        let other = try #require(strip.first(where: { $0.url == second }))
+        let films = model.films
+        let film = try #require(films.first(where: { $0.isBlackAndWhite && !$0.isPositive }))
+        let papers = model.papers
+        let paper = try #require(papers.first(where: { $0.isBlackAndWhite }))
+        var blackAndWhite = DevelopSettings(filmID: film.id, paperID: paper.id)
+        blackAndWhite.grainEnabled = false
+
+        model.giveLook(blackAndWhite, to: [photos[1]])
+
+        try await wait("a gray thumbnail") {
+            guard let thumbnail = other.thumbnail, let color = Self.meanColor(of: thumbnail) else { return false }
+            return (color.max() ?? 0) - (color.min() ?? 0) <= 6
+        }
+    }
+
+    /// The image averaged into one sRGB pixel: red, green and blue.
+    private static func meanColor(of image: CGImage) -> [Int]? {
+        var bytes = [UInt8](repeating: 0, count: 4)
+        let drawn = bytes.withUnsafeMutableBytes { buffer -> Bool in
+            guard
+                let space = CGColorSpace(name: CGColorSpace.sRGB),
+                let context = CGContext(
+                    data: buffer.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4,
+                    space: space, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+                )
+            else { return false }
+            context.interpolationQuality = .medium
+            context.draw(image, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+            return true
+        }
+        return drawn ? bytes.prefix(3).map(Int.init) : nil
     }
 
     @Test func aRecipeGoesToTheSelectionOfTheLibraryAndOneUndoTakesItBackFromAll() async throws {
