@@ -58,17 +58,26 @@ open photos, the settings of the selected one and its preview.
 - **Rendering loop.** A settings change requests a render. Requests made while
   a render is running collapse into one follow-up render with the latest
   settings, so dragging a slider never queues stale frames.
-- **Preview resolution.** The preview is rendered at 2048 px on the long side
-  while the whole photo is in view, and at full resolution once the viewer
-  shows more pixels than that. The viewer's zoom is measured against the full
-  photo, so swapping previews does not move the picture.
+- **Preview resolution.** The preview is rendered at the size the viewer shows
+  the photo (`PreviewSize`): 2048 px on the long side while the photo is that
+  small on screen, then larger in steps of 512 px, each shown enlarged by up to
+  15% before the next is rendered, and the full resolution only when the
+  viewer shows about that many pixels (at 100% always). A photo fitted in a
+  large window is therefore rendered at 2560 or 3072 px, not whole. A photo
+  selected after a fitted one starts at the same size. The viewer's zoom is
+  measured against the full photo, so swapping previews does not move the
+  picture.
 - **While the settings change.** The preview is rendered at 1024 px, about a
   quarter of the work, so it follows a moving control. When the settings have
-  stayed still for 150 ms the preview the viewer needs is rendered; a photo
-  shown at full resolution gets the 2048 px preview first, because the full
-  one takes a second or more. The strip's thumbnail follows the settled
-  preview only. The photo is scaled for the 1024 px preview as soon as it is
-  on screen (`FilmRenderer.preparePreview`), so the first move does not wait.
+  stayed still for 150 ms the preview the viewer needs is rendered. One
+  larger than 3072 px takes several tenths of a second, the full one a second
+  or more, and the engine cannot interrupt a render (a lighter one asked
+  meanwhile waits for the GPU): so the 2048 px preview stands in for it, and
+  it is rendered only after that has been on screen for 400 ms with the
+  settings still. A zoom is not held back. The strip's thumbnail follows the
+  settled preview only. The photo is scaled for the 1024 px preview as soon
+  as it is on screen (`FilmRenderer.preparePreview`), so the first move does
+  not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
   `CGImage` through a layer. Core Animation color-manages it for the display.
   The layer reduces the image through mipmaps only below half size

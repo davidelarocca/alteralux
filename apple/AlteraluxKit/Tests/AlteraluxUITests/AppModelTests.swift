@@ -120,31 +120,99 @@ struct AppModelTests {
         #expect(model.alertMessage == nil)
     }
 
-    /// A full-resolution render takes a second or more on a large photo: when the settings
-    /// settle, the standard preview is shown first.
-    @Test func aPhotoShownAtFullResolutionSettlesThroughTheStandardPreview() async throws {
-        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 2400, height: 1600).first)
+    /// In a large window the fitted photo is shown with more pixels than the standard preview
+    /// has: the preview grows to what the viewer shows, not to the whole photo.
+    @Test func thePreviewGrowsWithThePhotoOnScreen() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 3600, height: 2400).first)
         defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
         let model = await startedModel()
         model.open([photo])
         try await waitForPreview(of: model, longSide: 2048)
-        // The viewer shows the photo at 100%: more pixels than the standard preview has.
+        // The viewer shows the photo 2880 pixels wide.
+        model.viewerDidChange(ViewerZoom(scale: 0.8, fitScale: 0.8, isFitted: true))
+        try await waitForPreview(of: model, longSide: 2560)
+
+        // Quick enough to follow the lighter preview directly.
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        try await waitForPreview(of: model, longSide: 1024)
+        #expect(try await previewSizes(of: model, until: 2560) == [1024, 2560])
+        #expect(model.alertMessage == nil)
+    }
+
+    /// A render of the whole of a large photo takes a second or more: when the settings settle,
+    /// the standard preview is shown first.
+    @Test func aPhotoShownAtFullResolutionSettlesThroughTheStandardPreview() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 3600, height: 2400).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+        // The viewer shows the photo at 100%: every pixel of it.
         model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
-        try await waitForPreview(of: model, longSide: 2400)
+        try await waitForPreview(of: model, longSide: 3600)
 
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
         try await waitForPreview(of: model, longSide: 1024)
         try await waitForPreview(of: model, longSide: 2048)
-        try await waitForPreview(of: model, longSide: 2400)
+        try await waitForPreview(of: model, longSide: 3600)
+        #expect(model.alertMessage == nil)
+    }
+
+    /// A render cannot be interrupted, so one that takes long waits for the settings to stay
+    /// still: a control taken up again after a short pause never finds it in the way.
+    @Test func aSlowPreviewWaitsForTheSettingsToStayStill() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 3600, height: 2400).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+        model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
+        try await waitForPreview(of: model, longSide: 3600)
+
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        try await waitForPreview(of: model, longSide: 2048)
+        // A short pause, then the control moves again.
+        model.settings.exposureEV = 0.6
+        model.settingsDidChange()
+        #expect(try await previewSizes(of: model, until: 3600) == [2048, 1024, 2048, 3600])
+        #expect(model.alertMessage == nil)
+    }
+
+    /// The next photo starts fitted: it is not rendered whole because the last one was at 100%.
+    @Test func aPhotoOpenedAfterAZoomedOneStartsFromTheStandardPreview() async throws {
+        let photos = try WindowedTests.writeTestPictures(count: 2, width: 3600, height: 2400)
+        defer { try? FileManager.default.removeItem(at: photos[0].deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photos[0]])
+        try await waitForPreview(of: model, longSide: 2048)
+        model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
+        try await waitForPreview(of: model, longSide: 3600)
+
+        model.open([photos[1]])
+        #expect(model.preview == nil)
+        try await waitForPreview(of: model, longSide: 2048)
         #expect(model.alertMessage == nil)
     }
 
     private func waitForPreview(of model: AppModel, longSide: Int) async throws {
+        _ = try await previewSizes(of: model, until: longSide)
+    }
+
+    /// The long sides of the previews the model shows, one after the other, until one of `longSide`.
+    private func previewSizes(of model: AppModel, until longSide: Int) async throws -> [Int] {
         let deadline = ContinuousClock.now + .seconds(60)
-        while model.preview.map({ max($0.width, $0.height) }) != longSide {
+        var sizes: [Int] = []
+        while sizes.last != longSide {
             try #require(ContinuousClock.now < deadline, "No preview of \(longSide) px in 60 seconds.")
-            try await Task.sleep(for: .milliseconds(5))
+            if let size = model.preview.map({ max($0.width, $0.height) }), size != sizes.last {
+                sizes.append(size)
+            } else {
+                try await Task.sleep(for: .milliseconds(5))
+            }
         }
+        return sizes
     }
 }

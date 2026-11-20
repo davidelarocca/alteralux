@@ -41,6 +41,9 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   the whole engine call takes 15 to 25 ms. Scaling the 24 MP source for a preview size takes about
   250 ms, once per size. In a large window on a 4K display the fitted photo needs
   more than 2048 px, so every update was a full-resolution render: 1.0 to 1.2 s at 24 MP.
+- Measured on the same Mac on 2026-11-20, one preview update of a 24 MP source by size, once the
+  source is scaled for it: 90 ms at 2048 px, 145 at 2560, 230 at 3072, 320 at 3584, 450 at 4096,
+  740 at 5120, 1050 at full resolution. Scaling the source for a size takes 250 to 370 ms, once.
 - **Not verified yet**: real RAW files from a camera (decoding time, highlights, metadata), drag and drop,
   trackpad gestures, and the Open panel.
 
@@ -71,11 +74,15 @@ draft pull request per step.
    mipmaps for every frame; while the settings change the preview is rendered at 1024 px, then at the
    size the viewer needs; `PreviewBudgetTests` keeps a preview update under 50 ms at 1024 px and under
    200 ms at 2048 px on a Mac's GPU (on CI, whose virtual GPU is several times slower, it checks only
-   that the lighter preview costs much less than the standard one). Still open, in this order:
-   - Render what the viewer shows: a fitted photo in a large window needs about 2400 to 3000 px, not
-     the full resolution (a second or more at 24 MP).
-   - Let a lighter render overtake a full-resolution one in progress: today the next update waits for
-     it to finish.
+   that the lighter preview costs much less than the standard one); the preview is rendered at the
+   size the viewer shows the photo, in steps of 512 px from 2048, so a photo fitted in a large
+   window gets 2560 or 3072 px and not the full resolution (`PreviewSize`). Still open, in this
+   order:
+   - Let a lighter render overtake a slow one in progress. Measured on 2026-11-20: the engine has
+     no way to stop a render, and a 1024 px render asked 100 ms into a full-resolution one of 24 MP
+     (1.05 s) waits 730 ms, for the GPU, even from another thread. Done here: a slow render starts
+     only after the settings have been still for a while, so a short pause does not start one. What
+     is left is upstream: a way to abandon a render between its stages.
    - No round trip of the pixels through main memory (see "GPU texture sharing" and "100% view" below).
    - The 7.5 ms of recalibration on exposure, filters and preflash are inside the upstream engine: to
      propose upstream, not to patch here.
