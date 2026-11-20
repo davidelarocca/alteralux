@@ -91,7 +91,7 @@ cat <<'EOF'
 ==> Ready.
 
   Open the app in Xcode and press Run:
-      open apple/Spektrafilm.xcodeproj
+      open apple/Alteralux.xcodeproj
 
   Check everything from the command line:
       scripts/verify.sh fast

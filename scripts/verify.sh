@@ -13,9 +13,9 @@ cd "$(dirname "$0")/.." || exit 1
 MODE="${1:-fast}"
 
 # ---- Project settings (filled by setup, edit freely) ----
-XCODE_CONTAINER="-project apple/Spektrafilm.xcodeproj"   # e.g. -project MyApp.xcodeproj or -workspace MyApp.xcworkspace
-SCHEME="Spektrafilm"                          # empty if the project is packages only
-PACKAGES=("apple/DesignSystem" "apple/SpektrafilmKit")                  # e.g. ("Packages/DesignSystem" "Packages/Domain"), or () for none
+XCODE_CONTAINER="-project apple/Alteralux.xcodeproj"   # e.g. -project MyApp.xcodeproj or -workspace MyApp.xcworkspace
+SCHEME="Alteralux"                          # empty if the project is packages only
+PACKAGES=("apple/DesignSystem" "apple/AlteraluxKit")                  # e.g. ("Packages/DesignSystem" "Packages/Domain"), or () for none
 PLATFORMS=("macOS")                       # platforms the scheme is built and tested on: ("macOS"), ("iOS") or ("macOS" "iOS")
 IOS_SIMULATOR=""              # simulator for iOS tests in full mode, e.g. "iPhone 16" (xcrun simctl list devices available)
 # Separate DerivedData so command-line builds never fight with an open Xcode for the build database.
@@ -55,12 +55,12 @@ if [ -n "$SCHEME" ] && [ "$MODE" = "full" ] && [[ " ${PLATFORMS[*]-} " == *" iOS
   exit 2
 fi
 
-# ---- Project prerequisites (spektrafilm) ----
+# ---- Project prerequisites (alteralux) ----
 # The Rust engine (XCFramework + generated Swift bindings) and the Xcode project are build
 # products, not committed. Build what is missing or stale before checking anything, so the
 # result is about the current sources. Both scripts are listed in verify.inputs.
-ENGINE_FRAMEWORK="apple/SpektrafilmKit/Frameworks/spektrafilm_ffiFFI.xcframework"
-ENGINE_BINDINGS="apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated/spektrafilm_ffi.swift"
+ENGINE_FRAMEWORK="apple/AlteraluxKit/Frameworks/alteralux_ffiFFI.xcframework"
+ENGINE_BINDINGS="apple/AlteraluxKit/Sources/AlteraluxEngine/Generated/alteralux_ffi.swift"
 engine_is_stale() {
   [ -d "$ENGINE_FRAMEWORK" ] && [ -f "$ENGINE_BINDINGS" ] || return 0
   [ -n "$(find engine/Cargo.toml engine/Cargo.lock engine/crates engine/vendor/spektrafilm-rs/crates \
@@ -76,8 +76,8 @@ if engine_is_stale; then
 fi
 # The generated project lists the app target's files, so it follows them and its definition.
 project_is_stale() {
-  [ -f apple/Spektrafilm.xcodeproj/project.pbxproj ] || return 0
-  [ -n "$(find apple/project.yml apple/Spektrafilm -newer apple/Spektrafilm.xcodeproj/project.pbxproj -print -quit 2>/dev/null)" ]
+  [ -f apple/Alteralux.xcodeproj/project.pbxproj ] || return 0
+  [ -n "$(find apple/project.yml apple/Alteralux -newer apple/Alteralux.xcodeproj/project.pbxproj -print -quit 2>/dev/null)" ]
 }
 if project_is_stale; then
   printf '\n== Xcode project: generating (scripts/bootstrap.sh --skip-engine) ==\n'

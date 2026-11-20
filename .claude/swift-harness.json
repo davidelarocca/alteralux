@@ -10,9 +10,9 @@
     "watch": ["engine/"]
   },
   "protectedPaths": [
-    "apple/Spektrafilm/Spektrafilm.entitlements",
-    "apple/Spektrafilm/Info.plist",
-    "apple/Spektrafilm/Signing.xcconfig"
+    "apple/Alteralux/Alteralux.entitlements",
+    "apple/Alteralux/Info.plist",
+    "apple/Alteralux/Signing.xcconfig"
   ],
   "registry": {
     "sources": ["apple/DesignSystem/Sources"]

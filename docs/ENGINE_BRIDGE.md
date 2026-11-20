@@ -18,10 +18,10 @@ Rust engine unchanged and puts a native macOS app around it.
 ┌──────────────────────────── macOS app (Swift) ─────────────────────────────┐
 │ SwiftUI windows · Metal preview · Core Image RAW · ColorSync · extensions  │
 └──────────────────────────────────────┬─────────────────────────────────────┘
-                                       │ SpektrafilmKit (Swift package)
+                                       │ AlteraluxKit (Swift package)
                                        │   generated UniFFI bindings
 ┌──────────────────────────────────────┴─────────────────────────────────────┐
-│ spektrafilm-ffi (Rust): Engine · SourceImage · RenderedImage · params JSON  │
+│ alteralux-ffi (Rust): Engine · SourceImage · RenderedImage · params JSON  │
 └──────────────────────────────────────┬─────────────────────────────────────┘
                                        │ plain Rust calls
 ┌──────────────────────────────────────┴─────────────────────────────────────┐
@@ -34,7 +34,7 @@ The upstream engine is a **git submodule pinned to a commit**. We never patch
 it: anything macOS-specific lives in this repository. Updating the engine means
 moving the submodule pointer and re-running the tests.
 
-## The bridge contract (`engine/crates/spektrafilm-ffi`)
+## The bridge contract (`engine/crates/alteralux-ffi`)
 
 ### Linear in, linear out
 

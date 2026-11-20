@@ -16,8 +16,8 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   Accelerate and is not affected.
 - **`open -a` needs an absolute path to the app.** A relative path gives "Unable to find application".
 - **A stepped `Slider` draws a tick mark per step.** Round in the binding instead, as `ParameterSlider` does.
-- **Strings in package views are looked up in the app's string catalog.** A new string in `SpektrafilmUI`
-  or `DesignSystem` needs its entry in `apple/Spektrafilm/Resources/Localizable.xcstrings`, or it shows in
+- **Strings in package views are looked up in the app's string catalog.** A new string in `AlteraluxUI`
+  or `DesignSystem` needs its entry in `apple/Alteralux/Resources/Localizable.xcstrings`, or it shows in
   English only.
 
 ## Data and tests

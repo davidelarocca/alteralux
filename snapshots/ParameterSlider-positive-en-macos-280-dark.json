@@ -11,7 +11,7 @@
   "size": "280x58",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift",
   "state": "positive",
-  "test": "apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
   "approved": "2026-11-20T07:51:38Z",
   "approvedFrom": "failed"
 }

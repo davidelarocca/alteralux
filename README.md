@@ -1,4 +1,4 @@
-# spektrafilm for macOS
+# alteralux for macOS
 
 A native macOS app for **spectral simulation of analog film photography**:
 develop your photos through a virtual negative, enlarger, print paper and
@@ -46,10 +46,10 @@ the original, several photos side by side in a strip, and export to JPEG,
  RAW / TIFF / EXR ──► Core Image (CIRAWFilter, ImageIO)
                          │  scene-linear RGB (Rec. 2020)
                          ▼
-                 SpektrafilmKit (Swift)  ◄── UniFFI bindings
+                 AlteraluxKit (Swift)  ◄── UniFFI bindings
                          │
                          ▼
-              spektrafilm-ffi (Rust, this repo)
+              alteralux-ffi (Rust, this repo)
                          │
                          ▼
      spektrafilm-rs engine (git submodule): film → enlarger → paper → scanner
@@ -67,10 +67,10 @@ recent Xcode (26 or later; CI builds with the latest release), and Rust
 (install it from [rustup.rs](https://rustup.rs)).
 
 ```bash
-git clone --recursive https://github.com/davidelarocca/spektrafilm-macos.git
-cd spektrafilm-macos
+git clone --recursive https://github.com/davidelarocca/alteralux.git
+cd alteralux
 scripts/setup-mac.sh
-open apple/Spektrafilm.xcodeproj
+open apple/Alteralux.xcodeproj
 ```
 
 Then press Run in Xcode. `scripts/setup-mac.sh` checks the tools (add
@@ -107,17 +107,17 @@ OpenBLAS instead of Apple's Accelerate, compiled from source on the first build
 (a few minutes):
 
 ```bash
-cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
+cargo test --release --manifest-path engine/Cargo.toml -p alteralux-ffi
 ```
 
 ## Repository layout
 
 ```
-apple/Spektrafilm/               the app shell (scene, resources, entitlements)
-apple/SpektrafilmKit/            Swift package: engine bindings, image I/O and rendering, screens
+apple/Alteralux/               the app shell (scene, resources, entitlements)
+apple/AlteraluxKit/            Swift package: engine bindings, image I/O and rendering, screens
 apple/DesignSystem/              Swift package: design tokens and shared components
 apple/project.yml                Xcode project definition (XcodeGen)
-engine/crates/spektrafilm-ffi/   Rust bridge (UniFFI) and its tests
+engine/crates/alteralux-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)
 scripts/                         setup, build and verification scripts
