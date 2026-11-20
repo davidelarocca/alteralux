@@ -85,6 +85,8 @@ public final class AppModel {
     /// Long side of the lighter preview shown while the settings are changing.
     private nonisolated static let draftPreviewDimension = 1024
     private nonisolated static let thumbnailDimension = 240
+    /// The most the thumbnails kept on disk take, in bytes: thousands of photos' worth.
+    private nonisolated static let thumbnailCacheLimit: Int64 = 512 * 1024 * 1024
     /// How long the settings must stay still before the preview is rendered at its full size.
     var settleDelay = Duration.milliseconds(150)
     /// How long the standard preview stays, once the settings are still, before a preview that
@@ -149,6 +151,7 @@ public final class AppModel {
                 : beside.appending(path: "folders.plist"),
             cacheDirectory: isApp ? URL.cachesDirectory.appending(path: "Thumbnails") : beside.appending(path: "thumbnails"),
             discards: DiscardStore(fallbackDirectory: edits.appending(path: "Discarded")),
+            preferences: isApp ? .standard : nil,
             hasAdjustments: { store.hasAdjustments(for: $0) },
         )
         recipeStore = RecipeStore(
@@ -184,6 +187,9 @@ public final class AppModel {
         await loadRecipes()
         // The library is where the app opens, unless it was started on a photo.
         await library.load()
+        Task.detached(priority: .background) { [thumbnails = library.thumbnails] in
+            thumbnails.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit)
+        }
         if photos.isEmpty, !library.isEmpty {
             showsLibrary = true
         }

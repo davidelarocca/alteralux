@@ -79,6 +79,27 @@ struct ThumbnailProviderTests {
         #expect(similar(rotatedBottomRight, originalTopRight))
     }
 
+    /// Over its limit, the disk cache loses the thumbnails written longest ago, and keeps the
+    /// rest and its other files.
+    @Test func theDiskCacheIsPrunedFromTheOldestThumbnails() throws {
+        let cache = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-cache-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: cache) }
+        let names = ["old.jpg", "middle.jpg", "new.jpg"]
+        for (age, name) in names.enumerated() {
+            let file = cache.appendingPathComponent(name)
+            try Data(count: 1000).write(to: file)
+            let date = Date(timeIntervalSinceNow: Double(age - names.count) * 3600)
+            try FileManager.default.setAttributes([.modificationDate: date], ofItemAtPath: file.path)
+        }
+        try Data("index".utf8).write(to: cache.appendingPathComponent("a.index"))
+
+        ThumbnailProvider(cacheDirectory: cache).pruneDiskCache(toAtMost: 2000)
+
+        let left = try Set(FileManager.default.contentsOfDirectory(atPath: cache.path))
+        #expect(left == ["middle.jpg", "new.jpg", "a.index"])
+    }
+
     @Test func aFileThatIsNotAnImageHasNoThumbnail() async throws {
         let folder = try temporaryFolder()
         defer { try? FileManager.default.removeItem(at: folder) }
