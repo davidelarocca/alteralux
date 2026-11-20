@@ -11,6 +11,16 @@
         }
       }
     },
+    "%@, discarded" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, scartata"
+          }
+        }
+      }
+    },
     "%@, with adjustments" : {
       "localizations" : {
         "it" : {
@@ -27,6 +37,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$lld di %2$lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld di %2$lld foto"
           }
         }
       }
@@ -481,6 +501,26 @@
         }
       }
     },
+    "All but RAW" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutto tranne i RAW"
+          }
+        }
+      }
+    },
+    "All Kinds" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutti i tipi"
+          }
+        }
+      }
+    },
     "And %lld more." : {
       "localizations" : {
         "en" : {
@@ -527,6 +567,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Un'altra cartella…"
+          }
+        }
+      }
+    },
+    "Any Tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qualsiasi tag"
+          }
+        }
+      }
+    },
+    "Ascending" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crescente"
           }
         }
       }
@@ -621,6 +681,16 @@
         }
       }
     },
+    "Clear Filters" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togli i filtri"
+          }
+        }
+      }
+    },
     "Clear Selection" : {
       "localizations" : {
         "it" : {
@@ -691,6 +761,16 @@
         }
       }
     },
+    "Date" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data"
+          }
+        }
+      }
+    },
     "Delete" : {
       "localizations" : {
         "it" : {
@@ -707,6 +787,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminare la recipe “%@”?"
+          }
+        }
+      }
+    },
+    "Descending" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Decrescente"
           }
         }
       }
@@ -1012,6 +1102,16 @@
         }
       }
     },
+    "Filter and Sort" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtra e ordina"
+          }
+        }
+      }
+    },
     "Fit" : {
       "localizations" : {
         "it" : {
@@ -1128,6 +1228,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tieni entrambi"
+          }
+        }
+      }
+    },
+    "Kind" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo"
+          }
+        }
+      }
+    },
+    "Kind of File" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo di file"
           }
         }
       }
@@ -1352,6 +1472,16 @@
         }
       }
     },
+    "Order" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordine"
+          }
+        }
+      }
+    },
     "Original" : {
       "localizations" : {
         "it" : {
@@ -1448,6 +1578,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qualità"
+          }
+        }
+      }
+    },
+    "RAW Only" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solo RAW"
           }
         }
       }
@@ -1728,6 +1868,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si è verificato un problema"
+          }
+        }
+      }
+    },
+    "Sort By" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordina per"
+          }
+        }
+      }
+    },
+    "Sort the photos of the folder, and choose which kinds and tags are shown" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ordina le foto della cartella e scegli quali tipi e tag mostrare"
           }
         }
       }

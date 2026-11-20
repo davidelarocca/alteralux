@@ -1,69 +1,51 @@
 import DesignSystem
 import SwiftUI
 
-/// What can be done with the selected photos: move, copy, tag, give a recipe, export, discard.
+/// What can be done with the selected photos: give a recipe, export, move, copy, tag, discard.
+/// It floats over the grid, near its bottom edge, while photos are selected.
 ///
-/// The bar never cuts a title short. Where its column is too narrow for everything side by
-/// side, clearing the selection becomes an icon, and then moving, copying and tagging go into
-/// one menu.
+/// The bar never cuts a title short. Where the grid is too narrow for every action side by
+/// side, moving, copying and tagging go into one menu.
 struct LibrarySelectionBar: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            row(isCompact: false, clearsWithIcon: false)
-            row(isCompact: false, clearsWithIcon: true)
-            row(isCompact: true, clearsWithIcon: true)
+            bar(isCompact: false)
+            bar(isCompact: true)
         }
-        .menuStyle(.button)
-        .controlSize(.small)
-        .padding(.horizontal, Spacing.l)
-        .padding(.vertical, Spacing.xs)
-        .background(.bar)
     }
 
-    private func row(isCompact: Bool, clearsWithIcon: Bool) -> some View {
-        HStack(spacing: Spacing.m) {
-            // Each control keeps the width of its title: the row says how wide it needs to be.
-            Group {
-                Text("\(model.library.selection.count) photos")
-                    .font(Typography.value)
-                if model.library.filter == .discarded {
-                    Button("Take Back") { model.discardSelection() }
-                        .help("Take the selected photos back among the others")
-                } else {
-                    actions(isCompact: isCompact)
-                }
+    private func bar(isCompact: Bool) -> some View {
+        FloatingBar {
+            Text("\(model.library.selection.count) photos")
+                .font(Typography.value)
+            Divider()
+            if model.library.filter == .discarded {
+                Button("Take Back") { model.discardSelection() }
+                    .help("Take the selected photos back among the others")
+            } else {
+                actions(isCompact: isCompact)
             }
-            .fixedSize()
-            Spacer(minLength: Spacing.s)
+            Divider()
             Button {
                 model.library.clearSelection()
             } label: {
-                if clearsWithIcon {
-                    Label("Clear Selection", systemImage: "xmark.circle").labelStyle(.iconOnly)
-                } else {
-                    Text("Clear Selection")
-                }
+                Label("Clear Selection", systemImage: "xmark").labelStyle(.iconOnly)
             }
             .buttonStyle(.borderless)
             .help("Clear Selection")
-            .fixedSize()
         }
         .lineLimit(1)
+        .fixedSize()
     }
 
     @ViewBuilder
     private func actions(isCompact: Bool) -> some View {
-        if !isCompact {
-            organizing
-        }
         recipes
         Button("Export…") { model.presentExport() }
             .help("Develop the selected photos and write them as files")
             .disabled(!model.canPresentExport)
-        Button("Discard") { model.discardSelection() }
-            .help("Hide the selected photos. They stay on disk until the discarded photos are emptied.")
         if isCompact {
             Menu {
                 organizing
@@ -71,7 +53,11 @@ struct LibrarySelectionBar: View {
                 Label("More Actions", systemImage: "ellipsis").labelStyle(.iconOnly)
             }
             .help("Move, copy or tag the selected photos")
+        } else {
+            organizing
         }
+        Button("Discard") { model.discardSelection() }
+            .help("Hide the selected photos. They stay on disk until the discarded photos are emptied.")
     }
 
     /// Moving, copying and tagging: three menus side by side, or the entries of one.

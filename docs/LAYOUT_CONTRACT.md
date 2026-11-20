@@ -43,6 +43,7 @@ they must open inside the window, or on screen for a separate window.
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
 | `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
+| Filter and Sort | Library, the trailing side of the toolbar | system menu | system | system |
 | `RecipeMenu` | Main window, the toolbar's Recipe button; Library, Recipe of the selection's bar | system menu | system | system |
 | Name of a recipe | `RecipeMenu`, Save as New Recipe… and Rename | system alert with a text field | system | centered in the window |
 | Deleting a recipe | `RecipeMenu`, Delete | system confirmation dialog | system | centered in the window |
@@ -61,10 +62,12 @@ Deliberate departures from the rules above, with the reason.
   its two columns have a row each. Their Min is what each gets at the window's Min (900x600 less the
   toolbar): the list of folders at its narrowest, and the photos beside the list at its widest.
 
-- With photos selected the library's grid has `LibrarySelectionBar` under it. It never cuts a title:
-  where the column is too narrow for every action side by side, clearing the selection becomes an
-  icon, then moving, copying and tagging go into one menu. A layout test measures the grid with a
-  selection.
+- With photos selected the library's grid has `LibrarySelectionBar` floating over it, near its bottom
+  edge. It never cuts a title: where the column is too narrow for every action side by side, moving,
+  copying and tagging go into one menu. A layout test measures the grid with a selection.
+- The library's grid lays its photos in rows of one height, each photo as wide as its own shape:
+  the rows are computed for the width the grid has (`LibraryRows`), so no photo is cut or pushed out
+  at any size of its row.
 
 - The main window holds an inspector, which behaves like a split view: its row names the window type as
   View and Window, so the row checks the window's sizes.

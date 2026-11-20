@@ -221,6 +221,56 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct FloatingBarSnapshots {
+        private let source = "\(components)/FloatingBar.swift"
+        private let sizes = ["560x90"]
+        private let english = "en"
+
+        /// A bar where the app draws it: over the surround of the photos.
+        private func overThePhotos(_ bar: some View) -> some View {
+            bar
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.DS.viewerSurround)
+        }
+
+        private func actions() -> some View {
+            FloatingBar {
+                Text(verbatim: "3 photos")
+                Divider()
+                Menu {} label: { Text(verbatim: "Recipe") }
+                Button {} label: { Text(verbatim: "Export…") }
+                Button {} label: { Text(verbatim: "Discard") }
+                    .disabled(true)
+            }
+            .fixedSize()
+        }
+
+        @Test func actionsAndADisabledOne() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "actions", locale: english, source: source) {
+                overThePhotos(actions())
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "long-text", locale: english, source: source) {
+                overThePhotos(
+                    FloatingBar {
+                        Text(verbatim: "A selection described at length")
+                        Button {} label: { Text(verbatim: "One Action With a Long Title") }
+                    }
+                    .fixedSize(),
+                )
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "actions", locale: "ar", source: source) {
+                overThePhotos(actions())
+            } == [])
+        }
+    }
+
+    @MainActor
     struct FormSheetSnapshots {
         private let source = "\(components)/FormSheet.swift"
         private let sizes = ["420x300"]

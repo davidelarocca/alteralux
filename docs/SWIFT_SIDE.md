@@ -40,7 +40,10 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     preview embedded in the file when there is one, a few at a time, kept in
     memory and on disk; `PhotoFileActions` moves, copies and trashes files
     and reads and writes their Finder tags, reporting per file; `DiscardStore`
-    keeps a photo's "discarded" mark in the photo, like its adjustments.
+    keeps a photo's "discarded" mark in the photo, like its adjustments;
+    `PhotoInfoReader` reads what the grid shows and sorts a photo by, without
+    decoding it: its shape, its date, whether it is a RAW, its size and its
+    Finder tags with their colors.
   - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
   - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
@@ -101,11 +104,17 @@ open photos, the settings of the selected one and its preview.
   (`AppModel.showsLibrary`); it opens on the library once a folder was added,
   unless the app was started on a photo. `LibraryModel` holds the folders
   with their trees and counts, the folder on screen, its photos, which have
-  adjustments, the filter and the selection; it reads off the main actor and
+  adjustments, what each says about itself (`PhotoInfo`), the filter, the
+  order (name, date or kind), the kinds and the tag shown, and the selection; it reads off the main actor and
   reads again when a `FolderWatcher` reports. A photo of a folder is
   developed with the folder's photos in the strip, in their order, and the
   toolbar has the way back. Folders come from a panel, the File menu, a drop
-  on the window or the Finder. With photos selected a bar offers the actions:
+  on the window or the Finder. The grid lays the photos in rows of one height,
+  each as wide as its own shape (`LibraryRows`), with a dot for each colored
+  Finder tag beside the name; the toolbar has the filter in the middle and a
+  Filter and Sort menu at the trailing side; the line under the grid says the
+  size of the photos shown, or of the selected ones. With photos selected a
+  bar floating over the grid offers the actions:
   move and copy to another folder of the library (the sandbox lets the app
   write only into folders the user added), Finder tags, and discard, which
   marks a photo and hides it; the discarded photos have a filter of their

@@ -15,6 +15,16 @@ struct LibraryScreen: View {
         static let maximum: CGFloat = 320
     }
 
+    /// Under the folder's name: how many photos it has, or how many of them the filters show.
+    private var subtitle: Text {
+        let library = model.library
+        guard library.selectedFolder != nil else { return Text(verbatim: "") }
+        if library.hasFilters {
+            return Text("\(library.visiblePhotos.count) of \(library.filteredCount) photos")
+        }
+        return Text("\(library.photos.count) photos")
+    }
+
     var body: some View {
         @Bindable var library = model.library
         @Bindable var model = model
@@ -28,9 +38,10 @@ struct LibraryScreen: View {
             LibraryGrid(isAddingFolder: $model.isFolderImporterPresented)
         }
         .navigationTitle(model.library.selectedNode?.name ?? String(localized: "Library"))
-        .navigationSubtitle(model.library.selectedFolder == nil ? Text(verbatim: "") : Text("\(model.library.photos.count) photos"))
+        .navigationSubtitle(subtitle)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            // In the middle of the toolbar: which photos of the folder are shown.
+            ToolbarItem(placement: .principal) {
                 Picker("Show", selection: $library.filter) {
                     Text("All").tag(LibraryFilter.all)
                     Text("With Adjustments").tag(LibraryFilter.adjusted)
@@ -41,6 +52,11 @@ struct LibraryScreen: View {
                 .disabled(model.library.selectedFolder == nil)
             }
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                LibraryFilterMenu(library: model.library)
+            }
+        }
         .fileImporter(
             isPresented: $model.isFolderImporterPresented, allowedContentTypes: [.folder],
             allowsMultipleSelection: true,
@@ -49,6 +65,51 @@ struct LibraryScreen: View {
                 model.take(urls)
             }
         }
+    }
+}
+
+/// The toolbar's Filter and Sort menu: the system's menu, with what the photos are sorted by and
+/// which kinds and tags are shown. Its symbol is filled while it hides photos.
+private struct LibraryFilterMenu: View {
+    @Bindable var library: LibraryModel
+
+    var body: some View {
+        Menu {
+            Picker("Sort By", selection: $library.sort) {
+                Text("Name").tag(LibrarySort.name)
+                Text("Date").tag(LibrarySort.date)
+                Text("Kind").tag(LibrarySort.kind)
+            }
+            .pickerStyle(.inline)
+            Picker("Order", selection: $library.sortsAscending) {
+                Text("Ascending").tag(true)
+                Text("Descending").tag(false)
+            }
+            .pickerStyle(.inline)
+            Picker("Kind of File", selection: $library.kinds) {
+                Text("All Kinds").tag(LibraryKinds.all)
+                Text("RAW Only").tag(LibraryKinds.raw)
+                Text("All but RAW").tag(LibraryKinds.other)
+            }
+            .pickerStyle(.inline)
+            Picker("Tag", selection: $library.tagFilter) {
+                Text("Any Tag").tag(String?.none)
+                ForEach(library.tagsInFolder, id: \.name) { tag in
+                    Text(verbatim: tag.name).tag(String?.some(tag.name))
+                }
+            }
+            .pickerStyle(.inline)
+            Divider()
+            Button("Clear Filters") { library.clearFilters() }
+                .disabled(!library.hasFilters)
+        } label: {
+            Label(
+                "Filter and Sort",
+                systemImage: library.hasFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle",
+            )
+        }
+        .help("Sort the photos of the folder, and choose which kinds and tags are shown")
+        .disabled(library.selectedFolder == nil)
     }
 }
 

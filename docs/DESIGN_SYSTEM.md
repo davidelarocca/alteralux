@@ -45,6 +45,7 @@ Motion gets no animation, or a fade for a transition.
 | Choosing among a few named options | paper, film format | `Picker` in a `Form` |
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
+| Actions on what is selected | the selected photos of the library | `FloatingBar`: it floats over the content near its bottom edge while something is selected |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |
 | Asking for a name | the name of a new recipe, another name for one | system alert with a text field |
 | Options before acting, or a progress that can be stopped | export options, the export of several photos | `FormSheet`: it follows the look of the system's alert (bold title, wide round buttons), so the two read as one family |

@@ -48,3 +48,38 @@ extension WindowedTests {
         }
     }
 }
+
+extension WindowedTests {
+    /// Saves images of the library for review: photos of different shapes, tags, a selection
+    /// with its bar of actions. Nothing is compared with a baseline.
+    @MainActor
+    struct LibraryScreenshots {
+        @Test func photosOfDifferentShapesWithASelection() async throws {
+            let wide = try WindowedTests.writeTestPictures(count: 5, width: 300, height: 200)
+            let folder = wide[0].deletingLastPathComponent()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let upright = try WindowedTests.writeTestPictures(count: 3, width: 200, height: 300)
+            defer { try? FileManager.default.removeItem(at: upright[0].deletingLastPathComponent()) }
+            for (index, picture) in upright.enumerated() {
+                try FileManager.default.moveItem(at: picture, to: folder.appendingPathComponent("Upright \(index + 1).png"))
+            }
+            let tags = try PropertyListSerialization.data(fromPropertyList: ["Trip\n2", "Print\n6"], format: .binary, options: 0)
+            for picture in [wide[1], wide[3]] {
+                _ = tags.withUnsafeBytes {
+                    setxattr(picture.path, "com.apple.metadata:_kMDItemUserTags", $0.baseAddress, tags.count, 0, 0)
+                }
+            }
+
+            let model = AppModel(dataDirectory: WindowedTests.engineData, editsDirectory: folder.appendingPathComponent("support"))
+            await model.start()
+            await model.addFolder(folder)
+            let photos = model.library.photos
+            #expect(photos.count == 8)
+            model.library.click(photos[1])
+            model.library.click(photos[6], toggling: true)
+            // The thumbnails are made off the main actor: give them a moment to arrive.
+            try await Task.sleep(for: .milliseconds(1500))
+            #expect(Screenshot.capture("MainWindow", state: "library-selection") { MainWindow().environment(model) } == [])
+        }
+    }
+}
