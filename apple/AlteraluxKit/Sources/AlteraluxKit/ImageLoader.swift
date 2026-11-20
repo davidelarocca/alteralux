@@ -157,6 +157,31 @@ public enum ImageLoader {
         )
     }
 
+    /// `image` straightened and cut as `crop` says. `image` is the whole photo, upright, at any
+    /// size: the frame is relative to it.
+    static func framed(_ image: CIImage, by crop: PhotoCrop) -> CIImage {
+        let image = image.transformed(
+            by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY),
+        )
+        let size = image.extent.size
+        var turned = image
+        if crop.angle != 0 {
+            // Core Image's y points up: a clockwise turn on screen is a negative angle here.
+            let turn = CGAffineTransform(translationX: size.width / 2, y: size.height / 2)
+                .rotated(by: -crop.angle * .pi / 180)
+                .translatedBy(x: -size.width / 2, y: -size.height / 2)
+            // Clamped first, so the edges of the frame are not blended with the empty corners.
+            turned = image.clampedToExtent().transformed(by: turn)
+        }
+        let pixels = crop.pixelRect(in: size)
+        // From the top left to Core Image's bottom left, on whole pixels.
+        let rect = CGRect(
+            x: pixels.minX.rounded(), y: (size.height - pixels.maxY).rounded(),
+            width: max(1, pixels.width.rounded()), height: max(1, pixels.height.rounded()),
+        )
+        return turned.cropped(to: rect.intersection(CGRect(origin: .zero, size: size)))
+    }
+
     /// Renders `image` to scene-linear pixels.
     static func pixels(of image: CIImage, url: URL) throws -> DecodedPixels {
         // Normalize the origin.

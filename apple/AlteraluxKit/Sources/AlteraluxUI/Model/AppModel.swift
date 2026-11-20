@@ -30,6 +30,10 @@ public final class AppModel {
     private(set) var original: CGImage?
     /// The selected photo developed with `settings`.
     private(set) var preview: DevelopedImage?
+    /// The frame `preview` was developed with: `nil` for the whole photo.
+    private(set) var previewCrop: PhotoCrop?
+    /// The frame being chosen, while the crop controls are on screen.
+    var cropSession: CropSession?
 
     // MARK: Viewer
 
@@ -254,6 +258,8 @@ public final class AppModel {
             isAdjusting = false
         }
         selectedID = item.id
+        // A frame being chosen belonged to the photo before.
+        cropSession = nil
         settings = item.settings
         seenSettings = settings
         history.follow(item)
@@ -303,6 +309,7 @@ public final class AppModel {
         sources = nil
         original = nil
         preview = nil
+        previewCrop = nil
         isLoading = true
         // Whatever was held back belonged to the photo before.
         slowPreviewRelease?.cancel()
@@ -446,9 +453,10 @@ public final class AppModel {
     func viewerDidChange(_ zoom: ViewerZoom) {
         viewerZoom = zoom
         guard let sources else { return }
-        let current = previewDimension(photoLongSide: sources.longSide)
-        displayedLongSide = Double(sources.longSide) * zoom.scale
-        if previewDimension(photoLongSide: sources.longSide) != current {
+        let longSide = sources.longSide(framedBy: renderedCrop)
+        let current = previewDimension(photoLongSide: longSide)
+        displayedLongSide = Double(longSide) * zoom.scale
+        if previewDimension(photoLongSide: longSide) != current {
             requestRender()
         }
     }
@@ -476,9 +484,10 @@ public final class AppModel {
             needsRender = false
             let generation = loadGeneration
             let isSettled = !isAdjusting
-            let settings = settings
-            let dimension = nextRenderDimension(photoLongSide: sources.longSide)
-            let isDraft = dimension != previewDimension(photoLongSide: sources.longSide)
+            let settings = renderedSettings
+            let longSide = sources.longSide(framedBy: settings.crop)
+            let dimension = nextRenderDimension(photoLongSide: longSide)
+            let isDraft = dimension != previewDimension(photoLongSide: longSide)
             do {
                 // The photo is decoded at the size of the preview: the engine scales nothing.
                 let source = try await sources.source(dimension: dimension, settings: settings)
@@ -488,6 +497,7 @@ public final class AppModel {
                 // Drop the frame if another photo was selected meanwhile.
                 if generation == loadGeneration {
                     preview = developed
+                    previewCrop = settings.crop
                     previewIsDraft = isDraft
                     if isSettled, holdsSlowPreview {
                         releaseSlowPreviewLater()
@@ -501,8 +511,11 @@ public final class AppModel {
         renderLoop = nil
         // The strip follows once the settings settle, not on every frame of a drag.
         if !previewIsDraft {
-            refreshSelectedThumbnail()
-            sources?.prepare(lighterDimension: Self.draftPreviewDimension, settings: settings)
+            // The whole photo shown while a frame is chosen is not the photo's look.
+            if !isCropping {
+                refreshSelectedThumbnail()
+            }
+            sources?.prepare(lighterDimension: Self.draftPreviewDimension, settings: renderedSettings)
         }
     }
 

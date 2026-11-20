@@ -138,7 +138,7 @@ public struct BatchExporter: Sendable {
             var reservedURL: URL?
             do {
                 let decoder = try PhotoDecoder(url: job.photo)
-                let photoLongSide = max(decoder.width, decoder.height)
+                let photoLongSide = decoder.longSide(framedBy: job.settings.crop)
                 let decodeLimit = options.longSide.flatMap { requested in
                     requested > 0 && requested < photoLongSide ? requested : nil
                 }
@@ -146,7 +146,7 @@ public struct BatchExporter: Sendable {
                     job.settings.whiteBalance(asShot: $0)
                 }
                 let loaded = try await decoder.decode(
-                    maxDimension: decodeLimit, whiteBalance: whiteBalance,
+                    maxDimension: decodeLimit, whiteBalance: whiteBalance, crop: job.settings.crop,
                 )
                 let developed = try await renderer.render(
                     loaded, settings: job.settings, quality: .full,

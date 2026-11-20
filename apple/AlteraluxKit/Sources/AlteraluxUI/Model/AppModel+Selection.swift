@@ -21,9 +21,11 @@ extension AppModel {
         sources != nil
     }
 
-    /// The size of the selected photo, in pixels, once it is open.
+    /// The size of the photo on screen, in pixels, once it is open: framed as its preview is.
     var photoSize: CGSize? {
-        sources.map { CGSize(width: $0.decoder.width, height: $0.decoder.height) }
+        sources.map { sources in
+            previewCrop?.framedSize(of: sources.decoder.size) ?? sources.decoder.size
+        }
     }
 
     /// Backend and timing of the last preview render, for diagnostics.

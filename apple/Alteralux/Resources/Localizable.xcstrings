@@ -591,6 +591,16 @@
         }
       }
     },
+    "Aspect Ratio" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proporzioni"
+          }
+        }
+      }
+    },
     "Assign tags to %lld photos" : {
       "localizations" : {
         "en" : {
@@ -657,6 +667,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Torna alla libreria"
+          }
+        }
+      }
+    },
+    "Back to the whole photo, straight" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Torna alla foto intera, dritta"
           }
         }
       }
@@ -841,6 +861,36 @@
         }
       }
     },
+    "Crop" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritaglia"
+          }
+        }
+      }
+    },
+    "Crop and Straighten" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritaglia e raddrizza"
+          }
+        }
+      }
+    },
+    "Crop and straighten the photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritaglia e raddrizza la foto"
+          }
+        }
+      }
+    },
     "Date" : {
       "localizations" : {
         "it" : {
@@ -988,6 +1038,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display P3"
+          }
+        }
+      }
+    },
+    "Done" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fine"
           }
         }
       }
@@ -1252,6 +1312,17 @@
         }
       }
     },
+    "Freeform" : {
+      "comment" : "A crop frame of any shape",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libera"
+          }
+        }
+      }
+    },
     "Give a recipe to the selected photos. Recipes are saved while developing a photo." : {
       "localizations" : {
         "it" : {
@@ -1382,12 +1453,32 @@
         }
       }
     },
+    "Landscape" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orizzontale"
+          }
+        }
+      }
+    },
     "Large format" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grande formato"
+          }
+        }
+      }
+    },
+    "Lay the frame down or stand it upright" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cornice orizzontale o verticale"
           }
         }
       }
@@ -1682,6 +1773,16 @@
         }
       }
     },
+    "Orientation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orientamento"
+          }
+        }
+      }
+    },
     "Original" : {
       "localizations" : {
         "it" : {
@@ -1722,6 +1823,16 @@
         }
       }
     },
+    "Photo being cropped" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto da ritagliare"
+          }
+        }
+      }
+    },
     "PNG (16-bit)" : {
       "localizations" : {
         "it" : {
@@ -1738,6 +1849,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Carta"
+          }
+        }
+      }
+    },
+    "Portrait" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verticale"
           }
         }
       }
@@ -2152,12 +2273,33 @@
         }
       }
     },
+    "Square" : {
+      "comment" : "A square crop frame",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quadrata"
+          }
+        }
+      }
+    },
     "Stop" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Interrompi"
+          }
+        }
+      }
+    },
+    "Straighten" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raddrizza"
           }
         }
       }
@@ -2288,6 +2430,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non è stato possibile salvare la recipe “%@”."
+          }
+        }
+      }
+    },
+    "The shape of the frame" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La forma della cornice"
           }
         }
       }

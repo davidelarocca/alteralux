@@ -44,6 +44,9 @@ public struct AlteraluxCommands: Commands {
             Button("Reset Adjustments") { model.resetAdjustments() }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
                 .disabled(!model.hasPhoto)
+            Button("Crop and Straighten") { model.beginCrop() }
+                .keyboardShortcut("c", modifiers: [.command, .option])
+                .disabled(!model.canCrop || model.isCropping)
         }
         CommandGroup(before: .toolbar) {
             Button("Library") { model.showLibrary() }

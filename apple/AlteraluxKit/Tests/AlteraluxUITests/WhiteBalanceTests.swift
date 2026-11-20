@@ -210,7 +210,7 @@ struct PhotoSourcesTests {
     @Test func anythingNotSmallerThanThePhotoIsTheWholeOfIt() async throws {
         let (sources, folder) = try sources()
         defer { try? FileManager.default.removeItem(at: folder) }
-        #expect(sources.longSide == 240)
+        #expect(sources.longSide(framedBy: nil) == 240)
         let whole = try await sources.source(dimension: 0, settings: DevelopSettings())
         #expect(whole.width == 240 && whole.height == 160)
         #expect(try await sources.source(dimension: 240, settings: DevelopSettings()).source === whole.source)

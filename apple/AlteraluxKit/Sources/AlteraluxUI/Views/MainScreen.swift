@@ -92,7 +92,9 @@ struct DevelopScreen: View {
         VStack(spacing: 0) {
             PhotoStage()
                 .contextMenu { DevelopPhotoMenu() }
-            if !model.photos.isEmpty {
+            if let session = model.cropSession {
+                CropControls(session: session)
+            } else if !model.photos.isEmpty {
                 ZoomControls()
                 if showsStrip {
                     Divider()
@@ -107,9 +109,9 @@ struct DevelopScreen: View {
                 )
         }
         // Escape goes back to the library, as in Photos. A sheet or a list over the window
-        // takes its own Escape first.
+        // takes its own Escape first, and so do the crop controls.
         .background {
-            if model.hasLibrary {
+            if model.hasLibrary, !model.isCropping {
                 Button("Library") { model.showLibrary() }
                     .keyboardShortcut(.cancelAction)
                     .opacity(0)
@@ -188,11 +190,17 @@ private struct MainToolbar: ToolbarContent {
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
+            Toggle(isOn: cropping) {
+                Label("Crop", systemImage: "crop")
+            }
+            .help("Crop and straighten the photo")
+            .disabled(!model.canCrop)
+
             Toggle(isOn: $model.showsOriginal) {
                 Label("Original", systemImage: "circle.lefthalf.filled")
             }
             .help("Compare with the original")
-            .disabled(model.original == nil)
+            .disabled(model.original == nil || model.isCropping)
 
             RecipeMenu(model: model, savesNew: true) { model.apply($0) }
                 .help("Give this photo a recipe, or save its look as one")
@@ -213,5 +221,13 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Show or hide the adjustments")
         }
+    }
+
+    /// On while the crop controls are shown: turned off, it keeps the frame chosen.
+    private var cropping: Binding<Bool> {
+        Binding(
+            get: { model.isCropping },
+            set: { $0 ? model.beginCrop() : model.confirmCrop() },
+        )
     }
 }
