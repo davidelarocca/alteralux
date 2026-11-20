@@ -9,6 +9,8 @@ import SwiftUI
 /// by side, moving, copying and tagging show their symbols alone.
 struct LibrarySelectionBar: View {
     @Environment(AppModel.self) private var model
+    /// What was typed over the list of tags.
+    @State private var typedTag = ""
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
@@ -60,8 +62,8 @@ struct LibrarySelectionBar: View {
             empty: Text("No other folder in the library."),
         )
         .help("Copy the selected photos to another folder of the library")
-        ChoiceListButton(Text("Tag"), symbol: isCompact ? "tag" : nil, choices: tags, empty: Text("No Tags"), staysOpen: true) {
-            TagField()
+        ChoiceListButton(Text("Tag"), symbol: isCompact ? "tag" : nil, choices: tags, empty: noTag, staysOpen: true) {
+            TagField(typed: $typedTag)
                 .environment(model)
         }
         .help("Put a Finder tag on the selected photos, or take it off")
@@ -82,7 +84,7 @@ struct LibrarySelectionBar: View {
     /// dash when some do.
     private var tags: [Choice] {
         let selected = model.library.selection.count
-        return model.tagChoices.map { tag in
+        return model.tagChoices.matching(typedTag).map { tag in
             // A tag without a color has the Finder's empty circle.
             Choice(
                 id: tag.name, title: tag.name, color: tag.color?.swatch, symbol: "circle",
@@ -91,6 +93,12 @@ struct LibrarySelectionBar: View {
                 model.toggleTag(tag.name, color: tag.color)
             }
         }
+    }
+
+    /// What the list of tags says when no tag's name holds what was typed.
+    private var noTag: Text {
+        let typed = typedTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        return typed.isEmpty ? Text("No Tags") : Text("Press Return to make the tag “\(typed)”.")
     }
 
     /// The folders of the library, the folder on screen left out.

@@ -74,7 +74,9 @@ struct MainScreen: View {
 /// adjustments in an inspector on the right.
 private struct DevelopScreen: View {
     @Environment(AppModel.self) private var model
-    @State private var showsInspector = true
+    /// A photo opens on its own, the whole window for it; the adjustments are a click away and
+    /// stay open from one photo to the next once opened.
+    @State private var showsInspector = false
 
     /// Width of the adjustments inspector, in points.
     private enum InspectorWidth {

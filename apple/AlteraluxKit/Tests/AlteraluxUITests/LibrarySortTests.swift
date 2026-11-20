@@ -140,8 +140,9 @@ struct LibrarySortTests {
         #expect(library.infos[first]?.aspectRatio == 2)
     }
 
-    /// The tags offered for a selection are the Finder's labels, never its "none", and the
-    /// user's own with the color they were made with.
+    /// The tags offered for a selection are the Finder's labels, never its "none", then the
+    /// tags of the folder's photos, so one made on a photo can be put on the next, each with
+    /// the color it was made with.
     @Test func aTagOfOnesOwnIsMadeWithItsColor() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
@@ -150,19 +151,27 @@ struct LibrarySortTests {
         let second = try photo("Picture 2.png", in: model.library)
         model.library.click(second)
 
-        // The Finder's seven labels come first, each with its color, and "none" is not one.
+        // The Finder's seven labels come first, each with its color, and "none" is not one;
+        // then the tags other photos of the folder carry, though the selection does not.
         #expect(model.tagChoices.prefix(7).map(\.color) == FinderTagColor.allCases.map(Optional.some))
+        #expect(model.tagChoices.dropFirst(7).map(\.name) == ["Plain", "Print", "Trip"])
+        #expect(model.tagChoices.named("trip") == TagChoice(name: "Trip", color: .green, carriedBy: 0))
         model.addTag(named: "  ", color: .red)
         model.addTag(named: " Event ", color: .purple)
         #expect(PhotoInfoReader.tags(of: second) == [FinderTag(name: "Event", color: .purple)])
         let deadline = ContinuousClock.now + .seconds(60)
-        while model.tagChoices.last != TagChoice(name: "Event", color: .purple, carriedBy: 1) {
+        while !model.tagChoices.contains(TagChoice(name: "Event", color: .purple, carriedBy: 1)) {
             try #require(ContinuousClock.now < deadline, "Waited 60 seconds for the tag to show with its color.")
             try await Task.sleep(for: .milliseconds(5))
         }
-        // Chosen again, it comes off.
+        // Typing narrows the list; a name a tag has, whatever its case, puts that tag on with
+        // its own color.
+        #expect(model.tagChoices.matching("ri").map(\.name) == ["Print", "Trip"])
+        model.addTag(named: "trip", color: .red)
+        #expect(PhotoInfoReader.tags(of: second) == [FinderTag(name: "Event", color: .purple), FinderTag(name: "Trip", color: .green)])
+        // Chosen again, a tag comes off.
         model.toggleTag("Event", color: .purple)
-        #expect(PhotoInfoReader.tags(of: second).isEmpty)
+        #expect(PhotoInfoReader.tags(of: second) == [FinderTag(name: "Trip", color: .green)])
         #expect(model.alertMessage == nil)
     }
 }

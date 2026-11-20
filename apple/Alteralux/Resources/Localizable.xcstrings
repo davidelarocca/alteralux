@@ -631,6 +631,16 @@
         }
       }
     },
+    "Assign tags to “%@”" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assegna tag a “%@”"
+          }
+        }
+      }
+    },
     "Automatic metering" : {
       "localizations" : {
         "it" : {
@@ -667,6 +677,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bianco e nero"
+          }
+        }
+      }
+    },
+    "Blue" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blu"
           }
         }
       }
@@ -1162,6 +1182,16 @@
         }
       }
     },
+    "Find or make a tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca o crea un tag"
+          }
+        }
+      }
+    },
     "Fit" : {
       "localizations" : {
         "it" : {
@@ -1218,6 +1248,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Grana"
+          }
+        }
+      }
+    },
+    "Gray" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grigio"
+          }
+        }
+      }
+    },
+    "Green" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde"
           }
         }
       }
@@ -1412,16 +1462,6 @@
         }
       }
     },
-    "New tag" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuovo tag"
-          }
-        }
-      }
-    },
     "Next Photo" : {
       "localizations" : {
         "it" : {
@@ -1552,6 +1592,16 @@
         }
       }
     },
+    "Orange" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arancio"
+          }
+        }
+      }
+    },
     "Order" : {
       "localizations" : {
         "it" : {
@@ -1612,6 +1662,16 @@
         }
       }
     },
+    "Press Return to make the tag “%@”." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Premi Invio per creare il tag “%@”."
+          }
+        }
+      }
+    },
     "Previous Photo" : {
       "localizations" : {
         "it" : {
@@ -1638,6 +1698,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esposizione di stampa"
+          }
+        }
+      }
+    },
+    "Purple" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viola"
           }
         }
       }
@@ -1678,6 +1748,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recipe"
+          }
+        }
+      }
+    },
+    "Red" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosso"
           }
         }
       }
@@ -1992,6 +2072,16 @@
         }
       }
     },
+    "Tag name" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome del tag"
+          }
+        }
+      }
+    },
     "Take Back" : {
       "localizations" : {
         "it" : {
@@ -2028,6 +2118,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il colore della luce, in kelvin. Valori più bassi rendono la foto più fredda."
+          }
+        }
+      }
+    },
+    "The color of the new tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore del nuovo tag"
           }
         }
       }
@@ -2208,6 +2308,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con regolazioni"
+          }
+        }
+      }
+    },
+    "Yellow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giallo"
           }
         }
       }

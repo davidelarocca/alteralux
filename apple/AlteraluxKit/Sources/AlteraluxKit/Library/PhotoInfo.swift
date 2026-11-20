@@ -96,7 +96,10 @@ public enum PhotoInfoReader {
     /// Reads the file's Finder tags and their colors, keeping Finder's order.
     public static func tags(of file: URL) -> [FinderTag] {
         tags(attributeData: finderTagsAttributeData(of: file)) {
-            (try? file.resourceValues(forKeys: [.tagNamesKey]))?.tagNames ?? []
+            // A URL keeps the tags it read once, and does not see the attribute written since.
+            var fresh = file
+            fresh.removeAllCachedResourceValues()
+            return (try? fresh.resourceValues(forKeys: [.tagNamesKey]))?.tagNames ?? []
         }
     }
 

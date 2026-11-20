@@ -219,7 +219,11 @@ branch of its own. What was said, in the order to take it:
   tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
   photo, which stays hidden outside its own filter; the actions on the selection in a bar floating
   over the grid; up and down arrows; under the grid, the size of the photos shown or of the selected
-  ones. Still open: seen so far only in images made by the tests, not in the built app; the date is
+  ones; a rectangle dragged over the grid selects photos; a list of tags in the Finder's manner, with
+  a field that narrows it and makes a tag with a color; a photo opens with the adjustments closed.
+  Seen in the built app on 2026-11-20: the tag list, a new tag made with a color and written to the
+  file, a photo opening without the adjustments. Still open: the rectangle drawn by hand (a mouse
+  drag, not driven by the checks), and it does not scroll the grid when it reaches an edge; the date is
   the file's, not the one of the shot; one tag at a time; the order and the filters are not kept
   between launches; an arrow key does not scroll the grid to the photo it reaches.
 - Things that reach past the window's edge when the window is made small: to find one by one in

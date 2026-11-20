@@ -73,7 +73,8 @@ Deliberate departures from the rules above, with the reason.
   at any size of its row.
 
 - The main window holds an inspector, which behaves like a split view: its row names the window type as
-  View and Window, so the row checks the window's sizes.
+  View and Window, so the row checks the window's sizes. A photo opens with the inspector closed; the
+  sizes are those with it open, the narrowest the photo gets.
 - The panes of the main window have no rows of their own yet. `PhotoStage` and `FilmstripView` scroll or
   scale their content and `InspectorView` is a scrolling `Form`: each takes any width, so
   `LayoutContract.check` cannot measure them. What they hold is checked through the shared components:

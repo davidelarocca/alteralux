@@ -62,8 +62,7 @@ public enum PhotoFileActions {
 
     /// The file's Finder tags, empty when it has none or they cannot be read.
     public static func tags(of file: URL) -> [String] {
-        let values = try? file.resourceValues(forKeys: [.tagNamesKey])
-        return values?.tagNames ?? []
+        PhotoInfoReader.tags(of: file).map(\.name)
     }
 
     /// For a selection, each tag with the number of files that carry it.

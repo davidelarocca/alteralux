@@ -113,10 +113,14 @@ open photos, the settings of the selected one and its preview.
   each as wide as its own shape (`LibraryRows`), with a dot for each colored
   Finder tag beside the name; the toolbar has the filter in the middle and a
   Filter and Sort menu at the trailing side; the line under the grid says the
-  size of the photos shown, or of the selected ones. With photos selected a
-  bar floating over the grid offers the actions:
+  size of the photos shown, or of the selected ones. Photos are selected as
+  in the Finder: a click, Command and Shift with it, or a rectangle dragged
+  from between them (`SelectionMarquee`); a click between them clears the
+  selection. With photos selected a bar floating over the grid offers the actions:
   move and copy to another folder of the library (the sandbox lets the app
-  write only into folders the user added), Finder tags, and discard, which
+  write only into folders the user added), Finder tags (a field over their
+  list narrows it and makes a new tag with one of the Finder's colors; tags
+  are written as the Finder keeps them, so a color stays), and discard, which
   marks a photo and hides it; the discarded photos have a filter of their
   own, where they are taken back or emptied into the Trash. Discarding and
   moving are steps of the window's undo.

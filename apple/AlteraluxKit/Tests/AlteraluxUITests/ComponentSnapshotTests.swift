@@ -303,6 +303,41 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct SelectionMarqueeSnapshots {
+        private let source = "\(components)/SelectionMarquee.swift"
+        private let sizes = ["320x140"]
+
+        /// The rectangle over three thumbnails, as it is dragged across the library's grid.
+        private func overThumbnails() -> some View {
+            ZStack(alignment: .topLeading) {
+                HStack(spacing: Spacing.m) {
+                    ForEach(0 ..< 3) { _ in
+                        ThumbnailCell(image: nil, isSelected: false, size: CGSize(width: 80, height: 60))
+                    }
+                }
+                .padding(Spacing.l)
+                SelectionMarquee()
+                    .frame(width: 150, height: 80)
+                    .offset(x: 50, y: 30)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color.DS.viewerSurround)
+        }
+
+        @Test func overThePhotos() {
+            #expect(Snapshot.verify("SelectionMarquee", sizes: sizes, state: "over-thumbnails", locale: "en", source: source) {
+                overThumbnails()
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("SelectionMarquee", sizes: sizes, state: "over-thumbnails", locale: "ar", source: source) {
+                overThumbnails()
+            } == [])
+        }
+    }
+
+    @MainActor
     struct FormSheetSnapshots {
         private let source = "\(components)/FormSheet.swift"
         private let sizes = ["420x300"]

@@ -1,3 +1,4 @@
+import AppKit
 import AlteraluxKit
 import DesignSystem
 import SwiftUI
@@ -9,12 +10,23 @@ struct LibraryGrid: View {
     @Binding var isAddingFolder: Bool
     @AppStorage("library.thumbnailSize") private var thumbnailSize = LibraryGrid.thumbnailSizes.lowerBound + 40
     @State private var isEmptyingDiscarded = false
+    /// Where each photo of the grid is drawn, in the grid's own space, for the rectangle that
+    /// selects by dragging.
+    @State private var tileFrames: [URL: CGRect] = [:]
+    /// The rectangle being dragged over the grid, while it is.
+    @State private var marquee: CGRect?
+    @State private var selectionBeforeMarquee: Set<URL> = []
+    @State private var marqueeToggles = false
 
     /// The widths a thumbnail can have, in points.
     static let thumbnailSizes = 120.0 ... 320.0
     private static let thumbnailSizeStep = 20.0
     /// A thumbnail is this much less tall than wide: room for an upright photo and a wide one.
     private static let tileProportion = 0.75
+    /// The name of the grid's scrolling space, where photos and the rectangle are placed.
+    private static let space = "library.grid"
+    /// How far the pointer moves before a press between the photos becomes a drag, in points.
+    private static let dragThreshold: CGFloat = 3
     /// Width of the slider for the size of the thumbnails, in points.
     private static let sliderWidth: CGFloat = 130
 
@@ -97,11 +109,30 @@ struct LibraryGrid: View {
                                     isDiscarded: library.discarded.contains(item.photo),
                                     tags: library.infos[item.photo]?.tags ?? [],
                                 )
+                                .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.space)) } action: {
+                                    tileFrames[item.photo] = $0
+                                }
                             }
                         }
                     }
                 }
                 .padding(Spacing.m)
+                // The room under the photos takes clicks and drags too.
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .topLeading)
+                .background {
+                    Color.clear
+                        .contentShape(.rect)
+                        .onTapGesture { library.clearSelection() }
+                        .gesture(marqueeDrag)
+                }
+                .overlay(alignment: .topLeading) {
+                    if let marquee {
+                        SelectionMarquee()
+                            .frame(width: marquee.width, height: marquee.height)
+                            .offset(x: marquee.minX, y: marquee.minY)
+                    }
+                }
+                .coordinateSpace(.named(Self.space))
             }
             // The grid takes the keys: arrows move through the photos, Return develops.
             .focusable()
@@ -136,6 +167,32 @@ struct LibraryGrid: View {
                 return .handled
             }
         }
+    }
+
+    /// A drag that starts between the photos draws a rectangle and selects the photos it
+    /// touches, as the Finder does: with Shift it adds to the selection, with Command it turns
+    /// each photo it touches on or off.
+    private var marqueeDrag: some Gesture {
+        DragGesture(minimumDistance: Self.dragThreshold, coordinateSpace: .named(Self.space))
+            .onChanged { drag in
+                let library = model.library
+                if marquee == nil {
+                    let modifiers = NSEvent.modifierFlags
+                    marqueeToggles = modifiers.contains(.command)
+                    selectionBeforeMarquee = modifiers.contains(.command) || modifiers.contains(.shift) ? library.selection : []
+                }
+                let rectangle = CGRect(
+                    x: min(drag.startLocation.x, drag.location.x), y: min(drag.startLocation.y, drag.location.y),
+                    width: abs(drag.location.x - drag.startLocation.x), height: abs(drag.location.y - drag.startLocation.y),
+                )
+                marquee = rectangle
+                let covered = tileFrames.filter { library.visiblePhotos.contains($0.key) && $0.value.intersects(rectangle) }.keys
+                library.select(covered: Set(covered), before: selectionBeforeMarquee, toggling: marqueeToggles)
+            }
+            .onEnded { _ in
+                marquee = nil
+                selectionBeforeMarquee = []
+            }
     }
 
     /// Goes to the photo above or below the one the keys are on, or to the first photo when

@@ -325,6 +325,17 @@ final class LibraryModel {
         anchor = target
     }
 
+    /// The photos a rectangle dragged over the grid covers become the selection, as in the
+    /// Finder: with Shift they join the photos selected before, with Command they join or
+    /// leave it.
+    func select(covered: Set<URL>, before: Set<URL> = [], toggling: Bool = false) {
+        let covered = covered.intersection(visiblePhotos)
+        selection = toggling ? before.symmetricDifference(covered) : before.union(covered)
+        if let first = visiblePhotos.first(where: covered.contains) {
+            anchor = first
+        }
+    }
+
     func selectAll() {
         selection = Set(visiblePhotos)
     }

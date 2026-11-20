@@ -98,12 +98,16 @@ public struct ChoiceListButton<Header: View>: View {
         if choices.isEmpty {
             empty
                 .foregroundStyle(.secondary)
-                .padding(Spacing.l)
+                .multilineTextAlignment(.center)
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(Spacing.m)
                 .frame(maxWidth: .infinity)
         } else {
             List(selection: $highlightedID) {
                 ForEach(choices) { choice in
                     row(for: choice)
+                        .listRowSeparator(.hidden)
                 }
             }
             .scrollContentBackground(.hidden)
@@ -118,16 +122,19 @@ public struct ChoiceListButton<Header: View>: View {
 
     private func row(for choice: Choice) -> some View {
         HStack(spacing: Spacing.s) {
-            Group {
-                switch choice.mark {
-                case .off: Color.clear
-                case .all: Image(systemName: "checkmark")
-                case .part: Image(systemName: "minus")
+            // A list to take several choices from shows which hold, as a menu does.
+            if showsMarks {
+                Group {
+                    switch choice.mark {
+                    case .off: Color.clear
+                    case .all: Image(systemName: "checkmark")
+                    case .part: Image(systemName: "minus")
+                    }
                 }
+                .font(Typography.badge)
+                .frame(width: Spacing.m)
+                .accessibilityHidden(true)
             }
-            .font(Typography.badge)
-            .frame(width: Spacing.m)
-            .accessibilityHidden(true)
             if let color = choice.color {
                 Circle()
                     .fill(color)
@@ -157,6 +164,10 @@ public struct ChoiceListButton<Header: View>: View {
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(choice.mark == .all ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { take(choice) }
+    }
+
+    private var showsMarks: Bool {
+        staysOpen || choices.contains { $0.mark != .off }
     }
 
     private func take(_ choice: Choice) {

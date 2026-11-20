@@ -11,6 +11,20 @@ struct TagChoice: Equatable {
     let carriedBy: Int
 }
 
+extension [TagChoice] {
+    /// The tags whose name holds what was typed, all of them when nothing was.
+    func matching(_ typed: String) -> [TagChoice] {
+        let typed = typed.trimmingCharacters(in: .whitespacesAndNewlines)
+        return typed.isEmpty ? self : filter { $0.name.localizedStandardContains(typed) }
+    }
+
+    /// The tag with this name, whatever its case.
+    func named(_ typed: String) -> TagChoice? {
+        let name = typed.trimmingCharacters(in: .whitespacesAndNewlines)
+        return first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
+    }
+}
+
 extension AppModel {
     /// Adds a folder the user chose to the library, and shows it.
     func addFolder(_ url: URL) async {
@@ -145,11 +159,14 @@ extension AppModel {
         // The first of the Finder's labels is "none": not a tag to put on a photo.
         let labels = NSWorkspace.shared.fileLabels.enumerated().dropFirst().filter { !$0.element.isEmpty }
         var choices = labels.map { TagChoice(name: $0.element, color: FinderTagColor(rawValue: $0.offset), carriedBy: carried[$0.element] ?? 0) }
-        // The tags the photos carry beyond the Finder's labels, with their color once the
-        // folder has been read again.
-        let colors = Dictionary(library.tagsInFolder.map { ($0.name, $0.color) }, uniquingKeysWith: { first, _ in first })
+        // The tags of the folder's photos beyond the Finder's labels, so one made on a photo
+        // can be put on the next, then those the selection carries that the folder has not
+        // read yet.
+        for tag in library.tagsInFolder where !choices.contains(where: { $0.name == tag.name }) {
+            choices.append(TagChoice(name: tag.name, color: tag.color, carriedBy: carried[tag.name] ?? 0))
+        }
         for name in carried.keys.sorted() where !choices.contains(where: { $0.name == name }) {
-            choices.append(TagChoice(name: name, color: colors[name].flatMap(\.self), carriedBy: carried[name] ?? 0))
+            choices.append(TagChoice(name: name, color: nil, carriedBy: carried[name] ?? 0))
         }
         return choices
     }
@@ -163,12 +180,16 @@ extension AppModel {
         setTag(FinderTag(name: tag, color: color), isOn: carried < photos.count)
     }
 
-    /// Puts a tag of the user's own on the selected photos: a name, and a color if they chose
-    /// one. Whether `name` can be a tag: anything but blank.
+    /// Puts a tag typed by the user on the selected photos. A name a tag already has, whatever
+    /// its case, puts that tag on with its own color; a new one takes the color chosen, if any.
     func addTag(named name: String, color: FinderTagColor?) {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        setTag(FinderTag(name: name, color: color), isOn: true)
+        if let existing = tagChoices.named(name) {
+            setTag(FinderTag(name: existing.name, color: existing.color), isOn: true)
+        } else {
+            setTag(FinderTag(name: name, color: color), isOn: true)
+        }
     }
 
     private func setTag(_ tag: FinderTag, isOn: Bool) {

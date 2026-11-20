@@ -14,4 +14,17 @@ extension FinderTagColor {
         case .orange: .orange
         }
     }
+
+    /// The name of the color, as the Finder says it.
+    var name: LocalizedStringResource {
+        switch self {
+        case .gray: "Gray"
+        case .green: "Green"
+        case .purple: "Purple"
+        case .blue: "Blue"
+        case .yellow: "Yellow"
+        case .red: "Red"
+        case .orange: "Orange"
+        }
+    }
 }

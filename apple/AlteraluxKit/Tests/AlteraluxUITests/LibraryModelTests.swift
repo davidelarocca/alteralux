@@ -160,6 +160,28 @@ struct LibraryModelTests {
         #expect(model.selection.isEmpty && model.focusedPhoto == nil)
     }
 
+    /// A rectangle dragged over the grid selects what it covers, as in the Finder.
+    @Test func aRectangleDraggedOverThePhotosSelectsThem() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+
+        model.click(photos[0])
+        // Alone, the rectangle replaces the selection, and the keys go on from its first photo.
+        model.select(covered: [photos[2], photos[1]])
+        #expect(model.selection == [photos[1], photos[2]] && model.focusedPhoto == photos[1])
+        // With Shift it adds to what was selected; with Command it takes away what it covers twice.
+        model.select(covered: [photos[0]], before: [photos[2]])
+        #expect(model.selection == [photos[0], photos[2]])
+        model.select(covered: [photos[1], photos[2]], before: [photos[0], photos[2]], toggling: true)
+        #expect(model.selection == [photos[0], photos[1]])
+        // A rectangle over nothing, alone, leaves nothing selected.
+        model.select(covered: [])
+        #expect(model.selection.isEmpty)
+    }
+
     /// Discarding marks a photo and hides it; the file stays until the discarded are emptied.
     @Test func discardedPhotosAreHiddenAndStillOnDisk() async throws {
         let fixture = try Fixture()
