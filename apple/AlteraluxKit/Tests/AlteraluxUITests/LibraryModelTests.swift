@@ -160,9 +160,8 @@ struct LibraryModelTests {
         #expect(model.selection.isEmpty && model.focusedPhoto == nil)
     }
 
-    /// The order and the kinds shown are kept for the next launch; the filter of adjusted and
-    /// discarded photos is not.
-    @Test func theOrderAndTheKindsShownAreKeptForTheNextLaunch() throws {
+    /// The order and the filters are kept for the next launch.
+    @Test func theOrderAndTheFiltersAreKeptForTheNextLaunch() throws {
         let suite = "alteralux-tests-\(UUID().uuidString)"
         let preferences = try #require(UserDefaults(suiteName: suite))
         defer { preferences.removePersistentDomain(forName: suite) }
@@ -182,10 +181,11 @@ struct LibraryModelTests {
         first.sortsAscending = false
         first.kinds = .raw
         first.filter = .discarded
+        first.tagFilter = "Print"
 
         let next = launch()
         #expect(next.sort == .date && !next.sortsAscending && next.kinds == .raw)
-        #expect(next.filter == .all)
+        #expect(next.filter == .discarded && next.tagFilter == "Print")
     }
 
     /// Shift with the arrow keys grows the selection from the photo it started on, and the keys

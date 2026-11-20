@@ -3,7 +3,7 @@ import Foundation
 import Observation
 
 /// Which photos of a folder the grid shows.
-enum LibraryFilter: Hashable, CaseIterable {
+enum LibraryFilter: String, Hashable, CaseIterable {
     case all
     /// Only the photos that have adjustments.
     case adjusted
@@ -68,8 +68,12 @@ final class LibraryModel {
     private(set) var discarded: Set<URL> = []
     /// The shape, date, kind, size and tags of each of `photos`, read with the folder.
     private(set) var infos: [URL: PhotoInfo] = [:]
+    /// Which photos are shown. Kept between launches, as the order, the kinds and the tag are.
     var filter = LibraryFilter.all {
-        didSet { selection.formIntersection(visiblePhotos) }
+        didSet {
+            selection.formIntersection(visiblePhotos)
+            preferences?.set(filter.rawValue, forKey: Self.filterKey)
+        }
     }
 
     /// What the photos are sorted by, and whether from the first to the last. Kept between
@@ -92,7 +96,10 @@ final class LibraryModel {
 
     /// The Finder tag a photo must carry to be shown; `nil` shows the photos whatever their tags.
     var tagFilter: String? {
-        didSet { selection.formIntersection(visiblePhotos) }
+        didSet {
+            selection.formIntersection(visiblePhotos)
+            preferences?.set(tagFilter, forKey: Self.tagFilterKey)
+        }
     }
 
     /// The photos picked in the grid.
@@ -105,11 +112,13 @@ final class LibraryModel {
     @ObservationIgnored private let folders: LibraryFolders
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
     @ObservationIgnored private let discards: DiscardStore
-    /// Where the order and the kinds shown are kept; `nil` keeps them for this run only.
+    /// Where the order and the filters are kept; `nil` keeps them for this run only.
     @ObservationIgnored private let preferences: UserDefaults?
     private static let sortKey = "library.sort"
     private static let ascendingKey = "library.sortsAscending"
     private static let kindsKey = "library.kinds"
+    private static let filterKey = "library.filter"
+    private static let tagFilterKey = "library.tagFilter"
     @ObservationIgnored private var watchers: [LibraryFolder.ID: Task<Void, Never>] = [:]
     /// The photo a Shift-click or a Shift-arrow extends the selection from.
     @ObservationIgnored private var anchor: URL?
@@ -136,6 +145,8 @@ final class LibraryModel {
         sort = preferences?.string(forKey: Self.sortKey).flatMap(LibrarySort.init) ?? .name
         sortsAscending = preferences?.object(forKey: Self.ascendingKey) as? Bool ?? true
         kinds = preferences?.string(forKey: Self.kindsKey).flatMap(LibraryKinds.init) ?? .all
+        filter = preferences?.string(forKey: Self.filterKey).flatMap(LibraryFilter.init) ?? .all
+        tagFilter = preferences?.string(forKey: Self.tagFilterKey)
     }
 
     /// Whether the user has added any folder.

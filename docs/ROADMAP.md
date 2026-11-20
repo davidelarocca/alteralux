@@ -226,8 +226,8 @@ branch of its own. What was said, in the order to take it:
   file, a photo opening without the adjustments; with real pointer events on a folder of 40 test
   pictures, a click on a photo and between them, a rectangle that scrolls the grid when held at its
   bottom edge, and the arrow keys bringing the photo they reach in sight. The date is the one the
-  photo was taken (the file's for a photo that does not say), and the order and the kinds shown are
-  kept between launches. Still open: one tag at a time.
+  photo was taken (the file's for a photo that does not say), and the order and the filters (what
+  is shown, the kinds, the tag) are kept between launches. Still open: one tag at a time.
 - Mouse and keyboard, asked on 2026-11-20 ("everything must feel intuitive"). Done, checked in the
   built app: Shift with the arrows, Home, End, Page Up and Down in the grid; Space for Quick Look;
   Zoom In and Out and a pinch for the thumbnails; a menu on a secondary click on a photo, in the
