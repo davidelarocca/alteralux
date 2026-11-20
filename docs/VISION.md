@@ -131,9 +131,10 @@ hand-drawn controls of the mockups were dropped for the system's
 
 ## Open questions
 
-- **Where edits and marks are kept.** Each photo's adjustments and its "discarded" mark need a place
-  that follows the photo when it is moved in the Finder: a sidecar file beside it, or extended
-  attributes, or a store of the app's keyed by file. To decide with the step on persistent edits.
+- **Where marks are kept.** Each photo's adjustments are kept in the photo itself, as an extended
+  attribute ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)), and a sidecar beside the photo can be
+  added inside the library's folders. Whether the "discarded" mark goes the same way is to decide
+  with the library.
 - **Finder tags in the sandbox.** Whether the app can read and write the tags of files in a folder the
   user has added, with the access the sandbox gives. To verify before designing the tag menu.
 - **Automatic white balance.** Which method gives the starting temperature for adaptive recipes, and

@@ -58,6 +58,11 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   warmer, Reset Adjustments goes back to the camera's values, each photo keeps its own white balance
   when the selection changes, and on the TIFF the two sliders are dimmed, do not move and carry
   their note. It is the only camera file tried so far.
+- Verified by driving the built app on 2026-11-20: adjustments made on a RAW are in the photo's
+  extended attribute and come back after quitting and opening the photo again; a photo made read-only
+  keeps them in the app's container and gets them back too; two changes are undone and redone as two
+  steps by the toolbar's buttons and by Command-Z and Shift-Command-Z; the toolbar fits the window at
+  its minimum size.
 - **Not verified yet**: RAW files of other cameras, their highlights and metadata; how a white
   balance drag feels under the hand (it is timed through the app model, not by hand); drag and drop,
   trackpad gestures, and the Open panel.
@@ -71,7 +76,6 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    built app: several files opened at once, the keyboard and accessibility steps of `ParameterSlider`,
    black and white films printed on a color paper, the export file name, and commands enabled with
    nothing to act on. Still open:
-   - There is no undo: Reset Adjustments cannot be taken back (solved with step 5).
    - With a black and white print the yellow and magenta filters stay visible, and the development
      times the black and white profiles carry are not offered.
 2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
@@ -112,7 +116,16 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      and at 2048 px at most.
    - A picker on the photo for the neutral point, and an automatic white balance (the vision's open
      question for adaptive recipes).
-5. **Edits that persist**, with undo and redo.
+5. **Edits that persist**, with undo and redo. Done: each photo's adjustments are kept in the photo
+   itself, as an extended attribute, and in a folder of the app's when the photo cannot be written
+   ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)); they are read back when the photo is opened;
+   undo and redo through the window's own undo manager, one step per change, with two buttons in the
+   toolbar. Still open:
+   - A sidecar beside the photo, for services that drop extended attributes: possible only inside
+     folders the user adds, so with the library.
+   - Undo steps are not kept between launches.
+   - In Italian the Edit menu shows "Ripristina" (Redo) just above "Ripristina regolazioni" (Reset
+     Adjustments): the second needs another word.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
    the actions on a selection (move, copy, tag with the Finder's tags, discard). Needs step 5, and the
    open questions of the vision on where marks are kept and on tags in the sandbox.
