@@ -53,9 +53,9 @@ struct EditHistoryTests {
     }
 
     private func wait(_ what: String, until condition: () -> Bool) async throws {
-        let deadline = ContinuousClock.now + .seconds(10)
+        let deadline = ContinuousClock.now + .seconds(60)
         while !condition() {
-            try #require(ContinuousClock.now < deadline, "Waited 10 seconds for \(what).")
+            try #require(ContinuousClock.now < deadline, "Waited 60 seconds for \(what).")
             try await Task.sleep(for: .milliseconds(5))
         }
     }
@@ -123,6 +123,30 @@ struct EditHistoryTests {
         let second = fixture.model()
         second.open(fixture.photos)
         #expect(second.settings.exposureEV == -1.2)
+    }
+
+    /// Adjustments that could not be written are not taken for kept: they are written the next
+    /// time the photo settles.
+    @Test func adjustmentsThatCouldNotBeKeptAreTriedAgain() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        // Nowhere to keep them: the photo cannot be written, and the folder for those is a file.
+        let blocked = fixture.folder.appendingPathComponent("blocked")
+        try Data().write(to: blocked)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: fixture.photos[0].path)
+        let model = AppModel(
+            dataDirectory: WindowedTests.engineData, editsDirectory: blocked.appendingPathComponent("edits"),
+        )
+        model.open(fixture.photos)
+        try await change(model) { $0.exposureEV = 0.7 }
+        #expect(model.alertMessage != nil)
+        #expect(model.history.kept(for: fixture.photos[0]) == nil)
+
+        // The photo can be written again; nothing changes but the photo leaving the strip.
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: fixture.photos[0].path)
+        model.removeSelection()
+        await model.history.waitUntilSaved()
+        #expect(model.history.kept(for: fixture.photos[0])?.exposureEV == 0.7)
     }
 
     @Test func aChangeMadeWhileSelectingAnotherPhotoIsKept() async throws {

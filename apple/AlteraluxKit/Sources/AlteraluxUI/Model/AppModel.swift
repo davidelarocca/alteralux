@@ -73,7 +73,7 @@ public final class AppModel {
     /// How long the standard preview stays, once the settings are still, before a preview that
     /// takes long replaces it. A render cannot be interrupted: one started at every short pause
     /// would keep the control waiting when the hand takes it up again.
-    private nonisolated static let slowPreviewDelay = Duration.milliseconds(400)
+    var slowPreviewDelay = Duration.milliseconds(400)
 
     /// Long side of the photo as the viewer shows it, in display pixels (0 until it reports).
     private var displayedLongSide = 0.0
@@ -137,17 +137,6 @@ public final class AppModel {
     /// The size of the selected photo, in pixels, once it is open.
     var photoSize: CGSize? {
         sources.map { CGSize(width: $0.decoder.width, height: $0.decoder.height) }
-    }
-
-    /// Previous and next need another photo to go to.
-    var canStepThroughPhotos: Bool {
-        photos.count > 1
-    }
-
-    /// Whether there is a photo `offset` places from the selected one in the strip.
-    func canSelectAdjacent(offset: Int) -> Bool {
-        guard let index = photos.firstIndex(where: { $0.id == selectedID }) else { return false }
-        return photos.indices.contains(index + offset)
     }
 
     /// Backend and timing of the last preview render, for diagnostics.
@@ -250,26 +239,13 @@ public final class AppModel {
         }
         guard item.id == selectedID else { return }
         selectedID = nil
+        // A photo still being opened must not come back once it has left the strip.
+        loadGeneration += 1
         sources = nil
         original = nil
         preview = nil
         if let next = photos.indices.contains(index) ? photos[index] : photos.last {
             select(next)
-        }
-    }
-
-    /// Removes the selected photo from the strip.
-    func removeSelection() {
-        if let selection {
-            remove(selection)
-        }
-    }
-
-    func selectAdjacent(offset: Int) {
-        guard let index = photos.firstIndex(where: { $0.id == selectedID }) else { return }
-        let target = index + offset
-        if photos.indices.contains(target) {
-            select(photos[target])
         }
     }
 
@@ -389,11 +365,14 @@ public final class AppModel {
     private func releaseSlowPreviewLater() {
         guard slowPreviewRelease == nil else { return }
         slowPreviewRelease = Task { [weak self] in
-            try? await Task.sleep(for: Self.slowPreviewDelay)
+            guard let delay = self?.slowPreviewDelay else { return }
+            try? await Task.sleep(for: delay)
             guard !Task.isCancelled, let self else { return }
             slowPreviewRelease = nil
             holdsSlowPreview = false
-            if previewIsDraft {
+            // Also while a render is running: it may be the standard preview standing in, which
+            // would otherwise stay on screen in place of the one the viewer needs.
+            if previewIsDraft || renderLoop != nil {
                 requestRender()
             }
         }
