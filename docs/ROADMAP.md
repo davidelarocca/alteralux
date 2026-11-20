@@ -50,7 +50,7 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 ## Next, in this order
 
 Decided on 2026-11-19, towards version 1.0 as described in [VISION.md](VISION.md). One branch and one
-draft pull request per step.
+pull request per step, or per part of a long one; a merged branch is deleted.
 
 1. **Defects found by driving the app.** Fixed on 2026-11-19, each with tests and checked again on the
    built app: several files opened at once, the keyboard and accessibility steps of `ParameterSlider`,
@@ -117,7 +117,7 @@ Defects found on real RAW files go to step 1.
   as a separate helper (an XPC service) used only for export.
 - **Photos extension.** As far as we know, Photos hands editing extensions a rendered image rather than
   the RAW original, which would lower the quality compared with the app (the app can read originals from
-  the library through PhotoKit). To verify first thing in phase 3.
+  the library through PhotoKit). To verify first thing when the Photos integration starts.
 - **GPU texture sharing.** Previews currently travel GPU → CPU → GPU. If that becomes the bottleneck, wgpu
   can render into an `IOSurface` shared with the viewer's layer.
 - **100% view.** Zooming in renders the whole photo at full resolution. The engine has no
