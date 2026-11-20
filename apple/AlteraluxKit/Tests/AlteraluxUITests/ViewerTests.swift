@@ -14,4 +14,14 @@ struct ViewerTests {
         // Nothing is laid out yet.
         #expect(!ImageScrollView.needsMipmaps(imagePixels: 2048, displayedPixels: 0))
     }
+
+    /// The photo's scroll bars are the thin ones that show while scrolling, even when a mouse
+    /// makes the system ask for the wide ones that stay.
+    @Test func scrollBarsStayThin() {
+        let viewer = ImageScrollView()
+        #expect(viewer.scrollerStyle == .overlay)
+        viewer.scrollerStyle = .legacy
+        #expect(viewer.scrollerStyle == .overlay)
+        #expect(viewer.scrollerKnobStyle == .light)
+    }
 }
