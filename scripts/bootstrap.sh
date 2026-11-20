@@ -5,7 +5,7 @@
 #   --skip-engine  only regenerate the Xcode project (engine already built)
 #   other options are passed to scripts/build-engine.sh
 #
-# Afterwards open apple/Spektrafilm.xcodeproj and press Run.
+# Afterwards open apple/Alteralux.xcodeproj and press Run.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -44,8 +44,8 @@ if [[ ! -x "$XCODEGEN" ]]; then
   rm "$ARCHIVE"
 fi
 
-echo "==> Generating apple/Spektrafilm.xcodeproj"
+echo "==> Generating apple/Alteralux.xcodeproj"
 "$XCODEGEN" generate --quiet --spec "$ROOT/apple/project.yml" --project "$ROOT/apple"
 
 echo "==> Done. Open the project with:"
-echo "    open apple/Spektrafilm.xcodeproj"
+echo "    open apple/Alteralux.xcodeproj"

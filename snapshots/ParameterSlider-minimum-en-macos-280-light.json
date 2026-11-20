@@ -11,7 +11,7 @@
   "size": "280x58",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift",
   "state": "minimum",
-  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/SpektrafilmKit/Tests/SpektrafilmUITests/ComponentSnapshotTests.swift",
+  "test": "/Users/fidelio/orca/workspaces/alteralux/https-github.com-davidelarocca-alteralux-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
   "approved": "2026-11-20T07:51:38Z",
   "approvedFrom": "failed"
 }

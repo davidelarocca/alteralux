@@ -35,7 +35,7 @@ jobs:
           workspaces: engine
       - name: Test
         # Release mode: the tests run real renders, which are slow unoptimized.
-        run: cargo test --release --manifest-path engine/Cargo.toml -p spektrafilm-ffi
+        run: cargo test --release --manifest-path engine/Cargo.toml -p alteralux-ffi
 
   swift-macos:
     name: Swift packages and app (macOS, Apple silicon)
@@ -67,7 +67,7 @@ jobs:
       # verify.sh shows only the end of each test run: list every test here.
       - name: Test summary
         run: |
-          for package in apple/DesignSystem apple/SpektrafilmKit; do
+          for package in apple/DesignSystem apple/AlteraluxKit; do
             echo "== $package"
             swift test --package-path "$package" --skip-build 2>&1 | grep -E "^(✔|✘) (Test|Suite)|Test run with" || true
           done
@@ -78,20 +78,20 @@ jobs:
       - name: Build the app (Release)
         run: |
           xcodebuild build \
-            -project apple/Spektrafilm.xcodeproj \
-            -scheme Spektrafilm \
+            -project apple/Alteralux.xcodeproj \
+            -scheme Alteralux \
             -configuration Release \
             -destination 'platform=macOS,arch=arm64' \
             -derivedDataPath build/DerivedData \
             -skipPackagePluginValidation
       - name: Check the app bundle
         run: |
-          APP=build/DerivedData/Build/Products/Release/Spektrafilm.app
+          APP=build/DerivedData/Build/Products/Release/Alteralux.app
           test -d "$APP/Contents/Resources/data/profiles"
           codesign --verify --deep --strict "$APP"
           codesign -d --entitlements - "$APP" 2>/dev/null | grep -q app-sandbox
       - name: Smoke test (launch the app, open a test chart, take a screenshot)
-        run: scripts/ci/smoke-test.sh build/DerivedData/Build/Products/Release/Spektrafilm.app
+        run: scripts/ci/smoke-test.sh build/DerivedData/Build/Products/Release/Alteralux.app
       - name: Upload the smoke test screenshot
         if: always()
         uses: actions/upload-artifact@v7
@@ -116,10 +116,10 @@ jobs:
         run: |
           mkdir -p build/package
           ditto -c -k --keepParent \
-            build/DerivedData/Build/Products/Release/Spektrafilm.app \
-            build/package/Spektrafilm.zip
+            build/DerivedData/Build/Products/Release/Alteralux.app \
+            build/package/Alteralux.zip
       - name: Upload the app
         uses: actions/upload-artifact@v7
         with:
-          name: Spektrafilm-app
-          path: build/package/Spektrafilm.zip
+          name: Alteralux-app
+          path: build/package/Alteralux.zip

@@ -1,7 +1,8 @@
 # Vision
 
-What spektrafilm for macOS is meant to become. `docs/ROADMAP.md` says in which order; this document says
-where it is going and what "finished" means. Agreed on 2026-11-19 and revised on 2026-11-20 after the
+What alteralux for macOS is meant to become. `docs/ROADMAP.md` says in which order; this document says
+where it is going and what "finished" means. Until 2026-11-20 the app was called spektrafilm for
+macOS, after the upstream project whose film model it uses; it has had a name of its own since then. Agreed on 2026-11-19 and revised on 2026-11-20 after the
 mockups of the whole interface; a change of direction is a change to this file.
 
 ## In one paragraph
@@ -87,7 +88,7 @@ What the first public version needs on top of what exists today:
 8. Camera and lens corrections.
 9. Workflows from the Finder: actions for Shortcuts that develop the selected photos with a recipe and
    hand the results back for saving.
-10. An icon, a decision on the name, and the notarized release.
+10. An icon and the notarized release.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters.
 

@@ -10,10 +10,10 @@ most code lives in Swift packages, which need no project file at all.
 
 ## Decision
 
-Describe the project in `apple/project.yml` and generate `apple/Spektrafilm.xcodeproj` with a pinned,
+Describe the project in `apple/project.yml` and generate `apple/Alteralux.xcodeproj` with a pinned,
 checksummed XcodeGen release (`scripts/bootstrap.sh`). The generated project is not committed.
 
-Code signing and hardened runtime settings live in `apple/Spektrafilm/Signing.xcconfig`, a tracked file,
+Code signing and hardened runtime settings live in `apple/Alteralux/Signing.xcconfig`, a tracked file,
 so a change to them is visible in review and to the checks that watch security settings.
 
 ## Alternatives considered

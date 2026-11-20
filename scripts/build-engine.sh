@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Builds the Rust engine for macOS and packages it for Swift:
-#   apple/SpektrafilmKit/Frameworks/spektrafilm_ffiFFI.xcframework
-#   apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated/spektrafilm_ffi.swift
+#   apple/AlteraluxKit/Frameworks/alteralux_ffiFFI.xcframework
+#   apple/AlteraluxKit/Sources/AlteraluxEngine/Generated/alteralux_ffi.swift
 #
 # Usage: scripts/build-engine.sh [--universal] [--debug]
 #   --universal  also build for Intel Macs (x86_64) and merge with lipo
@@ -12,9 +12,9 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENGINE="$ROOT/engine"
-KIT="$ROOT/apple/SpektrafilmKit"
+KIT="$ROOT/apple/AlteraluxKit"
 BUILD="$ROOT/build/engine"
-CRATE_LIB="spektrafilm_ffi"
+CRATE_LIB="alteralux_ffi"
 MODULE="${CRATE_LIB}FFI"
 
 UNIVERSAL=0
@@ -51,7 +51,7 @@ TARGETS=(aarch64-apple-darwin)
 [[ $UNIVERSAL == 1 ]] && TARGETS+=(x86_64-apple-darwin)
 rustup target add "${TARGETS[@]}" >/dev/null
 
-CARGO_FLAGS=(--manifest-path "$ENGINE/Cargo.toml" -p spektrafilm-ffi)
+CARGO_FLAGS=(--manifest-path "$ENGINE/Cargo.toml" -p alteralux-ffi)
 [[ $PROFILE == release ]] && CARGO_FLAGS+=(--release)
 # Match the deployment target of the Swift package.
 export MACOSX_DEPLOYMENT_TARGET=26.0
@@ -86,15 +86,15 @@ cp "$BUILD/generated/${MODULE}.h" "$BUILD/headers/"
 cp "$BUILD/generated/${MODULE}.modulemap" "$BUILD/headers/module.modulemap"
 
 echo "==> Packaging ${MODULE}.xcframework"
-mkdir -p "$KIT/Frameworks" "$KIT/Sources/SpektrafilmEngine/Generated"
+mkdir -p "$KIT/Frameworks" "$KIT/Sources/AlteraluxEngine/Generated"
 rm -rf "$KIT/Frameworks/${MODULE}.xcframework"
 xcodebuild -create-xcframework \
   -library "$STATIC_LIB" \
   -headers "$BUILD/headers" \
   -output "$KIT/Frameworks/${MODULE}.xcframework" >/dev/null
-cp "$BUILD/generated/${CRATE_LIB}.swift" "$KIT/Sources/SpektrafilmEngine/Generated/"
+cp "$BUILD/generated/${CRATE_LIB}.swift" "$KIT/Sources/AlteraluxEngine/Generated/"
 
 echo "==> Done"
 echo "    $KIT/Frameworks/${MODULE}.xcframework"
-echo "    $KIT/Sources/SpektrafilmEngine/Generated/${CRATE_LIB}.swift"
-echo "Run the Swift tests with:  swift test --package-path apple/SpektrafilmKit"
+echo "    $KIT/Sources/AlteraluxEngine/Generated/${CRATE_LIB}.swift"
+echo "Run the Swift tests with:  swift test --package-path apple/AlteraluxKit"

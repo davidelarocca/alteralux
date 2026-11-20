@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
 members = [
-    "crates/spektrafilm-ffi",
+    "crates/alteralux-ffi",
     "crates/uniffi-bindgen",
 ]
 # The upstream engine is a git submodule with its own workspace; we only
@@ -14,7 +14,7 @@ edition = "2024"
 license = "GPL-3.0-or-later"
 rust-version = "1.85"
 publish = false
-repository = "https://github.com/davidelarocca/spektrafilm-macos"
+repository = "https://github.com/davidelarocca/alteralux"
 
 [workspace.dependencies]
 spektrafilm-core = { path = "vendor/spektrafilm-rs/crates/spektrafilm-core" }

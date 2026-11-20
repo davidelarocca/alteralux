@@ -3,11 +3,11 @@
 What each Swift module does and how the app works at run time.
 Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
 
-### `SpektrafilmKit` (Swift package)
+### `AlteraluxKit` (Swift package)
 
-- **`SpektrafilmEngine`**: the generated UniFFI bindings plus the compiled
+- **`AlteraluxEngine`**: the generated UniFFI bindings plus the compiled
   engine as an XCFramework. Nothing else.
-- **`SpektrafilmKit`**: what an app needs, without any UI.
+- **`AlteraluxKit`**: what an app needs, without any UI.
   - `ImageLoader` decodes a file to scene-linear Rec. 2020 float pixels. RAW
     files go through `CIRAWFilter` with tone curve, local tone mapping, gamut
     mapping and sharpening turned off; other formats go through ImageIO. It
@@ -26,10 +26,10 @@ The tests of the package run the real engine: they check row order and channel
 order end to end, the bit depth and profile of exported files, and the
 parameter mapping.
 
-- **`SpektrafilmUI`**: the app model and the screens, as a package target so
+- **`AlteraluxUI`**: the app model and the screens, as a package target so
   they build and test with `swift test`, outside the sandboxed app.
 
-Its tests (`SpektrafilmUITests`) also draw in real windows, with the helpers
+Its tests (`AlteraluxUITests`) also draw in real windows, with the helpers
 copied from the swift-harness templates (`LayoutContract.swift`,
 `Screenshot.swift`, `Snapshot.swift`, `KeyboardCheck.swift`, kept as shipped):
 
@@ -49,7 +49,7 @@ Tokens (`Spacing`, `Radius`, `Typography`, `Motion`, semantic colors) and the
 shared components. The only place for raw visual values: see
 [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) and [COMPONENT_REGISTRY.md](COMPONENT_REGISTRY.md).
 
-### The app (`apple/Spektrafilm`, `SpektrafilmUI`)
+### The app (`apple/Alteralux`, `AlteraluxUI`)
 
 A single-window SwiftUI app. The app target is a shell: the `@main` scene, the
 resources, the entitlements. `AppModel` (`@Observable`, main actor) owns the
@@ -80,4 +80,4 @@ open photos, the settings of the selected one and its preview.
 
 The Xcode project is generated from `apple/project.yml` and is not committed.
 Code signing and hardened runtime settings live in
-`apple/Spektrafilm/Signing.xcconfig`, a tracked file.
+`apple/Alteralux/Signing.xcconfig`, a tracked file.
