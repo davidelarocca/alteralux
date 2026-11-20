@@ -21,6 +21,16 @@
         }
       }
     },
+    "%lld of %lld" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld di %2$lld"
+          }
+        }
+      }
+    },
     "%lld photos" : {
       "localizations" : {
         "en" : {
@@ -94,6 +104,46 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Non è stato possibile copiare %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos could not be exported." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be exported."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be exported."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile esportare %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile esportare %lld foto."
                 }
               }
             }
@@ -217,6 +267,16 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld px on the long side" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld px sul lato lungo"
           }
         }
       }
@@ -381,6 +441,56 @@
         }
       }
     },
+    "And %lld more." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "And %lld more."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "E %lld altra."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "E altre %lld."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Another folder…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un'altra cartella…"
+          }
+        }
+      }
+    },
     "Automatic metering" : {
       "localizations" : {
         "it" : {
@@ -397,6 +507,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Torna alla libreria"
+          }
+        }
+      }
+    },
+    "Beside the originals" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accanto agli originali"
           }
         }
       }
@@ -501,6 +621,16 @@
         }
       }
     },
+    "Copy Adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia regolazioni"
+          }
+        }
+      }
+    },
     "Copy the selected photos to another folder of the library" : {
       "localizations" : {
         "it" : {
@@ -521,6 +651,36 @@
         }
       }
     },
+    "Delete" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina"
+          }
+        }
+      }
+    },
+    "Delete the recipe “%@”?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminare la recipe “%@”?"
+          }
+        }
+      }
+    },
+    "Destination" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Destinazione"
+          }
+        }
+      }
+    },
     "Develop" : {
       "localizations" : {
         "it" : {
@@ -531,12 +691,43 @@
         }
       }
     },
+    "Develop the selected photos and write them as files" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa le foto selezionate e scrivile come file"
+          }
+        }
+      }
+    },
+    "Developed" : {
+      "comment" : "The name of the folder exported photos are written to, beside the originals",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppate"
+          }
+        }
+      }
+    },
     "Developed photo" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto sviluppata"
+          }
+        }
+      }
+    },
+    "Developing" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo in corso"
           }
         }
       }
@@ -611,12 +802,72 @@
         }
       }
     },
+    "Export" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta"
+          }
+        }
+      }
+    },
+    "Export %lld Photos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Export %lld Photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Export %lld Photos"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esporta %lld foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Esporta %lld foto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Export the developed photo" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esporta la foto sviluppata"
+          }
+        }
+      }
+    },
+    "Export the Photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta la foto"
           }
         }
       }
@@ -751,6 +1002,26 @@
         }
       }
     },
+    "Give a recipe to the selected photos. Recipes are saved while developing a photo." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dai una recipe alle foto selezionate. Le recipe si salvano mentre sviluppi una foto."
+          }
+        }
+      }
+    },
+    "Give this photo a recipe, or save its look as one" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dai una recipe a questa foto, o salva il suo aspetto come recipe"
+          }
+        }
+      }
+    },
     "Grain" : {
       "localizations" : {
         "it" : {
@@ -851,6 +1122,16 @@
         }
       }
     },
+    "More Actions" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre azioni"
+          }
+        }
+      }
+    },
     "Motion Picture" : {
       "localizations" : {
         "it" : {
@@ -911,6 +1192,26 @@
         }
       }
     },
+    "Move, copy or tag the selected photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta, copia o metti un tag alle foto selezionate"
+          }
+        }
+      }
+    },
+    "Name" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
+          }
+        }
+      }
+    },
     "Next Photo" : {
       "localizations" : {
         "it" : {
@@ -947,6 +1248,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuna foto"
+          }
+        }
+      }
+    },
+    "No Recipes" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna recipe"
           }
         }
       }
@@ -1007,6 +1318,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto originale"
+          }
+        }
+      }
+    },
+    "Paste Adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Incolla regolazioni"
           }
         }
       }
@@ -1081,6 +1402,16 @@
         }
       }
     },
+    "Recipe" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recipe"
+          }
+        }
+      }
+    },
     "Redo" : {
       "localizations" : {
         "it" : {
@@ -1121,6 +1452,26 @@
         }
       }
     },
+    "Rename" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina"
+          }
+        }
+      }
+    },
+    "Rename Recipe" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina recipe"
+          }
+        }
+      }
+    },
     "Reset" : {
       "localizations" : {
         "it" : {
@@ -1137,6 +1488,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ripristina regolazioni"
+          }
+        }
+      }
+    },
+    "Save" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva"
+          }
+        }
+      }
+    },
+    "Save as New Recipe" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva come nuova recipe"
+          }
+        }
+      }
+    },
+    "Save as New Recipe…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva come nuova recipe…"
           }
         }
       }
@@ -1221,6 +1602,16 @@
         }
       }
     },
+    "Size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione"
+          }
+        }
+      }
+    },
     "Size of the thumbnails" : {
       "localizations" : {
         "it" : {
@@ -1267,6 +1658,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si è verificato un problema"
+          }
+        }
+      }
+    },
+    "Stop" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrompi"
           }
         }
       }
@@ -1321,12 +1722,62 @@
         }
       }
     },
+    "The files go into a folder “%@” beside the originals. A file that is already there is kept." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I file vanno in una cartella “%@” accanto agli originali. Un file che c'è già non viene sostituito."
+          }
+        }
+      }
+    },
     "The library shows the photos of the folders you add, as they are on disk." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "La libreria mostra le foto delle cartelle che aggiungi, così come sono su disco."
+          }
+        }
+      }
+    },
+    "The photos that received it keep their adjustments." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le foto che l'hanno ricevuta conservano le loro regolazioni."
+          }
+        }
+      }
+    },
+    "The recipe keeps the look of this photo: everything but its white balance." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La recipe conserva l'aspetto di questa foto: tutto tranne il bilanciamento del bianco."
+          }
+        }
+      }
+    },
+    "The recipe “%@” could not be deleted." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile eliminare la recipe “%@”."
+          }
+        }
+      }
+    },
+    "The recipe “%@” could not be saved." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile salvare la recipe “%@”."
           }
         }
       }
@@ -1447,6 +1898,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filtro giallo"
+          }
+        }
+      }
+    },
+    "You choose the folder when the export starts. A file that is already there is kept." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli la cartella quando parte l'esportazione. Un file che c'è già non viene sostituito."
           }
         }
       }

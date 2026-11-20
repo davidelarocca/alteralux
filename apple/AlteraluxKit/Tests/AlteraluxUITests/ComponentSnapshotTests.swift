@@ -221,6 +221,77 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct FormSheetSnapshots {
+        private let source = "\(components)/FormSheet.swift"
+        private let sizes = ["420x300"]
+        private let english = "en"
+
+        private func options(confirmIsEnabled: Bool = true) -> some View {
+            FormSheet(
+                Text(verbatim: "Export 340 Photos"),
+                confirm: SheetAction(Text(verbatim: "Export"), isEnabled: confirmIsEnabled) {},
+                cancel: SheetAction(Text(verbatim: "Cancel")) {},
+            ) {
+                Picker(selection: .constant(0)) {
+                    Text(verbatim: "JPEG").tag(0)
+                } label: {
+                    Text(verbatim: "Format")
+                }
+                Toggle(isOn: .constant(true)) {
+                    Text(verbatim: "Include camera metadata")
+                }
+            }
+        }
+
+        @Test func optionsAndTwoButtons() {
+            #expect(Snapshot.verify("FormSheet", sizes: sizes, state: "options", locale: english, source: source) {
+                options()
+            } == [])
+        }
+
+        @Test func aDefaultButtonThatWaits() {
+            #expect(Snapshot.verify("FormSheet", sizes: sizes, state: "waiting", locale: english, source: source) {
+                options(confirmIsEnabled: false)
+            } == [])
+        }
+
+        /// Something going on: a message, a progress, and the one button that stops it.
+        @Test func progressAndOneButton() {
+            #expect(Snapshot.verify("FormSheet", sizes: sizes, state: "progress", locale: english, source: source) {
+                FormSheet(
+                    Text(verbatim: "Developing"), message: Text(verbatim: "The files go beside the originals."),
+                    confirm: nil, cancel: SheetAction(Text(verbatim: "Stop")) {},
+                ) {
+                    ProgressView(value: 0.35) {
+                        Text(verbatim: "120 of 340 · DSC_4836.NEF")
+                    }
+                }
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("FormSheet", sizes: sizes, state: "long-text", locale: english, source: source) {
+                FormSheet(
+                    Text(verbatim: "A title long enough to need a second line in a sheet as narrow as this one is"),
+                    message: Text(verbatim: "A message that explains at some length what is about to happen, and wraps."),
+                    confirm: SheetAction(Text(verbatim: "A long default button")) {},
+                    cancel: SheetAction(Text(verbatim: "A long way out")) {},
+                ) {
+                    Toggle(isOn: .constant(false)) {
+                        Text(verbatim: "An option with a long title beside its switch")
+                    }
+                }
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("FormSheet", sizes: sizes, state: "options", locale: "ar", source: source) {
+                options()
+            } == [])
+        }
+    }
+
+    @MainActor
     struct StatusBadgeSnapshots {
         private let source = "\(components)/StatusBadge.swift"
         private let sizes = ["320x60"]

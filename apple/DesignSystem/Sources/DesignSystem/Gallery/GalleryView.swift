@@ -41,6 +41,14 @@ public struct GalleryView: View {
             Section("StatusBadge") {
                 StatusBadge("Original")
             }
+            Section("FormSheet") {
+                FormSheet(
+                    Text("Save as New Recipe"), message: Text("The recipe keeps the look of this photo."),
+                    confirm: SheetAction(Text("Save")) {}, cancel: SheetAction(Text("Cancel")) {},
+                ) {
+                    TextField("Name", text: .constant("Warm evening"))
+                }
+            }
             Section("Colors") {
                 swatch("viewerSurround", Color.DS.viewerSurround)
                 swatch("thumbnailPlaceholder", Color.DS.thumbnailPlaceholder)

@@ -54,7 +54,11 @@ public final class AppModel {
     private(set) var isStarting = true
     private(set) var isLoading = false
     private(set) var isRendering = false
-    private(set) var isExporting = false
+    var isExporting = false
+    /// How far the export of several photos is, while one runs.
+    var batchExport: BatchExportProgress?
+    /// The export of several photos that is running, to stop it.
+    var exportTask: Task<[FileActionResult], Never>?
 
     // MARK: Presentation
 
@@ -63,6 +67,11 @@ public final class AppModel {
     var isFolderImporterPresented = false
 
     var isExportPresented = false
+    /// The photos the export sheet is for: the selected photos of the library, or none for the
+    /// photo on screen.
+    var photosToExport: [URL] = []
+    /// Whether several photos go to a folder beside each original, or to one folder to choose.
+    var exportsBesideOriginals = true
     var alertMessage: String?
 
     /// File types offered by the Open panel and accepted by drag and drop.
@@ -81,7 +90,7 @@ public final class AppModel {
     /// Long side of the photo as the viewer shows it, in display pixels (0 until it reports).
     private var displayedLongSide = 0.0
 
-    private var renderer: FilmRenderer?
+    private(set) var renderer: FilmRenderer?
     private var renderLoop: Task<Void, Never>?
     private var needsRender = false
     private var loadGeneration = 0
@@ -103,6 +112,11 @@ public final class AppModel {
     let library: LibraryModel
     /// Whether the window shows the library instead of the photo being developed.
     var showsLibrary = false
+    /// The recipes, by name, and where they are kept.
+    var recipes: [Recipe] = []
+    let recipeStore: RecipeStore
+    /// The adjustments copied from a photo, to paste on others.
+    var copiedAdjustments: DevelopSettings?
     /// The settings the last call of `settingsDidChange` has seen.
     private var seenSettings = DevelopSettings()
 
@@ -132,6 +146,9 @@ public final class AppModel {
             discards: DiscardStore(fallbackDirectory: edits.appending(path: "Discarded")),
             hasAdjustments: { store.hasAdjustments(for: $0) },
         )
+        recipeStore = RecipeStore(
+            directory: isApp ? URL.applicationSupportDirectory.appending(path: "Recipes") : beside.appending(path: "recipes"),
+        )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
@@ -159,6 +176,7 @@ public final class AppModel {
         } catch {
             alertMessage = error.localizedDescription
         }
+        await loadRecipes()
         // The library is where the app opens, unless it was started on a photo.
         await library.load()
         if photos.isEmpty, !library.isEmpty {
@@ -376,6 +394,24 @@ public final class AppModel {
         }
     }
 
+    /// Gives a photo of the strip adjustments decided away from the develop screen (a recipe or
+    /// a paste on a selection of the library, and their undo), without showing that photo. The
+    /// caller keeps them with the photo.
+    func put(_ new: DevelopSettings, on item: PhotoItem) {
+        item.settings = new
+        item.keptSettings = new
+        guard item.id == selectedID else { return }
+        settle?.cancel()
+        settle = nil
+        isAdjusting = false
+        settings = new
+        seenSettings = new
+        // The next change starts from here.
+        history.follow(item)
+        sources?.settingsDidChange(new)
+        requestRender()
+    }
+
     /// Lets a preview that takes long through, once the settled one has been on screen for a
     /// while without the settings changing again.
     private func releaseSlowPreviewLater() {
@@ -508,44 +544,6 @@ public final class AppModel {
         context.interpolationQuality = .high
         context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
         return context.makeImage()
-    }
-
-    // MARK: - Export
-
-    /// Asks where to save the developed photo, and writes it there.
-    func export() async {
-        guard let sources, !isExporting else { return }
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [exportOptions.format.contentType]
-        panel.canCreateDirectories = true
-        panel.nameFieldStringValue = Self.exportFileName(
-            source: sources.decoder.url,
-            film: selectedFilm?.displayName ?? settings.filmID,
-            format: exportOptions.format,
-        )
-        guard await panel.begin() == .OK, let destination = panel.url else { return }
-        await export(to: destination)
-    }
-
-    /// Develops the whole photo with the settings on screen and writes it to `destination`.
-    func export(to destination: URL) async {
-        guard let sources, let renderer, !isExporting else { return }
-        let url = sources.decoder.url
-        let settings = settings
-        isExporting = true
-        defer { isExporting = false }
-        let options = exportOptions
-        do {
-            let whole = try await sources.source(dimension: 0, settings: settings)
-            let developed = try await renderer.render(whole, settings: settings, quality: .full)
-            try await Task.detached(priority: .userInitiated) {
-                try ImageExporter.write(
-                    developed, to: destination, options: options, originalURL: url,
-                )
-            }.value
-        } catch {
-            alertMessage = error.localizedDescription
-        }
     }
 }
 

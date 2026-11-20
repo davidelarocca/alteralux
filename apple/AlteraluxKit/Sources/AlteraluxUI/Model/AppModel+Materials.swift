@@ -21,11 +21,16 @@ extension AppModel {
 
     /// "Portra 400 → Portra Endura", shown under the window title.
     var materialsSummary: String {
-        guard hasPhoto, let film = selectedFilm else { return "" }
-        if settings.scanFilm {
+        hasPhoto ? materials(of: settings) : ""
+    }
+
+    /// The film and the paper of `settings` as the user reads them: "Portra 400 → Portra Endura",
+    /// or the film alone when it is scanned directly.
+    func materials(of settings: DevelopSettings) -> String {
+        guard let film = films.first(where: { $0.id == settings.filmID }) else { return "" }
+        guard !settings.scanFilm, let paper = papers.first(where: { $0.id == settings.paperID }) else {
             return film.displayName
         }
-        guard let paper = selectedPaper else { return film.displayName }
         return "\(film.displayName) → \(paper.displayName)"
     }
 

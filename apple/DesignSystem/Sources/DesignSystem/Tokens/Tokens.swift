@@ -22,10 +22,17 @@ public enum Radius {
     public static let emblem: CGFloat = 5
 }
 
+public enum SheetSize {
+    /// The width of every sheet: it opens inside the window at its smallest.
+    public static let width: CGFloat = 420
+}
+
 public enum Typography {
     public static let body = Font.body
     /// The name of what a pane is about: the film at the top of the inspector.
     public static let heading = Font.title2.weight(.semibold)
+    /// The title of a sheet, as the system's alerts write theirs.
+    public static let sheetTitle = Font.headline
     /// A line of context above or under a heading.
     public static let caption = Font.subheadline
     /// The speed written on a film's emblem.
