@@ -15,6 +15,12 @@ extension AppModel {
         sources != nil && !showsLibrary
     }
 
+    /// The original can be shown in place of the developed photo: once it is read, and not
+    /// while a frame is being chosen.
+    var canCompare: Bool {
+        original != nil && !isCropping
+    }
+
     /// The frame the preview is developed with: none while a frame is being chosen.
     var renderedCrop: PhotoCrop? {
         isCropping ? nil : settings.crop
@@ -83,7 +89,17 @@ extension AppModel {
         cropSession?.setUpright(isUpright)
     }
 
-    /// Back to the whole photo, straight, while a frame is being chosen.
+    /// Turns the photo a quarter counterclockwise, while a frame is being chosen.
+    func turnCropLeft() {
+        cropSession?.turnLeft()
+    }
+
+    /// Mirrors the photo left to right, while a frame is being chosen.
+    func flipCrop() {
+        cropSession?.flip()
+    }
+
+    /// Back to the whole photo as it was shot, while a frame is being chosen.
     func resetCrop() {
         cropSession?.reset()
     }

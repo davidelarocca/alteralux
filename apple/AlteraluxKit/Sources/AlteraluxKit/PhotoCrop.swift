@@ -1,11 +1,14 @@
 import CoreGraphics
 import Foundation
 
-/// How a photo is framed: turned by a small angle to straighten it, then cut to a rectangle.
+/// How a photo is framed: turned a quarter at a time and mirrored, turned by a small angle to
+/// straighten it, then cut to a rectangle, in that order.
 ///
 /// The frame is applied before the engine, so the engine takes the framed picture as one whole
 /// frame of the film and the grain keeps its size relative to it (ADR 0010). The rectangle is
-/// relative to the photo shown upright, so it holds at every size the photo is decoded at.
+/// relative to the photo once turned and mirrored, so it holds at every size the photo is
+/// decoded at. Every size passed to the methods here is the photo's own, as it is shown upright:
+/// they turn it themselves.
 public struct PhotoCrop: Codable, Equatable, Sendable {
     /// The left edge of the rectangle kept, from 0 (the photo's left edge) to 1.
     public var left: Double
@@ -17,25 +20,59 @@ public struct PhotoCrop: Codable, Equatable, Sendable {
     public var height: Double
     /// How far the picture is turned about its center, in degrees: positive turns it clockwise.
     public var angle: Double
+    /// How many quarter turns clockwise the photo takes first, 0 to 3.
+    public var quarterTurns: Int
+    /// Whether the photo, once turned, is mirrored left to right.
+    public var isFlipped: Bool
 
     /// The angles the straightening covers.
     public static let angleRange = -45.0 ... 45.0
     /// The whole photo, not turned.
     public static let whole = PhotoCrop(left: 0, top: 0, width: 1, height: 1, angle: 0)
 
-    public init(left: Double, top: Double, width: Double, height: Double, angle: Double = 0) {
+    public init(
+        left: Double, top: Double, width: Double, height: Double, angle: Double = 0,
+        quarterTurns: Int = 0, isFlipped: Bool = false,
+    ) {
         self.left = left
         self.top = top
         self.width = width
         self.height = height
         self.angle = angle
+        self.quarterTurns = quarterTurns
+        self.isFlipped = isFlipped
+    }
+
+    /// Reads a frame saved by any version of the app: one saved before photos could be turned
+    /// a quarter at a time or mirrored is neither.
+    public init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        try self.init(
+            left: values.decode(Double.self, forKey: .left),
+            top: values.decode(Double.self, forKey: .top),
+            width: values.decode(Double.self, forKey: .width),
+            height: values.decode(Double.self, forKey: .height),
+            angle: values.decodeIfPresent(Double.self, forKey: .angle) ?? 0,
+            quarterTurns: values.decodeIfPresent(Int.self, forKey: .quarterTurns) ?? 0,
+            isFlipped: values.decodeIfPresent(Bool.self, forKey: .isFlipped) ?? false,
+        )
     }
 
     /// Whether this frame keeps the whole photo as it is.
     public var isWhole: Bool {
         let tolerance = 1e-6
         return abs(left) < tolerance && abs(top) < tolerance && abs(width - 1) < tolerance
-            && abs(height - 1) < tolerance && abs(angle) < 1e-3
+            && abs(height - 1) < tolerance && abs(angle) < 1e-3 && turns == 0 && !isFlipped
+    }
+
+    /// The quarter turns, 0 to 3, whatever was stored.
+    var turns: Int {
+        ((quarterTurns % 4) + 4) % 4
+    }
+
+    /// The size of a photo of `photo` pixels once it is turned a quarter at a time.
+    public func orientedSize(of photo: CGSize) -> CGSize {
+        turns.isMultiple(of: 2) ? photo : CGSize(width: photo.height, height: photo.width)
     }
 
     /// The rectangle kept, relative to the photo (0 to 1, from the top left).
@@ -45,7 +82,29 @@ public struct PhotoCrop: Codable, Equatable, Sendable {
 
     /// The size of the framed picture, in pixels, for a photo of `photo` pixels.
     public func framedSize(of photo: CGSize) -> CGSize {
-        CGSize(width: width * photo.width, height: height * photo.height)
+        let space = orientedSize(of: photo)
+        return CGSize(width: width * space.width, height: height * space.height)
+    }
+
+    /// This frame with the photo turned a quarter counterclockwise: the picture turns with it.
+    public func turnedLeft() -> PhotoCrop {
+        var crop = self
+        crop.left = top
+        crop.top = 1 - (left + width)
+        crop.width = height
+        crop.height = width
+        // A mirrored photo turns the other way under the mirror.
+        crop.quarterTurns = (turns + (isFlipped ? 1 : 3)) % 4
+        return crop
+    }
+
+    /// This frame with the photo mirrored left to right: the picture is mirrored with it.
+    public func flipped() -> PhotoCrop {
+        var crop = self
+        crop.left = 1 - (left + width)
+        crop.angle = -angle
+        crop.isFlipped.toggle()
+        return crop
     }
 }
 
@@ -58,12 +117,13 @@ public extension PhotoCrop {
         guard left >= -Self.slack, top >= -Self.slack, left + width <= 1 + Self.slack, top + height <= 1 + Self.slack else {
             return false
         }
-        let pixels = pixelRect(in: photo)
+        let space = orientedSize(of: photo)
+        let pixels = pixelRect(in: space)
         let corners = [
             CGPoint(x: pixels.minX, y: pixels.minY), CGPoint(x: pixels.maxX, y: pixels.minY),
             CGPoint(x: pixels.minX, y: pixels.maxY), CGPoint(x: pixels.maxX, y: pixels.maxY),
         ]
-        return corners.allSatisfy { Self.turnedPhoto(photo, angle: angle, contains: $0) }
+        return corners.allSatisfy { Self.turnedPhoto(space, angle: angle, contains: $0) }
     }
 
     /// This frame made to fit in the turned photo: as it is when it fits, otherwise smaller
@@ -73,8 +133,9 @@ public extension PhotoCrop {
             return self
         }
         let center = CGPoint(x: left + width / 2, y: top + height / 2)
+        let space = orientedSize(of: photo)
         let centerInside = Self.turnedPhoto(
-            photo, angle: angle, contains: CGPoint(x: center.x * photo.width, y: center.y * photo.height),
+            space, angle: angle, contains: CGPoint(x: center.x * space.width, y: center.y * space.height),
         )
         let pivot = centerInside ? center : CGPoint(x: 0.5, y: 0.5)
         return Self.largest(fitting: photo) { scale in
@@ -87,22 +148,30 @@ public extension PhotoCrop {
         } ?? centered(in: photo)
     }
 
-    /// The largest frame of `aspect` (width over height, in pixels; `nil` for the photo's own
-    /// shape) at the center of the photo turned by `angle`.
-    static func largest(aspect: Double?, angle: Double, in photo: CGSize) -> PhotoCrop {
-        let photoAspect = photo.width / photo.height
+    /// The largest frame of `aspect` (width over height, in pixels; `nil` for the shape of the
+    /// photo as it is turned) at the center of the photo, turned and straightened as this one.
+    func largest(aspect: Double?, in photo: CGSize) -> PhotoCrop {
+        let space = orientedSize(of: photo)
+        let photoAspect = space.width / space.height
         let aspect = aspect ?? photoAspect
         // The fraction of the photo's width and height a frame of that shape takes, at most.
-        let width = aspect >= photoAspect ? 1 : aspect / photoAspect
-        let height = aspect >= photoAspect ? photoAspect / aspect : 1
-        return PhotoCrop(left: (1 - width) / 2, top: (1 - height) / 2, width: width, height: height, angle: angle)
-            .fitted(in: photo)
+        var crop = self
+        crop.width = aspect >= photoAspect ? 1 : aspect / photoAspect
+        crop.height = aspect >= photoAspect ? photoAspect / aspect : 1
+        crop.left = (1 - crop.width) / 2
+        crop.top = (1 - crop.height) / 2
+        return crop.fitted(in: photo)
     }
 
     /// A tiny frame at the center, for a frame that cannot be fitted any other way.
     private func centered(in photo: CGSize) -> PhotoCrop {
-        let side = Self.minimumSide(of: photo)
-        return PhotoCrop(left: 0.5 - side.width / 2, top: 0.5 - side.height / 2, width: side.width, height: side.height, angle: angle)
+        let side = Self.minimumSide(of: orientedSize(of: photo))
+        var crop = self
+        crop.left = 0.5 - side.width / 2
+        crop.top = 0.5 - side.height / 2
+        crop.width = side.width
+        crop.height = side.height
+        return crop
     }
 }
 
@@ -157,14 +226,16 @@ public extension PhotoCrop {
     }
 
     private func resized(_ handle: Handle, by delta: CGSize, aspect: Double?, in photo: CGSize) -> PhotoCrop {
-        let free = movingEdges(of: handle, by: delta, in: photo)
+        let space = orientedSize(of: photo)
+        let free = movingEdges(of: handle, by: delta, in: space)
         guard let aspect else { return free }
-        return free.keepingShape(aspect * photo.height / photo.width, of: handle, from: self)
+        return free.keepingShape(aspect * space.height / space.width, of: handle, from: self)
     }
 
-    /// The frame with the edges `handle` takes moved by `delta`, no smaller than the smallest.
-    private func movingEdges(of handle: Handle, by delta: CGSize, in photo: CGSize) -> PhotoCrop {
-        let minimum = Self.minimumSide(of: photo)
+    /// The frame with the edges `handle` takes moved by `delta`, no smaller than the smallest,
+    /// in a photo of `space` pixels as it is turned.
+    private func movingEdges(of handle: Handle, by delta: CGSize, in space: CGSize) -> PhotoCrop {
+        let minimum = Self.minimumSide(of: space)
         var leftEdge = left, topEdge = top, rightEdge = left + width, bottomEdge = top + height
         if handle.horizontal < 0 {
             leftEdge = min(leftEdge + delta.width, rightEdge - minimum.width)
@@ -176,7 +247,12 @@ public extension PhotoCrop {
         } else if handle.vertical > 0 {
             bottomEdge = max(bottomEdge + delta.height, topEdge + minimum.height)
         }
-        return PhotoCrop(left: leftEdge, top: topEdge, width: rightEdge - leftEdge, height: bottomEdge - topEdge, angle: angle)
+        var crop = self
+        crop.left = leftEdge
+        crop.top = topEdge
+        crop.width = rightEdge - leftEdge
+        crop.height = bottomEdge - topEdge
+        return crop
     }
 
     /// This frame given the shape `ratio` (width over height, as fractions of the photo) after
@@ -222,7 +298,7 @@ extension PhotoCrop {
         return CGSize(width: side / photo.width, height: side / photo.height)
     }
 
-    /// The rectangle in pixels, from the top left of the photo.
+    /// The rectangle in pixels, from the top left of the photo of `photo` pixels as it is turned.
     func pixelRect(in photo: CGSize) -> CGRect {
         CGRect(x: left * photo.width, y: top * photo.height, width: width * photo.width, height: height * photo.height)
     }

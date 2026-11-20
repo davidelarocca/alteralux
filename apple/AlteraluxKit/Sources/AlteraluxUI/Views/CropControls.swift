@@ -3,7 +3,8 @@ import DesignSystem
 import SwiftUI
 
 /// The bar under the photo while it is cropped, in place of the zoom: the shape of the frame,
-/// upright or lying down, the straightening, and the way out (Reset, Cancel, Done). Return keeps
+/// upright or lying down, a quarter turn and a mirror, the straightening, and the way out
+/// (Reset, Cancel, Done). Return keeps
 /// the frame, Escape lets it go.
 struct CropControls: View {
     @Environment(AppModel.self) private var model
@@ -35,6 +36,24 @@ struct CropControls: View {
             .disabled(!session.aspect.hasOrientation)
             .help("Lay the frame down or stand it upright")
 
+            Button {
+                model.turnCropLeft()
+            } label: {
+                Label("Rotate Left", systemImage: "rotate.left")
+                    .labelStyle(.iconOnly)
+            }
+            .buttonStyle(.borderless)
+            .help("Turn the photo a quarter to the left")
+
+            Button {
+                model.flipCrop()
+            } label: {
+                Label("Flip Horizontally", systemImage: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                    .labelStyle(.iconOnly)
+            }
+            .buttonStyle(.borderless)
+            .help("Mirror the photo left to right")
+
             Spacer(minLength: 0)
 
             ParameterSlider(
@@ -47,7 +66,7 @@ struct CropControls: View {
 
             HStack(spacing: Spacing.s) {
                 Button("Reset") { model.resetCrop() }
-                    .help("Back to the whole photo, straight")
+                    .help("Back to the whole photo as it was shot")
                 Button("Cancel", role: .cancel) { model.cancelCrop() }
                     .keyboardShortcut(.cancelAction)
                 Button("Done") { model.confirmCrop() }

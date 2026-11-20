@@ -2,8 +2,8 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-/// The whole photo, developed and turned by the straightening, with the frame being chosen over
-/// it. The frame takes the drags; the model keeps it in the turned photo.
+/// The whole photo, developed, turned, mirrored and straightened as the frame says, with the
+/// frame being chosen over it. The frame takes the drags; the model keeps it in the turned photo.
 struct CropEditor: View {
     @Environment(AppModel.self) private var model
     /// The whole photo, developed.
@@ -12,12 +12,18 @@ struct CropEditor: View {
 
     var body: some View {
         GeometryReader { proxy in
-            let photo = Self.photoRect(of: session.photo, in: proxy.size)
+            let crop = session.crop
+            let turned = crop.orientedSize(of: session.photo)
+            // Where the photo goes once turned, and the scale it is drawn at.
+            let photo = Self.photoRect(of: turned, in: proxy.size)
+            let scale = photo.width / turned.width
             ZStack(alignment: .topLeading) {
                 Image(decorative: image, scale: 1)
                     .resizable()
-                    .frame(width: photo.width, height: photo.height)
-                    .rotationEffect(.degrees(session.angle))
+                    .frame(width: session.photo.width * scale, height: session.photo.height * scale)
+                    .rotationEffect(.degrees(Double(crop.quarterTurns) * 90))
+                    .scaleEffect(x: crop.isFlipped ? -1 : 1, y: 1)
+                    .rotationEffect(.degrees(crop.angle))
                     .position(x: photo.midX, y: photo.midY)
                     .accessibilityLabel(Text("Photo being cropped"))
                 CropFrame(

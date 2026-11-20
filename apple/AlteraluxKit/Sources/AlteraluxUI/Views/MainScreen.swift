@@ -118,6 +118,7 @@ struct DevelopScreen: View {
                     .accessibilityHidden(true)
             }
         }
+        .modifier(HoldToCompare())
         .navigationTitle(model.selection?.name ?? "alteralux")
         .navigationSubtitle(model.materialsSummary)
         .toolbar {
@@ -199,8 +200,8 @@ private struct MainToolbar: ToolbarContent {
             Toggle(isOn: $model.showsOriginal) {
                 Label("Original", systemImage: "circle.lefthalf.filled")
             }
-            .help("Compare with the original")
-            .disabled(model.original == nil || model.isCropping)
+            .help("Compare with the original, or hold M")
+            .disabled(!model.canCompare)
 
             RecipeMenu(model: model, savesNew: true) { model.apply($0) }
                 .help("Give this photo a recipe, or save its look as one")

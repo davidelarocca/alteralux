@@ -161,6 +161,21 @@ struct LibraryModelTests {
     }
 
     /// The order and the filters are kept for the next launch.
+    /// Typing the beginning of a name finds the first photo shown with it, as in the Finder.
+    @Test func typingANameFindsThePhoto() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        #expect(model.photo(namedLike: "img_2")?.lastPathComponent == "IMG_2.jpg")
+        #expect(model.photo(namedLike: "IMG_1")?.lastPathComponent == model.visiblePhotos.first { $0.lastPathComponent.hasPrefix("IMG_1") }?.lastPathComponent)
+        #expect(model.photo(namedLike: "notes") == nil, "Only photos are shown.")
+        #expect(model.photo(namedLike: "") == nil)
+        // A photo hidden by the filter is not found.
+        model.filter = .adjusted
+        #expect(model.photo(namedLike: "IMG") == nil)
+    }
+
     @Test func theOrderAndTheFiltersAreKeptForTheNextLaunch() throws {
         let suite = "alteralux-tests-\(UUID().uuidString)"
         let preferences = try #require(UserDefaults(suiteName: suite))

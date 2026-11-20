@@ -25,6 +25,7 @@ struct CropTests {
 
         model.beginCrop()
         #expect(model.isCropping)
+        #expect(!model.canCompare, "The original is not shown over the frame.")
         model.setCropAspect(.square)
         let session = try #require(model.cropSession)
         #expect(abs(session.crop.framedSize(of: session.photo).width - 1600) < 1)
@@ -63,6 +64,18 @@ struct CropTests {
         session.setUpright(true)
         let size = session.crop.framedSize(of: session.photo)
         #expect(abs(size.width / size.height - 0.8) < 1e-6)
+        // A quarter turn stands the frame upright; mirrored and turned back, it is as it was.
+        let upright = session.crop
+        session.turnLeft()
+        #expect(!session.isUpright && session.aspect.title(isUpright: session.isUpright) == "5:4")
+        session.flip()
+        session.flip()
+        session.turnLeft()
+        session.turnLeft()
+        session.turnLeft()
+        let back = session.crop
+        let edges = [back.left - upright.left, back.top - upright.top, back.width - upright.width, back.height - upright.height]
+        #expect(edges.allSatisfy { abs($0) < 1e-9 } && back.quarterTurns == 0 && !back.isFlipped && session.isUpright)
         session.reset()
         #expect(session.result == nil && session.aspect == .freeform)
     }
