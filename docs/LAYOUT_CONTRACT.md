@@ -41,6 +41,7 @@ they must open inside the window, or on screen for a separate window.
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
 | `ExportSheet` | Main window, Export | sheet | 420 wide | fits inside the 900 pt window |
+| `FilmPicker` | Main window, the film heading of the inspector | popover | 300x420 | opens under the heading, inside the window |
 | Open panel | Main window, Open | system file importer | system | system |
 | Save panel | `ExportSheet`, Export | system save panel | system | separate window |
 | About panel | App menu | system About panel | system | separate window |
@@ -56,3 +57,5 @@ Deliberate departures from the rules above, with the reason.
   `LayoutContract.check` cannot measure them. What they hold is checked through the shared components:
   `ParameterSlider` has snapshots at 280 pt, the inspector's minimum width, with a long title too. The
   screenshots of the main window at Min and Default show the panes together, for review.
+- The zoom controls under the photo have a fixed width (about 400 pt). At the window's Min the photo
+  pane is 580 pt wide with the inspector at its ideal width, so they fit.

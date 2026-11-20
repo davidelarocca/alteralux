@@ -5,21 +5,28 @@ Code: `apple/DesignSystem/`. Gallery: `GalleryView`, shown from its Xcode previe
 
 ## Principles
 
-1. Native first: follow macOS conventions and the current system materials before inventing a pattern.
+1. Native first: controls are the system's (`Slider`, `Toggle`, `Picker`, `DisclosureGroup`, `List`,
+   `Form`). A component wraps one to add what the app needs around it, never to redraw it
+   ([ADR 0006](adr/0006-use-the-systems-controls.md)). The mockups guide structure, not the drawing of
+   controls.
 2. One behavior, one component. Things that look alike but behave differently stay separate.
 3. Intent over values: callers say what (`Spacing.m`, `Radius.thumbnail`), the design system decides how.
 4. Always dark: photos are judged against a neutral dark interface, so the app forces the dark
    appearance and each semantic color has a single value.
+5. Gray controls: the window sets `Color.DS.controlTint` as its tint, so a switch that is on and the
+   filled part of a slider are gray. The label of a button in a form would be tinted too and read as
+   disabled: such a button takes the label color as its tint (`.tint(.primary)`).
 
 ## Tokens
 
 | Token family | Type | Tokens | Notes |
 |---|---|---|---|
 | `Spacing` | `CGFloat` | `xxs`, `xs`, `s`, `m`, `l`, `xl` | 2, 4, 8, 12, 16, 24 pt |
-| `Radius` | `CGFloat` | `thumbnail`, `control` | |
-| `Typography` | `Font` | `body`, `value`, `badge`, `technical` | built on system text styles |
+| `Radius` | `CGFloat` | `thumbnail`, `control`, `emblem` | |
+| `Typography` | `Font` | `body`, `title`, `heading`, `caption`, `sectionHeader`, `emblem`, `value`, `badge`, `technical` | built on system text styles |
 | `Motion` | `Animation` | `quick`, `standard`, `moving(_:reduced:)` | durations live only here |
-| Colors | `Color` | `Color.DS.viewerSurround`, `thumbnailPlaceholder`, `hairline` | in `Colors.xcassets` |
+| Colors | `Color` | `Color.DS.viewerSurround`, `thumbnailPlaceholder`, `hairline`, `controlTint` | in `Colors.xcassets` |
+| Emblem inks | `FilmEmblem.Ink` | `violet`, `gold`, `petrol`, ... | the colors film emblems are made of; used only there |
 
 Keep this table in sync with the code. The code wins if they differ.
 
@@ -30,7 +37,13 @@ Motion gets no animation, or a fade for a transition.
 
 | Pattern | Use for | Component |
 |---|---|---|
-| Adjusting a numeric parameter | every slider of the adjustments inspector: the track fills from the neutral value, in grays only | `ParameterSlider` |
+| Adjusting a numeric parameter | every slider of the adjustments inspector and the zoom: the system slider, filled from the neutral value | `ParameterSlider` |
+| A parameter that can be switched off | grain, halation: the switch on the slider's row | `ParameterSlider` with `isOn` |
+| A group of controls the user can collapse | the sections of the inspector; collapsed, a section shows its values | `InspectorSection` |
+| The one thing a pane is about | the film at the top of the inspector, which opens the list of films | `HeadingButton` |
+| Telling items of a list apart | the films in the list of films | `FilmEmblem` in a row of a `List` |
+| Switching something on or off | every other switch | `Toggle` in a `Form` |
+| Choosing among a few named options | paper, film format | `Picker` in a `Form` |
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |

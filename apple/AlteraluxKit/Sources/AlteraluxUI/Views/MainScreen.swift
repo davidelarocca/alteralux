@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 
 /// The root view of the main window: the main screen plus the window's
@@ -12,11 +13,13 @@ public struct MainWindow: View {
 
     public var body: some View {
         MainScreen()
+            // The system's controls, in gray: nothing saturated sits next to the photo.
+            .tint(Color.DS.controlTint)
             .frame(minWidth: Self.minimumSize.width, minHeight: Self.minimumSize.height)
     }
 }
 
-/// The main screen: the photo with the strip of open photos below it, and the
+/// The main screen: the photo, with the zoom and the strip of open photos below it, and the
 /// adjustments in an inspector on the right.
 struct MainScreen: View {
     @Environment(AppModel.self) private var model
@@ -35,6 +38,7 @@ struct MainScreen: View {
         VStack(spacing: 0) {
             PhotoStage()
             if !model.photos.isEmpty {
+                ZoomControls()
                 Divider()
                 FilmstripView()
             }
@@ -47,6 +51,8 @@ struct MainScreen: View {
         }
         .navigationTitle(model.selection?.name ?? "alteralux")
         .navigationSubtitle(model.materialsSummary)
+        // The toolbar shows the photo's name itself, between previous and next.
+        .toolbar(removing: .title)
         .toolbar {
             MainToolbar(model: model, showsInspector: $showsInspector)
         }
@@ -86,7 +92,8 @@ struct MainScreen: View {
     }
 }
 
-/// The toolbar of the main window: open, compare, zoom, export, inspector.
+/// The toolbar of the main window: on the leading side open, then previous and next around the
+/// photo's name; on the trailing side compare, export and the inspector.
 private struct MainToolbar: ToolbarContent {
     @Bindable var model: AppModel
     @Binding var showsInspector: Bool
@@ -101,20 +108,22 @@ private struct MainToolbar: ToolbarContent {
             .help("Open photos")
         }
 
+        if model.hasPhoto {
+            ToolbarSpacer(.fixed, placement: .navigation)
+            ToolbarItem(placement: .navigation) {
+                PhotoTitle(model: model)
+            }
+        }
+
+        // The title's place is taken by the photo's name: the actions stay on the trailing side.
+        ToolbarSpacer(.flexible)
+
         ToolbarItemGroup(placement: .primaryAction) {
             Toggle(isOn: $model.showsOriginal) {
                 Label("Original", systemImage: "circle.lefthalf.filled")
             }
             .help("Compare with the original")
             .disabled(model.original == nil)
-
-            ControlGroup {
-                Button("Fit") { model.zoom(.fit) }
-                    .help("Zoom to fit")
-                Button("100%") { model.zoom(.actualSize) }
-                    .help("Actual size")
-            }
-            .disabled(!model.canZoom)
 
             Button {
                 model.isExportPresented = true
@@ -131,5 +140,39 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Show or hide the adjustments")
         }
+    }
+}
+
+/// The selected photo in the toolbar: its name over the film and paper it is developed with,
+/// between the buttons for the previous and the next photo of the strip.
+private struct PhotoTitle: View {
+    let model: AppModel
+
+    var body: some View {
+        HStack(spacing: Spacing.xs) {
+            step(-1, title: "Previous Photo", systemImage: "chevron.backward")
+            VStack(alignment: .leading, spacing: 0) {
+                Text(verbatim: model.selection?.name ?? "")
+                    .font(Typography.title)
+                Text(verbatim: model.materialsSummary)
+                    .font(Typography.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .lineLimit(1)
+            .accessibilityElement(children: .combine)
+            step(1, title: "Next Photo", systemImage: "chevron.forward")
+        }
+    }
+
+    private func step(_ offset: Int, title: LocalizedStringKey, systemImage: String) -> some View {
+        Button {
+            model.selectAdjacent(offset: offset)
+        } label: {
+            Label(title, systemImage: systemImage)
+                .labelStyle(.iconOnly)
+        }
+        .buttonStyle(.borderless)
+        .help(title)
+        .disabled(!model.canSelectAdjacent(offset: offset))
     }
 }

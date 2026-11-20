@@ -3,7 +3,8 @@
 What alteralux for macOS is meant to become. `docs/ROADMAP.md` says in which order; this document says
 where it is going and what "finished" means. Until 2026-11-20 the app was called spektrafilm for
 macOS, after the upstream project whose film model it uses; it has had a name of its own since then. Agreed on 2026-11-19 and revised on 2026-11-20 after the
-mockups of the whole interface; a change of direction is a change to this file.
+mockups of the whole interface, and again the same day when the first of it was seen in the running
+app; a change of direction is a change to this file.
 
 ## In one paragraph
 
@@ -94,14 +95,17 @@ After 1.0, in an order still to decide: the Photos integration, more of the engi
 
 ## Visual direction
 
-A neutral darkroom, close to standard macOS: grays and white only, the system typeface, numbers in
-tabular digits, no saturated accent color on the controls. Chosen on 2026-11-20 on mockups of every
-step of the roadmap; the black and red variant was set aside. What the mockups settled:
+A neutral darkroom made of the system's controls: sliders, switches, pop-up buttons, disclosure groups,
+lists and forms are macOS's own, tinted gray, with the system typeface and numbers in tabular digits.
+No saturated color on the controls. The direction was chosen on 2026-11-20 on mockups of every step of
+the roadmap (the black and red variant was set aside); the same day, seen in the running app, the
+hand-drawn controls of the mockups were dropped for the system's
+([ADR 0006](adr/0006-use-the-systems-controls.md)). The mockups stay the guide to what is where:
 
-- **Sliders** are thin and fill from their neutral point. A parameter that can be switched off (grain,
-  halation) has its switch on the slider's row.
-- **Inspector.** The film is its heading. The sections follow the path of light and can be collapsed;
-  a collapsed section shows its values. The right margin leaves room for the scroll bar.
+- **Sliders** are the system's and fill from their neutral point. A parameter that can be switched off
+  (grain, halation) has its switch on the slider's row.
+- **Inspector.** A grouped form. The film is its heading. The sections follow the path of light and can
+  be collapsed; a collapsed section shows its values. The controls keep clear of the scroll bar.
 - **Choosing the film.** A vertical list that scrolls, grouped by kind, with search. Each film has a
   small emblem of its own: a ground, a band and the speed, in colors suggested by the film's character.
   The emblems are original, they copy no brand's packaging. No rendered previews: they would cost a
@@ -109,7 +113,8 @@ step of the roadmap; the black and red variant was set aside. What the mockups s
 - **Toolbar.** On the left the way back to the folder, then previous and next around the file name. On
   the right undo and redo, crop, the original, Recipe and export. Icons alone wherever the icon is
   clear, always with an accessible label.
-- **Zoom** controls sit under the photo on the right, above the strip: fit, 100% and a slider.
+- **Zoom** controls sit under the photo on the right, above the strip: fit, 100% and a slider, whose
+  neutral point is the fitted photo.
 - **The strip of thumbnails** is visible by default; a setting collapses or hides it.
 - **Export in progress** is drawn as a print coming up in the developer, with one count. It stays still
   with Reduce Motion.

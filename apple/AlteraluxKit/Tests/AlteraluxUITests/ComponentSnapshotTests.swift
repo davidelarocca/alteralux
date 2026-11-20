@@ -48,6 +48,118 @@ extension WindowedTests {
                 SliderHost("Exposure", value: 0.3)
             } == [])
         }
+
+        @Test(arguments: [true, false])
+        func withItsSwitch(isOn: Bool) {
+            let state = isOn ? "switch-on" : "switch-off"
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: state, locale: english, source: source) {
+                SliderHost("Grain", value: 0.35, in: 0.05 ... 1, step: 0.01, defaultValue: 0.2, fractionDigits: 2, showsSign: false, isOn: isOn)
+            } == [])
+        }
+
+        @Test func withoutLabels() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "labels-hidden", locale: english, source: source) {
+                SliderHost("Zoom", value: 1.2).labelsHidden()
+            } == [])
+        }
+    }
+
+    @MainActor
+    struct InspectorSectionSnapshots {
+        private let source = "\(components)/InspectorSection.swift"
+        private let sizes = ["320x160"]
+
+        private func section(_ title: LocalizedStringKey, isExpanded: Bool, summary: String) -> some View {
+            Form {
+                InspectorSection(title, isExpanded: .constant(isExpanded), summary: summary) {
+                    Toggle("Automatic metering", isOn: .constant(true))
+                }
+            }
+            .formStyle(.grouped)
+        }
+
+        @Test func expanded() {
+            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "expanded", source: source) {
+                section("Camera", isExpanded: true, summary: "+0.3 · 35 mm")
+            } == [])
+        }
+
+        @Test func collapsedShowsItsValues() {
+            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "collapsed", source: source) {
+                section("Camera", isExpanded: false, summary: "+0.3 · 35 mm")
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "long-text", source: source) {
+                section("A section with a long title", isExpanded: false, summary: "a long summary of many values that cannot all fit")
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "collapsed", locale: "ar", source: source) {
+                section("Camera", isExpanded: false, summary: "+0.3 · 35 mm")
+            } == [])
+        }
+    }
+
+    @MainActor
+    struct HeadingButtonSnapshots {
+        private let source = "\(components)/HeadingButton.swift"
+        private let sizes = ["280x72"]
+
+        private func heading(_ title: String) -> some View {
+            HeadingButton(caption: Text("Film · color negative · ISO 400"), title: title) {}
+                .padding(Spacing.m)
+        }
+
+        @Test func shortTitle() {
+            #expect(Snapshot.verify("HeadingButton", sizes: sizes, state: "short", source: source) {
+                heading("Kodak Portra 400")
+            } == [])
+        }
+
+        @Test func longTitle() {
+            #expect(Snapshot.verify("HeadingButton", sizes: sizes, state: "long-text", source: source) {
+                heading("Kodak Double-X Negative Film 5222, with more to its name")
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("HeadingButton", sizes: sizes, state: "short", locale: "ar", source: source) {
+                heading("Kodak Portra 400")
+            } == [])
+        }
+    }
+
+    @MainActor
+    struct FilmEmblemSnapshots {
+        private let source = "\(components)/FilmEmblem.swift"
+        private let sizes = ["240x54"]
+
+        /// A light ground, a dark one, a long label and the emblem of a film with no look yet.
+        @Test func emblems() {
+            #expect(Snapshot.verify("FilmEmblem", sizes: sizes, state: "kinds", source: source) {
+                HStack(spacing: Spacing.s) {
+                    FilmEmblem(ground: .violet, band: .cream, label: "400")
+                    FilmEmblem(ground: .gold, band: .bronze, label: "200")
+                    FilmEmblem(ground: .darkViolet, band: .cream, label: "800+2")
+                    FilmEmblem(ground: .plain, band: .ash, label: "")
+                }
+                .padding(Spacing.m)
+            } == [])
+        }
+
+        /// An emblem is a picture: it is not mirrored.
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("FilmEmblem", sizes: sizes, state: "kinds", locale: "ar", source: source) {
+                HStack(spacing: Spacing.s) {
+                    FilmEmblem(ground: .violet, band: .cream, label: "400")
+                    FilmEmblem(ground: .petrol, band: .sky, label: "250D")
+                }
+                .padding(Spacing.m)
+            } == [])
+        }
     }
 
     @MainActor

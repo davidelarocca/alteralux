@@ -56,10 +56,17 @@ draft pull request per step.
    - There is no undo: Reset Adjustments cannot be taken back (solved with step 5).
    - With a black and white print the yellow and magenta filters stay visible, and the development
      times the black and white profiles carry are not offered.
-2. **The interface redrawn** in the visual direction of the vision, as the mockups of 2026-11-20
-   settled it: a slider of our own (neutral colors, fill from the neutral point, keyboard and
-   accessibility by step), the film as the heading and its list with an emblem per film, collapsible
-   sections, the toolbar, the zoom controls under the photo. Snapshots and `KeyboardCheck` tests with it.
+2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
+   2026-11-20 settled, built from the system's controls
+   ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
+   neutral point, with keyboard and accessibility by step), the film as the heading and its list with
+   an emblem per film, collapsible sections that show their values, previous and next around the
+   photo's name in the toolbar, the zoom controls under the photo, with snapshots and `KeyboardCheck`
+   tests. Still open:
+   - The toolbar's other items of the vision arrive with their steps: the way back to the folder
+     (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
+     stands where the way back will be.
+   - The setting that collapses or hides the strip of thumbnails.
 3. **Immediate editing.** Measured on 2026-11-20 (see above). Done: the viewer no longer builds
    mipmaps for every frame; while the settings change the preview is rendered at 1024 px, then at the
    size the viewer needs; `PreviewBudgetTests` keeps a preview update under 50 ms at 1024 px and under

@@ -24,7 +24,7 @@ struct PhotoStage: View {
                     pixelSize: CGSize(width: loaded.width, height: loaded.height),
                     command: model.zoomCommand,
                     commandID: model.zoomRequestID,
-                    onScaleChange: { model.viewerDidChange(scale: $0) },
+                    onZoomChange: { model.viewerDidChange($0) },
                 )
                 .accessibilityLabel(
                     model.showsOriginal ? Text("Original photo") : Text("Developed photo"),

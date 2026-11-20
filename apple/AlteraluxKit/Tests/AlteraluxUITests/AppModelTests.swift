@@ -129,7 +129,7 @@ struct AppModelTests {
         model.open([photo])
         try await waitForPreview(of: model, longSide: 2048)
         // The viewer shows the photo at 100%: more pixels than the standard preview has.
-        model.viewerDidChange(scale: 1)
+        model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
         try await waitForPreview(of: model, longSide: 2400)
 
         model.settings.exposureEV = 0.5

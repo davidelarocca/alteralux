@@ -14,15 +14,15 @@ struct ZoomableImageView: NSViewRepresentable {
     let pixelSize: CGSize
     let command: ZoomCommand
     let commandID: Int
-    /// Reports the scale relative to actual pixels (1 = 100%).
-    let onScaleChange: @MainActor (Double) -> Void
+    /// Reports how the photo is scaled, whenever that changes.
+    let onZoomChange: @MainActor (ViewerZoom) -> Void
 
     func makeNSView(context _: Context) -> ImageScrollView {
         ImageScrollView()
     }
 
     func updateNSView(_ view: ImageScrollView, context: Context) {
-        view.onScaleChange = onScaleChange
+        view.onZoomChange = onZoomChange
         view.setImage(image, pixelSize: pixelSize)
         if context.coordinator.lastCommandID != commandID {
             context.coordinator.lastCommandID = commandID
@@ -40,7 +40,7 @@ struct ZoomableImageView: NSViewRepresentable {
 }
 
 final class ImageScrollView: NSScrollView {
-    var onScaleChange: (@MainActor (Double) -> Void)?
+    var onZoomChange: (@MainActor (ViewerZoom) -> Void)?
 
     private let imageView = ImageLayerView()
     private var pixelSize = CGSize.zero
@@ -48,7 +48,7 @@ final class ImageScrollView: NSScrollView {
     private var imagePixelWidth = CGFloat.zero
     /// While set, the photo is kept fitted to the view as the window resizes.
     private var fitsView = true
-    private var reportedScale = -1.0
+    private var reportedZoom: ViewerZoom?
 
     /// Space left around a fitted photo, in points.
     private static let padding = Spacing.xl
@@ -130,6 +130,8 @@ final class ImageScrollView: NSScrollView {
             zoom(to: min(magnification * 1.5, maxMagnification))
         case .zoomOut:
             zoom(to: max(magnification / 1.5, minMagnification))
+        case let .scale(scale):
+            zoom(to: min(max(CGFloat(scale), minMagnification), maxMagnification))
         }
     }
 
@@ -139,6 +141,9 @@ final class ImageScrollView: NSScrollView {
         super.layout()
         if fitsView {
             zoomToFit()
+        } else {
+            // The scale that fits follows the window.
+            reportZoom()
         }
     }
 
@@ -167,29 +172,34 @@ final class ImageScrollView: NSScrollView {
         )
     }
 
-    private func zoomToFit() {
+    /// The magnification that shows the whole photo, or `nil` before the view has a size.
+    private func fitMagnification() -> CGFloat? {
         let document = imageView.frame.size
         guard document.width > 0, document.height > 0, bounds.width > 0, bounds.height > 0 else {
-            return
+            return nil
         }
         let available = NSSize(
             width: max(bounds.width - 2 * Self.padding, 1),
             height: max(bounds.height - 2 * Self.padding, 1),
         )
         // Never enlarge a small photo beyond its actual size.
-        let fit = min(available.width / document.width, available.height / document.height, 1)
-        minMagnification = min(fit, 0.1)
+        return min(available.width / document.width, available.height / document.height, 1)
+    }
+
+    private func zoomToFit() {
+        guard let fit = fitMagnification() else { return }
+        minMagnification = min(fit, AppModel.zoomScaleRange.lowerBound)
         if abs(magnification - fit) > 0.0001 {
             magnification = fit
         }
-        reportScale()
+        reportZoom()
     }
 
     private func zoom(to value: CGFloat, centeredAt point: NSPoint? = nil) {
         fitsView = false
         let center = point ?? NSPoint(x: contentView.bounds.midX, y: contentView.bounds.midY)
         setMagnification(value, centeredAt: center)
-        reportScale()
+        reportZoom()
     }
 
     // MARK: Events
@@ -199,7 +209,7 @@ final class ImageScrollView: NSScrollView {
     }
 
     @objc private func didEndMagnify(_: Notification) {
-        reportScale()
+        reportZoom()
     }
 
     /// Double-click toggles between fitted and actual size at the click point.
@@ -212,14 +222,27 @@ final class ImageScrollView: NSScrollView {
         }
     }
 
-    private func reportScale() {
+    /// Whether two reports say the same to the reader: scales closer than this are one scale.
+    private static func isSame(_ one: ViewerZoom, _ other: ViewerZoom) -> Bool {
+        one.isFitted == other.isFitted
+            && abs(one.scale - other.scale) <= 0.0001
+            && abs(one.fitScale - other.fitScale) <= 0.0001
+    }
+
+    private func reportZoom() {
         updateFiltering()
-        let scale = Double(magnification)
-        guard abs(scale - reportedScale) > 0.0001 else { return }
-        reportedScale = scale
+        let zoom = ViewerZoom(
+            scale: Double(magnification),
+            fitScale: Double(fitMagnification() ?? magnification),
+            isFitted: fitsView,
+        )
+        if let reportedZoom, Self.isSame(reportedZoom, zoom) {
+            return
+        }
+        reportedZoom = zoom
         // Deferred: this can run during a SwiftUI update, where changing
         // observed state is not allowed.
-        Task { @MainActor [weak self] in self?.onScaleChange?(scale) }
+        Task { @MainActor [weak self] in self?.onZoomChange?(zoom) }
     }
 }
 

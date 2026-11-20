@@ -5,6 +5,9 @@ import SwiftUI
 public struct GalleryView: View {
     @State private var exposure = 0.3
     @State private var filter = -12.0
+    @State private var grain = 0.35
+    @State private var grainIsOn = true
+    @State private var showsSection = false
 
     public init() {}
 
@@ -13,6 +16,23 @@ public struct GalleryView: View {
             Section("ParameterSlider") {
                 ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
                 ParameterSlider("Yellow filter", value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0, showsSign: true)
+                ParameterSlider("Grain", value: $grain, in: 0.05 ... 1, defaultValue: 0.2, isOn: $grainIsOn)
+            }
+            Section("HeadingButton") {
+                HeadingButton(caption: Text("Film · color negative · ISO 400"), title: "Kodak Portra 400") {}
+            }
+            Section("InspectorSection") {
+                InspectorSection("Camera", isExpanded: $showsSection, summary: "+0.3 · 35 mm") {
+                    ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
+                }
+            }
+            Section("FilmEmblem") {
+                HStack(spacing: Spacing.s) {
+                    FilmEmblem(ground: .violet, band: .cream, label: "400")
+                    FilmEmblem(ground: .gold, band: .bronze, label: "200")
+                    FilmEmblem(ground: .petrol, band: .sky, label: "250D")
+                    FilmEmblem(ground: .plain, band: .ash, label: "")
+                }
             }
             Section("ThumbnailCell") {
                 HStack(spacing: Spacing.s) {
@@ -27,6 +47,7 @@ public struct GalleryView: View {
                 swatch("viewerSurround", Color.DS.viewerSurround)
                 swatch("thumbnailPlaceholder", Color.DS.thumbnailPlaceholder)
                 swatch("hairline", Color.DS.hairline)
+                swatch("controlTint", Color.DS.controlTint)
             }
         }
         .formStyle(.grouped)
