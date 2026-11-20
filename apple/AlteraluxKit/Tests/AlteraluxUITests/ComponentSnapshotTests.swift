@@ -223,18 +223,19 @@ extension WindowedTests {
     @MainActor
     struct ChoiceListButtonSnapshots {
         private let source = "\(components)/ChoiceListButton.swift"
-        private let sizes = ["360x60"]
+        private let sizes = ["360x80"]
 
-        /// The button as it sits in a bar: with its title, with its symbol alone, and disabled.
+        /// The button where the app puts it, in the floating bar over the photos: with its title,
+        /// with its symbol alone, and disabled. Drawn straight on the photos' dark surround, the
+        /// light appearance's dark text could not be read.
         private func buttons() -> some View {
-            HStack(spacing: Spacing.m) {
+            FloatingBar {
                 ChoiceListButton(Text(verbatim: "Tag"), choices: [], empty: Text(verbatim: "No Tags"))
                 ChoiceListButton(Text(verbatim: "Move to…"), symbol: "folder", choices: [], empty: Text(verbatim: "No Folders"))
                 ChoiceListButton(Text(verbatim: "Recipe"), choices: [], empty: Text(verbatim: "No Recipes"))
                     .disabled(true)
             }
-            .buttonStyle(.bordered)
-            .buttonBorderShape(.capsule)
+            .fixedSize()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.DS.viewerSurround)
         }
