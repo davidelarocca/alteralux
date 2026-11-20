@@ -249,6 +249,40 @@ struct BatchExporterTests {
         #expect(try Data(contentsOf: output.appendingPathComponent("unrelated.jpg")) == Data("old".utf8))
     }
 
+    /// Replacing writes over nothing: the old file of the very same name is discarded like the
+    /// others, so in the app it can be taken back from the Trash. One that cannot be discarded
+    /// stays, with the new file beside it.
+    @Test func replacingDiscardsTheOldFileOfTheSameNameInsteadOfWritingOverIt() async throws {
+        let workspace = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: workspace) }
+        let photo = try writePhoto(named: "source.png", in: workspace)
+        let output = workspace.appendingPathComponent("exports", isDirectory: true)
+        let bin = workspace.appendingPathComponent("bin", isDirectory: true)
+        for folder in [output, bin] {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        }
+        let old = output.appendingPathComponent("source Ektar.jpg")
+        try Data("old".utf8).write(to: old)
+        let job = ExportJob(photo: photo, settings: DevelopSettings(), fileName: "source Ektar.jpg", earlierNames: ["source Ektar"])
+        let renderer = try FilmRenderer(dataDirectory: batchTestDataDirectory, backend: .cpu)
+
+        let binning = BatchExporter(renderer: renderer) { file in
+            try FileManager.default.moveItem(at: file, to: bin.appendingPathComponent(file.lastPathComponent))
+        }
+        let replaced = await binning.export([job], to: .folder(output), options: ExportOptions(), existing: .replace)
+        #expect(replaced.map(\.destination?.lastPathComponent) == ["source Ektar.jpg"])
+        #expect(try readImageSize(old) == (96, 64))
+        #expect(try Data(contentsOf: bin.appendingPathComponent("source Ektar.jpg")) == Data("old".utf8))
+        #expect(try FileManager.default.contentsOfDirectory(atPath: output.path) == ["source Ektar.jpg"])
+
+        try Data("older".utf8).write(to: old)
+        let stuck = BatchExporter(renderer: renderer) { _ in throw CocoaError(.fileWriteNoPermission) }
+        let kept = await stuck.export([job], to: .folder(output), options: ExportOptions(), existing: .replace)
+        #expect(kept.map(\.destination?.lastPathComponent) == ["source Ektar 2.jpg"])
+        #expect(try Data(contentsOf: old) == Data("older".utf8))
+        #expect(try readImageSize(output.appendingPathComponent("source Ektar 2.jpg")) == (96, 64))
+    }
+
     /// Two photos told to write the same name, as a RAW and its JPEG would be without care:
     /// replacing never lets the second take the place of what the first just wrote.
     @Test func twoPhotosOfOneNameNeverReplaceEachOther() async throws {

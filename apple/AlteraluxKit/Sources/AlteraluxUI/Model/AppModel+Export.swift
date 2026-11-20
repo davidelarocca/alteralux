@@ -138,10 +138,11 @@ extension AppModel {
             }
         }
         let policy = existing ?? .keepBoth
+        let exporter = discardExport.map { BatchExporter(renderer: renderer, discard: $0) } ?? BatchExporter(renderer: renderer)
         isExporting = true
         batchExport = BatchExportProgress(position: 1, total: jobs.count, name: jobs[0].photo.lastPathComponent)
         let task = Task {
-            await BatchExporter(renderer: renderer).export(jobs, to: destination, options: options, existing: policy) { [weak self] index, job in
+            await exporter.export(jobs, to: destination, options: options, existing: policy) { [weak self] index, job in
                 await self?.noteExport(of: job, at: index)
             }
         }
