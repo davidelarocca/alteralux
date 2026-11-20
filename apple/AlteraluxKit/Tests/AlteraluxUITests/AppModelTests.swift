@@ -113,10 +113,33 @@ struct AppModelTests {
         model.open([photo])
         try await waitForPreview(of: model, longSide: 2048)
 
+        // The test says when the settings stand still: the lighter preview stays until it has
+        // been seen, however slow the machine.
+        model.settleDelay = .seconds(600)
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
         try await waitForPreview(of: model, longSide: 1024)
+        model.settleChange()
         try await waitForPreview(of: model, longSide: 2048)
+        #expect(model.alertMessage == nil)
+    }
+
+    /// Nothing has to say the settings stand still: a moment without a change is enough.
+    @Test func thePreviewTheViewerNeedsFollowsOnItsOwn() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 2400, height: 1600).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+        let before = model.preview?.cgImage
+
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        let deadline = ContinuousClock.now + .seconds(60)
+        while model.preview?.cgImage === before || model.preview.map({ max($0.width, $0.height) }) != 2048 {
+            try #require(ContinuousClock.now < deadline, "No new preview of 2048 px in 60 seconds.")
+            try await Task.sleep(for: .milliseconds(5))
+        }
         #expect(model.alertMessage == nil)
     }
 
@@ -133,9 +156,11 @@ struct AppModelTests {
         try await waitForPreview(of: model, longSide: 2560)
 
         // Quick enough to follow the lighter preview directly.
+        model.settleDelay = .seconds(600)
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
         try await waitForPreview(of: model, longSide: 1024)
+        model.settleChange()
         #expect(try await previewSizes(of: model, until: 2560) == [1024, 2560])
         #expect(model.alertMessage == nil)
     }
@@ -152,9 +177,14 @@ struct AppModelTests {
         model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
         try await waitForPreview(of: model, longSide: 3600)
 
+        // Each preview stays until the test has seen it: the lighter one until the settings are
+        // said to stand still, the standard one for a pause long enough for a slow machine.
+        model.settleDelay = .seconds(600)
+        model.slowPreviewDelay = .seconds(3)
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
         try await waitForPreview(of: model, longSide: 1024)
+        model.settleChange()
         try await waitForPreview(of: model, longSide: 2048)
         try await waitForPreview(of: model, longSide: 3600)
         #expect(model.alertMessage == nil)
@@ -173,6 +203,7 @@ struct AppModelTests {
 
         // The pause is as long as the test needs, so a slow machine sees the same as a fast one.
         model.slowPreviewDelay = .seconds(30)
+        model.settleDelay = .seconds(600)
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
         model.settleChange()
