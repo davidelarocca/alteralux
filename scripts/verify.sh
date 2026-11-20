@@ -189,8 +189,15 @@ for pkg in ${PACKAGES[@]+"${PACKAGES[@]}"}; do
   ran=$((ran + 1))
   note_platform checked macOS
   note_platform tested macOS
-  swift test --package-path "$pkg" 2>&1 | tail -40
-  [ "${PIPESTATUS[0]}" -eq 0 ] || { fail=1; note_platform failed_on macOS; }
+  # The end of the run, and before it what each failing test reported: with a hundred tests the
+  # failures are not in the last lines.
+  test_log=$(mktemp)
+  swift test --package-path "$pkg" > "$test_log" 2>&1
+  test_status=$?
+  grep -E '^✘|recorded an issue|error:' "$test_log" | head -40
+  tail -40 "$test_log"
+  rm -f "$test_log"
+  [ "$test_status" -eq 0 ] || { fail=1; note_platform failed_on macOS; }
 done
 
 if [ -n "$SCHEME" ]; then

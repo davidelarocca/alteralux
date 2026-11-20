@@ -171,14 +171,53 @@ struct AppModelTests {
         model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
         try await waitForPreview(of: model, longSide: 3600)
 
+        // The pause is as long as the test needs, so a slow machine sees the same as a fast one.
+        model.slowPreviewDelay = .seconds(30)
         model.settings.exposureEV = 0.5
         model.settingsDidChange()
+        model.settleChange()
         try await waitForPreview(of: model, longSide: 2048)
         // A short pause, then the control moves again.
         model.settings.exposureEV = 0.6
         model.settingsDidChange()
-        #expect(try await previewSizes(of: model, until: 3600) == [2048, 1024, 2048, 3600])
+        try await waitForPreview(of: model, longSide: 1024)
+        model.settleChange()
+        #expect(try await previewSizes(of: model, until: 2048) == [1024, 2048])
         #expect(model.alertMessage == nil)
+    }
+
+    /// Once the settings have stayed still, the preview the viewer needs is rendered, however
+    /// short the pause is.
+    @Test func theSlowPreviewComesWhenThePauseEnds() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 3600, height: 2400).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+        model.viewerDidChange(ViewerZoom(scale: 1, fitScale: 0.4, isFitted: false))
+        try await waitForPreview(of: model, longSide: 3600)
+
+        // No pause at all: it ends before the standard preview is on screen.
+        model.slowPreviewDelay = .zero
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        model.settleChange()
+        try await waitForPreview(of: model, longSide: 3600)
+        #expect(model.alertMessage == nil)
+    }
+
+    /// A photo removed while it is still being opened does not come back into an empty strip.
+    @Test func aPhotoRemovedWhileItOpensStaysRemoved() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 2400, height: 1600).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        model.removeSelection()
+        #expect(model.photos.isEmpty)
+        // Long enough for the photo to finish opening.
+        try await Task.sleep(for: .seconds(1))
+        #expect(model.photoSize == nil && model.preview == nil)
+        #expect(!model.canExport && !model.canZoom)
     }
 
     /// The next photo starts fitted: it is not rendered whole because the last one was at 100%.
