@@ -1,9 +1,26 @@
 name: CI
 
+# A change to documents alone runs nothing. Two documents are read by the checks, so they count
+# as code: the layout contract (the layout tests) and the architecture contracts.
 on:
   push:
     branches: [main]
+    paths:
+      - "**"
+      - "!docs/**"
+      - "!**/*.md"
+      - "!.claude/**"
+      - "docs/LAYOUT_CONTRACT.md"
+      - "docs/architecture-contracts.json"
   pull_request:
+    # The same list as above.
+    paths:
+      - "**"
+      - "!docs/**"
+      - "!**/*.md"
+      - "!.claude/**"
+      - "docs/LAYOUT_CONTRACT.md"
+      - "docs/architecture-contracts.json"
 
 permissions:
   contents: read
@@ -25,15 +42,37 @@ jobs:
       OPENBLAS_TARGET: GENERIC
       OPENBLAS_DYNAMIC_ARCH: "1"
     steps:
+      # These tests cover the Rust bridge: they run when the engine or this workflow changed.
+      # When the list of changed files cannot be read, or is cut short, they run.
+      - name: Did the engine change?
+        id: engine
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.sha }}
+        run: |
+          if ! changed="$(gh api "repos/${{ github.repository }}/compare/${BASE}...${HEAD}" --jq '.files[].filename')"; then
+            changed=""
+          fi
+          count="$(grep -c . <<<"$changed" || true)"
+          if [ -z "$changed" ] || [ "$count" -ge 300 ] || grep -qE '^(engine/|\.gitmodules$|\.github/workflows/)' <<<"$changed"; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "The engine did not change: its tests are skipped."
+          fi
       - uses: actions/checkout@v7
+        if: steps.engine.outputs.run == 'true'
         with:
           submodules: recursive
       # OpenBLAS (CPU matrix maths on Linux) is compiled from source by the
       # openblas-src crate; rust-cache keeps it between runs.
       - uses: Swatinem/rust-cache@v2
+        if: steps.engine.outputs.run == 'true'
         with:
           workspaces: engine
       - name: Test
+        if: steps.engine.outputs.run == 'true'
         # Release mode: the tests run real renders, which are slow unoptimized.
         run: cargo test --release --manifest-path engine/Cargo.toml -p alteralux-ffi
 
