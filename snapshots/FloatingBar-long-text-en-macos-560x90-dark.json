@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-20T15:18:56Z",
+  "contractSize": "560x90",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "FloatingBar",
+  "size": "560x90",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/FloatingBar.swift",
+  "state": "long-text",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-20T15:19:44Z",
+  "approvedFrom": "missing"
+}
