@@ -40,6 +40,10 @@ private final class FolderWatcherState: Sendable {
 
     private let continuation: AsyncStream<Void>.Continuation
     private let debounceQueue = DispatchQueue(label: "alteralux.folder-watcher.debounce", qos: .utility)
+    /// The queue the filesystem events arrive on. It is serial, and the stream is stopped on it:
+    /// once `stop()` returns no event is being delivered, so the callback never reaches this
+    /// object after it is gone.
+    private let eventQueue = DispatchQueue(label: "alteralux.folder-watcher.events", qos: .utility)
     private let storage = Mutex(Storage())
 
     init(url: URL, continuation: AsyncStream<Void>.Continuation) {
@@ -60,10 +64,13 @@ private final class FolderWatcherState: Sendable {
             return eventStreamAddress
         }
 
-        if let eventStreamAddress, let eventStream = FSEventStreamRef(bitPattern: eventStreamAddress) {
-            FSEventStreamStop(eventStream)
-            FSEventStreamInvalidate(eventStream)
-            FSEventStreamRelease(eventStream)
+        if let eventStreamAddress {
+            eventQueue.sync {
+                guard let eventStream = FSEventStreamRef(bitPattern: eventStreamAddress) else { return }
+                FSEventStreamStop(eventStream)
+                FSEventStreamInvalidate(eventStream)
+                FSEventStreamRelease(eventStream)
+            }
         }
         continuation.finish()
     }
@@ -108,7 +115,7 @@ private final class FolderWatcherState: Sendable {
         }
 
         storage.withLock { $0.eventStreamAddress = UInt(bitPattern: eventStream) }
-        FSEventStreamSetDispatchQueue(eventStream, DispatchQueue.global(qos: .utility))
+        FSEventStreamSetDispatchQueue(eventStream, eventQueue)
         if !FSEventStreamStart(eventStream) {
             storage.withLock { $0.eventStreamAddress = nil }
             FSEventStreamInvalidate(eventStream)
