@@ -23,8 +23,13 @@ struct InspectorView: View {
             MaterialsHeading()
             InspectorSection(
                 "Camera", isExpanded: $showsCamera,
-                summary: summary.camera(formatName: formatName),
+                summary: summary.camera(
+                    formatName: formatName,
+                    whiteBalance: model.canAdjustWhiteBalance
+                        ? WhiteBalance(temperature: model.temperature, tint: model.tint) : nil,
+                ),
             ) {
+                WhiteBalanceControls()
                 CameraControls(settings: $model.settings)
             }
             if !model.settings.scanFilm {
@@ -101,6 +106,35 @@ private struct MaterialsHeading: View {
         }
         guard let iso = film.look.iso else { return kind }
         return Text("\(kind) · ISO \(Text(verbatim: String(iso)))")
+    }
+}
+
+/// Temperature and tint: what the RAW decoder takes as neutral, before the film sees the
+/// photo. They start from what the camera recorded and go back to it.
+private struct WhiteBalanceControls: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        let neutral = model.neutralWhiteBalance
+
+        Group {
+            ParameterSlider(
+                "Temperature", value: $model.temperature, in: model.temperatureRange,
+                step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
+            )
+            .help("The color of the light, in kelvin. Lower values make the photo cooler.")
+            ParameterSlider(
+                "Tint", value: $model.tint, in: AppModel.tintRange,
+                step: AppModel.tintStep, defaultValue: neutral.tint, fractionDigits: 0,
+            )
+        }
+        .disabled(!model.canAdjustWhiteBalance)
+        if model.whiteBalanceIsFixed {
+            Text("White balance can be chosen for RAW photos only.")
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 

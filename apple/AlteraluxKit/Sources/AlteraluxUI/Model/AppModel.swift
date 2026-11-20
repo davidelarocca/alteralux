@@ -46,8 +46,8 @@ public final class AppModel {
     var settings = DevelopSettings()
     var exportOptions = ExportOptions()
 
-    /// Decoded pixels of the selected photo.
-    private(set) var loaded: LoadedImage?
+    /// The selected photo, open and decoded as the engine needs it.
+    private(set) var sources: PhotoSources?
     /// The selected photo as the system renders it, for the comparison.
     private(set) var original: CGImage?
     /// The selected photo developed with `settings`.
@@ -113,8 +113,6 @@ public final class AppModel {
     private var slowPreviewRelease: Task<Void, Never>?
     /// Whether the preview on screen is smaller than the one the viewer needs.
     private var previewIsDraft = false
-    /// The load whose lighter preview has been prepared.
-    private var preparedGeneration = 0
 
     /// Where the engine's `data` folder is. `nil` means the app bundle's resources.
     private let dataDirectory: URL?
@@ -134,12 +132,17 @@ public final class AppModel {
     }
 
     var canExport: Bool {
-        loaded != nil && !isExporting
+        sources != nil && !isExporting
     }
 
     /// The zoom commands act on a photo that is loaded.
     var canZoom: Bool {
-        loaded != nil
+        sources != nil
+    }
+
+    /// The size of the selected photo, in pixels, once it is open.
+    var photoSize: CGSize? {
+        sources.map { CGSize(width: $0.decoder.width, height: $0.decoder.height) }
     }
 
     /// Previous and next need another photo to go to.
@@ -258,7 +261,7 @@ public final class AppModel {
         }
         guard item.id == selectedID else { return }
         selectedID = nil
-        loaded = nil
+        sources = nil
         original = nil
         preview = nil
         if let next = photos.indices.contains(index) ? photos[index] : photos.last {
@@ -286,7 +289,7 @@ public final class AppModel {
         loadGeneration += 1
         let generation = loadGeneration
         let url = item.url
-        loaded = nil
+        sources = nil
         original = nil
         preview = nil
         isLoading = true
@@ -294,23 +297,25 @@ public final class AppModel {
         slowPreviewRelease?.cancel()
         slowPreviewRelease = nil
         holdsSlowPreview = false
+        // The photo as the system renders it, for the comparison: the preview does not wait for it.
+        Task {
+            let system = await Task.detached(priority: .userInitiated) {
+                SendableImage(ImageLoader.originalPreview(of: url, maxDimension: PreviewSize.standard))
+            }.value
+            if generation == loadGeneration {
+                original = system.image
+            }
+        }
         Task {
             do {
-                async let decoded = Task.detached(priority: .userInitiated) {
-                    try ImageLoader.load(url)
+                // Opening reads what the file says about itself; its pixels are decoded for
+                // each preview, at the size of that preview.
+                let decoder = try await Task.detached(priority: .userInitiated) {
+                    try PhotoDecoder(url: url)
                 }.value
-                async let system = Task.detached(priority: .userInitiated) {
-                    SendableImage(
-                        ImageLoader.originalPreview(
-                            of: url, maxDimension: PreviewSize.standard,
-                        ),
-                    )
-                }.value
-                let (loadedImage, originalImage) = try await (decoded, system)
                 // Ignore the result if another photo was selected meanwhile.
                 guard generation == loadGeneration else { return }
-                loaded = loadedImage
-                original = originalImage.image
+                sources = PhotoSources(decoder: decoder)
                 isLoading = false
                 requestRender()
             } catch {
@@ -344,7 +349,8 @@ public final class AppModel {
     /// preview the viewer needs follows as soon as the settings stay still.
     func settingsDidChange() {
         selection?.settings = settings
-        guard loaded != nil, renderer != nil else { return }
+        guard let sources, renderer != nil else { return }
+        sources.settingsDidChange(settings)
         isAdjusting = true
         holdsSlowPreview = true
         slowPreviewRelease?.cancel()
@@ -414,19 +420,17 @@ public final class AppModel {
     /// on screen: see `PreviewSize`.
     func viewerDidChange(_ zoom: ViewerZoom) {
         viewerZoom = zoom
-        guard let loaded else { return }
-        let current = previewDimension(for: loaded)
-        displayedLongSide = Double(max(loaded.width, loaded.height)) * zoom.scale
-        if previewDimension(for: loaded) != current {
+        guard let sources else { return }
+        let current = previewDimension(photoLongSide: sources.longSide)
+        displayedLongSide = Double(sources.longSide) * zoom.scale
+        if previewDimension(photoLongSide: sources.longSide) != current {
             requestRender()
         }
     }
 
-    /// Long side of the preview the viewer needs of `photo`, in pixels (0 = full resolution).
-    private func previewDimension(for photo: LoadedImage) -> Int {
-        PreviewSize.dimension(
-            displayedLongSide: displayedLongSide, photoLongSide: max(photo.width, photo.height),
-        )
+    /// Long side of the preview the viewer needs of the photo, in pixels (0 = full resolution).
+    private func previewDimension(photoLongSide: Int) -> Int {
+        PreviewSize.dimension(displayedLongSide: displayedLongSide, photoLongSide: photoLongSide)
     }
 
     // MARK: - Rendering
@@ -435,7 +439,7 @@ public final class AppModel {
     /// render is running collapse into one follow-up render with the latest
     /// settings, so dragging a slider never queues up stale frames.
     func requestRender() {
-        guard loaded != nil, renderer != nil else { return }
+        guard sources != nil, renderer != nil else { return }
         needsRender = true
         guard renderLoop == nil else { return }
         renderLoop = Task { await runRenderLoop() }
@@ -443,15 +447,18 @@ public final class AppModel {
 
     private func runRenderLoop() async {
         isRendering = true
-        while needsRender, let loaded, let renderer {
+        while needsRender, let sources, let renderer {
             needsRender = false
             let generation = loadGeneration
             let isSettled = !isAdjusting
-            let dimension = nextRenderDimension(for: loaded)
-            let isDraft = dimension != previewDimension(for: loaded)
+            let settings = settings
+            let dimension = nextRenderDimension(photoLongSide: sources.longSide)
+            let isDraft = dimension != previewDimension(photoLongSide: sources.longSide)
             do {
+                // The photo is decoded at the size of the preview: the engine scales nothing.
+                let source = try await sources.source(dimension: dimension, settings: settings)
                 let developed = try await renderer.render(
-                    loaded, settings: settings, quality: .preview(maxDimension: dimension),
+                    source, settings: settings, quality: .preview(maxDimension: 0),
                 )
                 // Drop the frame if another photo was selected meanwhile.
                 if generation == loadGeneration {
@@ -470,27 +477,18 @@ public final class AppModel {
         // The strip follows once the settings settle, not on every frame of a drag.
         if !previewIsDraft {
             refreshSelectedThumbnail()
-            prepareLighterPreview()
+            sources?.prepare(lighterDimension: Self.draftPreviewDimension, settings: settings)
         }
-    }
-
-    /// Has the photo scaled for the lighter preview once it is on screen, so the first move of
-    /// a control does not wait for that.
-    private func prepareLighterPreview() {
-        guard let loaded, let renderer, preparedGeneration != loadGeneration else { return }
-        preparedGeneration = loadGeneration
-        renderer.preparePreview(of: loaded, maxDimension: Self.draftPreviewDimension)
     }
 
     /// The long side of the next render (0 = full resolution): the lighter preview while the
     /// settings change, then what the viewer needs, with the standard preview standing in for
     /// one that takes long until the settings have been still for a while.
-    private func nextRenderDimension(for photo: LoadedImage) -> Int {
+    private func nextRenderDimension(photoLongSide: Int) -> Int {
         if isAdjusting {
             return Self.draftPreviewDimension
         }
-        let dimension = previewDimension(for: photo)
-        let photoLongSide = max(photo.width, photo.height)
+        let dimension = previewDimension(photoLongSide: photoLongSide)
         if holdsSlowPreview, PreviewSize.comesAfterStandard(dimension, photoLongSide: photoLongSide) {
             return PreviewSize.standard
         }
@@ -540,26 +538,35 @@ public final class AppModel {
         return "\(baseName) \(filmName).\(format.fileExtension)"
     }
 
+    /// Asks where to save the developed photo, and writes it there.
     func export() async {
-        guard let loaded, let renderer, !isExporting else { return }
+        guard let sources, !isExporting else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [exportOptions.format.contentType]
         panel.canCreateDirectories = true
         panel.nameFieldStringValue = Self.exportFileName(
-            source: loaded.url,
+            source: sources.decoder.url,
             film: selectedFilm?.displayName ?? settings.filmID,
             format: exportOptions.format,
         )
         guard await panel.begin() == .OK, let destination = panel.url else { return }
+        await export(to: destination)
+    }
 
+    /// Develops the whole photo with the settings on screen and writes it to `destination`.
+    func export(to destination: URL) async {
+        guard let sources, let renderer, !isExporting else { return }
+        let url = sources.decoder.url
+        let settings = settings
         isExporting = true
         defer { isExporting = false }
         let options = exportOptions
         do {
-            let developed = try await renderer.render(loaded, settings: settings, quality: .full)
+            let whole = try await sources.source(dimension: 0, settings: settings)
+            let developed = try await renderer.render(whole, settings: settings, quality: .full)
             try await Task.detached(priority: .userInitiated) {
                 try ImageExporter.write(
-                    developed, to: destination, options: options, originalURL: loaded.url,
+                    developed, to: destination, options: options, originalURL: url,
                 )
             }.value
         } catch {

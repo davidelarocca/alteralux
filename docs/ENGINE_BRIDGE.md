@@ -97,6 +97,11 @@ of time. The simulation scales
 grain and halation from the physical film format, so a preview looks like the
 full render.
 
+Since [ADR 0007](adr/0007-decode-each-preview-at-its-size.md) the app no longer
+uses this: it hands the engine a source already decoded at the size of the
+preview and asks for `maxDimension` 0. The scaling and its cache stay here,
+with their tests, for any other caller.
+
 ### Pixels and safety
 
 - Pixels cross the boundary as bytes (`Data` in Swift): RGBA half float for

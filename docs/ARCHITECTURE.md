@@ -24,7 +24,10 @@ The dependencies between the Swift targets are enforced by `docs/architecture-co
 
 One state pattern: `AppModel`, an `@Observable` class on the main actor, injected with `.environment(_:)`.
 Views read it and send intents; they hold no business logic. Decoding, rendering and export run off the
-main actor (`ImageLoader`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
+main actor (`PhotoDecoder`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
+
+The selected photo is decoded for each preview at the size of that preview, and whole for the 100% view
+and for export. White balance is chosen in the RAW decoder, before the engine sees the photo.
 
 The engine works linear in, linear out: every transfer function and color conversion is done by macOS
 (Core Image, ColorSync), never by the engine. Parameters cross the bridge as a JSON patch over the engine
@@ -61,3 +64,4 @@ defaults, and unknown keys are errors.
 | [0004](adr/0004-ui-in-packages.md) | Keep the screens and the design system in Swift packages | Accepted |
 | [0005](adr/0005-organize-through-the-finder.md) | Organize photos through the Finder, with no catalogue of the app's own | Accepted |
 | [0006](adr/0006-use-the-systems-controls.md) | Build the interface from the system's controls | Accepted |
+| [0007](adr/0007-decode-each-preview-at-its-size.md) | Decode each preview at its size, with Core Image | Accepted |

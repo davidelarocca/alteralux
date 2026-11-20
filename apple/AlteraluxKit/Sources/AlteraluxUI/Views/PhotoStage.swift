@@ -18,10 +18,10 @@ struct PhotoStage: View {
             // A fixed neutral grey to judge colors against.
             Color.DS.viewerSurround.ignoresSafeArea()
 
-            if let image = displayedImage, let loaded = model.loaded {
+            if let image = displayedImage, let photoSize = model.photoSize {
                 ZoomableImageView(
                     image: image,
-                    pixelSize: CGSize(width: loaded.width, height: loaded.height),
+                    pixelSize: photoSize,
                     command: model.zoomCommand,
                     commandID: model.zoomRequestID,
                     onZoomChange: { model.viewerDidChange($0) },

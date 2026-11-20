@@ -34,10 +34,19 @@ struct InspectorSummary {
     /// In place of a parameter that is switched off.
     private static let switchedOff = "–"
 
-    /// - Parameter formatName: the film format as the reader's language names it.
-    func camera(formatName: String) -> String {
-        [number(settings.exposureEV, fractionDigits: 1, showsSign: true), formatName]
-            .joined(separator: Self.separator)
+    /// - Parameters:
+    ///   - formatName: the film format as the reader's language names it.
+    ///   - whiteBalance: the temperature and tint the sliders show; `nil` when the photo's
+    ///     white balance cannot be chosen.
+    func camera(formatName: String, whiteBalance: WhiteBalance? = nil) -> String {
+        var values: [String] = []
+        if let whiteBalance {
+            values.append(number(whiteBalance.temperature, fractionDigits: 0))
+            values.append(number(whiteBalance.tint, fractionDigits: 0))
+        }
+        values.append(number(settings.exposureEV, fractionDigits: 1, showsSign: true))
+        values.append(formatName)
+        return values.joined(separator: Self.separator)
     }
 
     var print: String {
@@ -63,6 +72,8 @@ struct InspectorSummary {
         value.formatted(
             .number
                 .precision(.fractionLength(fractionDigits))
+                // A temperature is read as one number: "5200", not "5,200".
+                .grouping(.never)
                 .sign(strategy: showsSign ? .always(includingZero: false) : .automatic)
                 .locale(locale),
         )

@@ -26,6 +26,12 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **Tests of the Swift packages use the real engine and the submodule's data.** They need the submodule
   checked out (`git submodule update --init`) and the engine built.
 - **Tests write only to the temporary folder.** The test charts are generated there and removed.
+- **Apple's RAW decoder refuses a RAW that is too small, without an error.** For a DNG of 128 × 96 pixels
+  `CIRAWFilter` is created, reports a size of zero and gives an empty image; 192 × 128 works. The test
+  RAW (`TestDNG`) is 240 × 160, and `PhotoDecoder` reports an image of no size as unreadable.
+- **A new `CIRAWFilter` for every decode is three times slower.** A 1024 px decode takes 65 ms from a
+  filter kept alive and 200 ms from a new one. Go through the photo's `PhotoDecoder`; `ImageLoader.load`
+  is for a file decoded once.
 
 ## UI
 

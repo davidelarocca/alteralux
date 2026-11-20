@@ -17,6 +17,14 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     /// slide film; on a negative it shows the orange-masked negative itself.
     public var scanFilm: Bool
 
+    // MARK: Before the film
+
+    /// The temperature of the light the RAW decoder takes as neutral, in kelvin. `nil` leaves
+    /// what the camera recorded, whatever the photo.
+    public var temperature: Double?
+    /// The tint that goes with ``temperature``. `nil` leaves what the camera recorded.
+    public var tint: Double?
+
     // MARK: Camera
 
     /// Exposure compensation in stops, on top of the metered exposure.
@@ -68,6 +76,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         filmID: String = "kodak_portra_400",
         paperID: String = "kodak_portra_endura",
         scanFilm: Bool = false,
+        temperature: Double? = nil,
+        tint: Double? = nil,
         exposureEV: Double = 0,
         autoExposure: Bool = true,
         filmFormatMM: Double = 35,
@@ -89,6 +99,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.filmID = filmID
         self.paperID = paperID
         self.scanFilm = scanFilm
+        self.temperature = temperature
+        self.tint = tint
         self.exposureEV = exposureEV
         self.autoExposure = autoExposure
         self.filmFormatMM = filmFormatMM
@@ -106,6 +118,16 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.sharpenRadius = sharpenRadius
         self.sharpenAmount = sharpenAmount
         self.advancedJSON = advancedJSON
+    }
+}
+
+// MARK: - White balance
+
+public extension DevelopSettings {
+    /// The white balance to decode a RAW with: the values chosen here, over the ones the
+    /// camera recorded.
+    func whiteBalance(asShot: WhiteBalance) -> WhiteBalance {
+        WhiteBalance(temperature: temperature ?? asShot.temperature, tint: tint ?? asShot.tint)
     }
 }
 

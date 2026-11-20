@@ -18,16 +18,16 @@ Early development. Nothing to download yet.
 What works today (engine, image decoding and export are covered by automated
 tests; the interface is young and needs testing on real photos): opening RAW,
 TIFF, HEIC, JPEG, PNG and EXR files, choosing film and paper, the main
-adjustments with a live preview, zoom, comparison with the original, several
-photos side by side in a strip, and export to JPEG, 10-bit HEIC, 16-bit TIFF
-or PNG with an embedded sRGB or Display P3 profile.
+adjustments with a live preview, white balance for RAW files, zoom, comparison
+with the original, several photos side by side in a strip, and export to JPEG,
+10-bit HEIC, 16-bit TIFF or PNG with an embedded sRGB or Display P3 profile.
 
 What it is meant to become, and what version 1.0 means, is in
 [docs/VISION.md](docs/VISION.md); what is done and what comes next, in order,
-is in [docs/ROADMAP.md](docs/ROADMAP.md). In short, before 1.0: white balance,
-edits that persist with undo and redo, a library over the Finder's folders,
-recipes, crop, camera and lens corrections, workflows from the Finder, and a
-notarized release. An integration with Photos comes after 1.0.
+is in [docs/ROADMAP.md](docs/ROADMAP.md). In short, before 1.0: edits that
+persist with undo and redo, a library over the Finder's folders, recipes,
+crop, camera and lens corrections, workflows from the Finder, and a notarized
+release. An integration with Photos comes after 1.0.
 
 ## Goals
 

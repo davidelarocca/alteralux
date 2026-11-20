@@ -54,15 +54,6 @@ public final class FilmRenderer: Sendable {
         try await render(image.source, settings: settings, quality: quality)
     }
 
-    /// Scales `image` for previews of `maxDimension` ahead of time, so the first render at that
-    /// size does not wait for it: scaling a large photo takes longer than developing a preview.
-    public func preparePreview(of image: LoadedImage, maxDimension: Int) {
-        let source = image.source
-        queue.async {
-            source.preparePreview(maxDimension: UInt32(max(0, maxDimension)))
-        }
-    }
-
     /// Develops an engine source image with `settings`.
     public func render(
         _ source: SourceImage, settings: DevelopSettings, quality: RenderQuality,

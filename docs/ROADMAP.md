@@ -7,8 +7,9 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 
 - **Engine bridge** (`engine/crates/alteralux-ffi`): the upstream engine exposed to Swift through UniFFI,
   with tests that compare its output with the upstream pipeline.
-- **AlteraluxKit**: image decoding (RAW through `CIRAWFilter`), settings, rendering, export with color
-  management, covered by tests on the real engine.
+- **AlteraluxKit**: image decoding (RAW through `CIRAWFilter`, each preview decoded at its size),
+  white balance for RAW files, settings, rendering, export with color management, covered by tests on
+  the real engine.
 - **The app**: one window with the viewer (zoom, fit, 100%), the strip of open photos, comparison with the
   original, the adjustments inspector and export. English and Italian. Sandboxed.
 - **Structure**: design system and screens in Swift packages, the app target as a shell.
@@ -44,7 +45,21 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 - Measured on the same Mac on 2026-11-20, one preview update of a 24 MP source by size, once the
   source is scaled for it: 90 ms at 2048 px, 145 at 2560, 230 at 3072, 320 at 3584, 450 at 4096,
   740 at 5120, 1050 at full resolution. Scaling the source for a size takes 250 to 370 ms, once.
-- **Not verified yet**: real RAW files from a camera (decoding time, highlights, metadata), drag and drop,
+- Measured on the same Mac on 2026-11-20 with a real RAW (Sony ILCE-7M3, 24 MP, a public-domain sample
+  from raw.pixls.us), before and after
+  [ADR 0007](adr/0007-decode-each-preview-at-its-size.md). Before: the first picture 1.6 s after
+  opening (1.15 s to decode the whole photo and hand it to the engine, 0.45 s for the first preview).
+  After: the first picture in 0.4 to 0.6 s; a temperature drag shows a frame every 90 ms at 1024 px
+  and the settled preview 0.35 s after the release; an exposure drag shows a frame every 32 ms; a
+  zoom to 100% takes 1.2 s once the whole photo is decoded, which happens ahead of need.
+- Verified by driving the built app on 2026-11-20 with the same RAW and a 24 MP TIFF: the RAW opens
+  and is developed with the right orientation and plausible colors; temperature and tint start from
+  the camera's values (4490 K, 8), a lower temperature turns the photo cooler and a higher one
+  warmer, Reset Adjustments goes back to the camera's values, each photo keeps its own white balance
+  when the selection changes, and on the TIFF the two sliders are dimmed, do not move and carry
+  their note. It is the only camera file tried so far.
+- **Not verified yet**: RAW files of other cameras, their highlights and metadata; how a white
+  balance drag feels under the hand (it is timed through the app model, not by hand); drag and drop,
   trackpad gestures, and the Open panel.
 
 ## Next, in this order
@@ -87,7 +102,16 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - The 7.5 ms of recalibration on exposure, filters and preflash are inside the upstream engine: to
      propose upstream, not to patch here.
    - Not measured yet: what SwiftUI redraws while a slider moves (needs Instruments on the app).
-4. **White balance** (temperature and tint) from the RAW decoder.
+4. **White balance** (temperature and tint) from the RAW decoder. Done: two sliders at the top of the
+   Camera section, starting from what the camera recorded, for RAW files only (other files show them
+   disabled, decided on 2026-11-20); every preview decoded at its size by a decoder kept for the photo
+   ([ADR 0007](adr/0007-decode-each-preview-at-its-size.md)); tests on a RAW the tests write
+   themselves. Still open:
+   - The temperature slider is linear in kelvin, so the warm end is cramped: to judge in the app.
+   - The original shown for the comparison is the system's rendering, with the camera's white balance
+     and at 2048 px at most.
+   - A picker on the photo for the neutral point, and an automatic white balance (the vision's open
+     question for adaptive recipes).
 5. **Edits that persist**, with undo and redo.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
    the actions on a selection (move, copy, tag with the Finder's tags, discard). Needs step 5, and the
