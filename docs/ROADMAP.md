@@ -5,9 +5,9 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 
 ## Done
 
-- **Engine bridge** (`engine/crates/spektrafilm-ffi`): the upstream engine exposed to Swift through UniFFI,
+- **Engine bridge** (`engine/crates/alteralux-ffi`): the upstream engine exposed to Swift through UniFFI,
   with tests that compare its output with the upstream pipeline.
-- **SpektrafilmKit**: image decoding (RAW through `CIRAWFilter`), settings, rendering, export with color
+- **AlteraluxKit**: image decoding (RAW through `CIRAWFilter`), settings, rendering, export with color
   management, covered by tests on the real engine.
 - **The app**: one window with the viewer (zoom, fit, 100%), the strip of open photos, comparison with the
   original, the adjustments inspector and export. English and Italian. Sandboxed.
@@ -89,7 +89,7 @@ draft pull request per step.
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;
    `/swift-harness:product-map` and `/swift-harness:audit`.
-12. **Version 1.0**: the icon, the name, the notarized release.
+12. **Version 1.0**: the icon, the notarized release.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.
@@ -110,8 +110,6 @@ Defects found on real RAW files go to step 1.
   region-of-interest rendering yet; rendering only the visible area would make large photos much faster.
 - **RAW highlights.** `CIRAWFilter` is used with its tone curve off. Whether its extended dynamic range
   setting should be raised to keep more highlight detail needs a look at real files.
-- **The app's name.** The app is called spektrafilm, the name of the upstream project it builds on.
-  Whether it keeps that name or takes one of its own is undecided.
 - **Distribution.** The app is signed to run locally, and CI packages it as an artifact. Giving it to other
   people needs a Developer ID signature and notarization, which need an Apple developer account. The Mac
   App Store is excluded ([ADR 0001](adr/0001-reuse-the-rust-engine.md)).

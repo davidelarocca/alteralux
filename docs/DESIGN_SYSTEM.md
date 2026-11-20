@@ -1,4 +1,4 @@
-# spektrafilm for macOS design system
+# alteralux for macOS design system
 
 Code: `apple/DesignSystem/`. Gallery: `GalleryView`, shown from its Xcode preview in
 `apple/DesignSystem/Sources/DesignSystem/Gallery/GalleryView.swift`.

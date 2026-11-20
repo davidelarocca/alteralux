@@ -13,7 +13,7 @@ interface grows.
 
 - `apple/DesignSystem` is a local package with the tokens and the shared components. It is the only
   place for raw visual values and depends on nothing app-specific.
-- The app model and the screens live in the `SpektrafilmUI` target of the `apple/SpektrafilmKit` package.
+- The app model and the screens live in the `AlteraluxUI` target of the `apple/AlteraluxKit` package.
 - The app target is a shell: the `@main` scene, the resources and the entitlements.
 - `docs/architecture-contracts.json` lists the dependencies each target may have.
 
@@ -27,6 +27,6 @@ interface grows.
 ## Consequences
 
 - `swift test` builds and tests the whole interface without Xcode, and the end-of-turn check runs it.
-- Types the app shell uses (`AppModel`, `MainWindow`, `SpektrafilmCommands`) are `public`.
+- Types the app shell uses (`AppModel`, `MainWindow`, `AlteraluxCommands`) are `public`.
 - Strings in package views are looked up in the app's string catalog
-  (`apple/Spektrafilm/Resources/Localizable.xcstrings`): a new string needs its entry there.
+  (`apple/Alteralux/Resources/Localizable.xcstrings`): a new string needs its entry there.

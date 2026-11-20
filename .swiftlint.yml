@@ -10,7 +10,7 @@ excluded:
   # Build products, the upstream engine and the generated UniFFI bindings.
   - build
   - engine
-  - apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated
+  - apple/AlteraluxKit/Sources/AlteraluxEngine/Generated
 
 disabled_rules:
   - trailing_comma # the formatter owns this

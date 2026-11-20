@@ -1,7 +1,7 @@
 ---
 paths:
-  - "apple/SpektrafilmKit/Sources/SpektrafilmUI/**/*.swift"
-  - "apple/Spektrafilm/**/*.swift"
+  - "apple/AlteraluxKit/Sources/AlteraluxUI/**/*.swift"
+  - "apple/Alteralux/**/*.swift"
 ---
 
 # UI rules for feature code
@@ -17,5 +17,5 @@ paths:
 - Every action works without a pointer: Return and Escape for the default and cancel actions, arrows in lists, a Command shortcut where the platform expects one, Tab through the controls in visual order. A shared component with keyboard actions gets a `KeyboardCheck` test; a main screen gets a `FocusOrder` test when the project has a UI test target.
 - Content that moves (a slide or move transition, an animated position, size or scale) reads `@ReduceMotion` and goes through `Motion.moving(_:reduced:)`, so Reduce Motion gets a fade or no animation. <!-- check: lint ds_motion_without_reduce -->
 - Keep `body` small. Extract subviews when a body grows past roughly 40 lines or mixes several responsibilities.
-- Views read state and send intents. Business rules, file I/O, decoding and rendering live in `AppModel` and `SpektrafilmKit`.
+- Views read state and send intents. Business rules, file I/O, decoding and rendering live in `AppModel` and `AlteraluxKit`.
 - If you need something the design system lacks, add it to the design system first (follow the `ui-change` skill), then use it here.

@@ -8,5 +8,5 @@
 --self remove
 --importgrouping testable-bottom
 --commas always
---exclude .build,DerivedData,build,engine,apple/SpektrafilmKit/Sources/SpektrafilmEngine/Generated,apple/SpektrafilmKit/Tests/SpektrafilmUITests/LayoutContract.swift,apple/SpektrafilmKit/Tests/SpektrafilmUITests/Screenshot.swift,apple/SpektrafilmKit/Tests/SpektrafilmUITests/Snapshot.swift,apple/SpektrafilmKit/Tests/SpektrafilmUITests/KeyboardCheck.swift
+--exclude .build,DerivedData,build,engine,apple/AlteraluxKit/Sources/AlteraluxEngine/Generated,apple/AlteraluxKit/Tests/AlteraluxUITests/LayoutContract.swift,apple/AlteraluxKit/Tests/AlteraluxUITests/Screenshot.swift,apple/AlteraluxKit/Tests/AlteraluxUITests/Snapshot.swift,apple/AlteraluxKit/Tests/AlteraluxUITests/KeyboardCheck.swift
 --disable swiftTestingTestCaseNames

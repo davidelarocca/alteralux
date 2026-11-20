@@ -12,7 +12,7 @@ Metal through wgpu. A native macOS app needs that model behind a Swift API.
 ## Decision
 
 Use spektrafilm-rs unmodified, as a git submodule pinned to a commit (`engine/vendor/spektrafilm-rs`).
-Expose it to Swift through one small Rust crate, `engine/crates/spektrafilm-ffi`, with bindings generated
+Expose it to Swift through one small Rust crate, `engine/crates/alteralux-ffi`, with bindings generated
 by UniFFI. Never patch the submodule: macOS-specific code lives in this repository.
 
 ## Alternatives considered

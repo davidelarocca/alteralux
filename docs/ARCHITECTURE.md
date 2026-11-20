@@ -1,4 +1,4 @@
-# spektrafilm for macOS architecture
+# alteralux for macOS architecture
 
 Hub document. Keep it short: it is imported into every Claude session. Detail lives in the linked documents.
 
@@ -10,12 +10,12 @@ RAW / TIFF / EXR ─► Core Image ─► scene-linear RGB ─► Rust engine �
 
 | Module | Where | Responsibility | May depend on |
 |---|---|---|---|
-| App shell | `apple/Spektrafilm/` | `@main` scene, resources, entitlements, signing | SpektrafilmUI |
-| SpektrafilmUI | `apple/SpektrafilmKit/Sources/SpektrafilmUI/` | App model, screens, menu commands | SpektrafilmKit, SpektrafilmEngine, DesignSystem |
+| App shell | `apple/Alteralux/` | `@main` scene, resources, entitlements, signing | AlteraluxUI |
+| AlteraluxUI | `apple/AlteraluxKit/Sources/AlteraluxUI/` | App model, screens, menu commands | AlteraluxKit, AlteraluxEngine, DesignSystem |
 | DesignSystem | `apple/DesignSystem/` | Tokens and shared components | nothing app-specific |
-| SpektrafilmKit | `apple/SpektrafilmKit/Sources/SpektrafilmKit/` | Image decoding, settings, rendering, export. No UI | SpektrafilmEngine |
-| SpektrafilmEngine | `apple/SpektrafilmKit/Sources/SpektrafilmEngine/` | Generated UniFFI bindings and the engine XCFramework | nothing |
-| Engine bridge | `engine/crates/spektrafilm-ffi/` | Rust API exposed to Swift | the upstream engine |
+| AlteraluxKit | `apple/AlteraluxKit/Sources/AlteraluxKit/` | Image decoding, settings, rendering, export. No UI | AlteraluxEngine |
+| AlteraluxEngine | `apple/AlteraluxKit/Sources/AlteraluxEngine/` | Generated UniFFI bindings and the engine XCFramework | nothing |
+| Engine bridge | `engine/crates/alteralux-ffi/` | Rust API exposed to Swift | the upstream engine |
 | Upstream engine | `engine/vendor/spektrafilm-rs/` | The film simulation (git submodule, never patched here) | nothing of ours |
 
 The dependencies between the Swift targets are enforced by `docs/architecture-contracts.json`.
@@ -24,7 +24,7 @@ The dependencies between the Swift targets are enforced by `docs/architecture-co
 
 One state pattern: `AppModel`, an `@Observable` class on the main actor, injected with `.environment(_:)`.
 Views read it and send intents; they hold no business logic. Decoding, rendering and export run off the
-main actor (`ImageLoader`, `FilmRenderer`, `ImageExporter` in SpektrafilmKit).
+main actor (`ImageLoader`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
 
 The engine works linear in, linear out: every transfer function and color conversion is done by macOS
 (Core Image, ColorSync), never by the engine. Parameters cross the bridge as a JSON patch over the engine
@@ -32,8 +32,8 @@ defaults, and unknown keys are errors.
 
 ## Protected areas
 
-- `apple/Spektrafilm/Spektrafilm.entitlements`, `apple/Spektrafilm/Info.plist` and
-  `apple/Spektrafilm/Signing.xcconfig`: the app's security settings (sandbox, hardened runtime, signing).
+- `apple/Alteralux/Alteralux.entitlements`, `apple/Alteralux/Info.plist` and
+  `apple/Alteralux/Signing.xcconfig`: the app's security settings (sandbox, hardened runtime, signing).
   They are never relaxed to make something work.
 - `engine/vendor/spektrafilm-rs/`: the upstream engine. Updating it means moving the submodule pointer;
   anything macOS-specific lives in this repository.
