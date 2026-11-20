@@ -88,7 +88,11 @@ public final class AppModel {
 
     /// Long side of the standard live preview, in pixels.
     private nonisolated static let standardPreviewDimension = 2048
+    /// Long side of the lighter preview shown while the settings are changing.
+    private nonisolated static let draftPreviewDimension = 1024
     private nonisolated static let thumbnailDimension = 240
+    /// How long the settings must stay still before the preview is rendered at its full size.
+    private nonisolated static let settleDelay = Duration.milliseconds(150)
 
     /// Long side the viewer currently needs, in pixels (0 = full resolution).
     private var previewDimension = AppModel.standardPreviewDimension
@@ -97,6 +101,16 @@ public final class AppModel {
     private var renderLoop: Task<Void, Never>?
     private var needsRender = false
     private var loadGeneration = 0
+    /// Set while the settings are changing: a slider is being dragged, a key is held down.
+    private var isAdjusting = false
+    private var settle: Task<Void, Never>?
+    /// Set when the settings settle on a photo shown at full resolution: the standard preview
+    /// comes first, because the full one takes a second or more.
+    private var needsStandardFirst = false
+    /// Whether the preview on screen is smaller than the one the viewer needs.
+    private var previewIsDraft = false
+    /// The load whose lighter preview has been prepared.
+    private var preparedGeneration = 0
 
     /// Where the engine's `data` folder is. `nil` means the app bundle's resources.
     private let dataDirectory: URL?
@@ -301,8 +315,21 @@ public final class AppModel {
 
     /// Called when the settings change: keeps the photo's copy in sync and
     /// refreshes the preview.
+    ///
+    /// While a control moves the preview is rendered smaller, so it keeps up with the hand; the
+    /// preview the viewer needs follows as soon as the settings stay still.
     func settingsDidChange() {
         selection?.settings = settings
+        guard loaded != nil, renderer != nil else { return }
+        isAdjusting = true
+        settle?.cancel()
+        settle = Task { [weak self] in
+            try? await Task.sleep(for: Self.settleDelay)
+            guard !Task.isCancelled, let self else { return }
+            isAdjusting = false
+            needsStandardFirst = true
+            requestRender()
+        }
         requestRender()
     }
 
@@ -375,13 +402,16 @@ public final class AppModel {
         while needsRender, let loaded, let renderer {
             needsRender = false
             let generation = loadGeneration
+            let dimension = nextRenderDimension()
+            let isDraft = dimension != previewDimension
             do {
                 let developed = try await renderer.render(
-                    loaded, settings: settings, quality: .preview(maxDimension: previewDimension),
+                    loaded, settings: settings, quality: .preview(maxDimension: dimension),
                 )
                 // Drop the frame if another photo was selected meanwhile.
                 if generation == loadGeneration {
                     preview = developed
+                    previewIsDraft = isDraft
                 }
             } catch {
                 alertMessage = error.localizedDescription
@@ -389,7 +419,36 @@ public final class AppModel {
         }
         isRendering = false
         renderLoop = nil
-        refreshSelectedThumbnail()
+        // The strip follows once the settings settle, not on every frame of a drag.
+        if !previewIsDraft {
+            refreshSelectedThumbnail()
+            prepareLighterPreview()
+        }
+    }
+
+    /// Has the photo scaled for the lighter preview once it is on screen, so the first move of
+    /// a control does not wait for that.
+    private func prepareLighterPreview() {
+        guard let loaded, let renderer, preparedGeneration != loadGeneration else { return }
+        preparedGeneration = loadGeneration
+        renderer.preparePreview(of: loaded, maxDimension: Self.draftPreviewDimension)
+    }
+
+    /// The long side of the next render (0 = full resolution): the lighter preview while the
+    /// settings change, then what the viewer needs, through the standard preview when that is
+    /// the full resolution.
+    private func nextRenderDimension() -> Int {
+        if isAdjusting {
+            return Self.draftPreviewDimension
+        }
+        if needsStandardFirst {
+            needsStandardFirst = false
+            if previewDimension == 0 {
+                needsRender = true
+                return Self.standardPreviewDimension
+            }
+        }
+        return previewDimension
     }
 
     /// Updates the strip thumbnail with the developed look.

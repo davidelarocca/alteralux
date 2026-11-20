@@ -31,6 +31,16 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 - Measured on an Apple M5 with 16 GB (generated 16-bit TIFF, GPU backend): a preview update takes about
   0.1 s at any size; the full-resolution render for the 100% view and for export takes about 0.6 s at
   12 MP, 1.8 s at 24 MP, 5.3 s at 45 MP and 9.2 s at 60 MP.
+- Measured on the same Mac on 2026-11-20, where the time of one preview update at 2048 px went (24 MP
+  source, default settings): 60 to 70 ms of GPU work (25 ms with every effect off; halation adds 18,
+  the couplers 15, sharpening 4, grain 2), 6 ms to prepare and read back, 12 ms to copy the pixels
+  into Swift (1 ms in Rust: the rest is the bridge's copy), and 31 ms on the main thread to put the
+  frame on screen, because of the layer's mipmaps. Moving the exposure, the print filters or the
+  preflash adds 9 ms: the engine recalibrates the pipeline, and 7.5 ms of that is upstream reloading
+  its spectral table and rebuilding its lookup table (loading the two profiles is 0.8 ms). At 1024 px
+  the whole engine call takes 15 to 25 ms. Scaling the 24 MP source for a preview size takes about
+  250 ms, once per size. In a large window on a 4K display the fitted photo needs
+  more than 2048 px, so every update was a full-resolution render: 1.0 to 1.2 s at 24 MP.
 - **Not verified yet**: real RAW files from a camera (decoding time, highlights, metadata), drag and drop,
   trackpad gestures, and the Open panel.
 
@@ -49,10 +59,19 @@ draft pull request per step.
 2. **The inspector redrawn** in the visual direction of the vision: a slider of our own (neutral colors,
    fill from the neutral point, keyboard and accessibility by step), the film as the heading, spacing and
    type. Snapshots and `KeyboardCheck` tests with it.
-3. **Immediate editing.** Measure where the 0.1 s of a preview update goes, then remove it: a lighter
-   preview while a control moves, rendering only what the viewer shows, and no round trip of the pixels
-   through main memory (see "GPU texture sharing" and "100% view" below). A performance budget test keeps
-   the result.
+3. **Immediate editing.** Measured on 2026-11-20 (see above). Done: the viewer no longer builds
+   mipmaps for every frame; while the settings change the preview is rendered at 1024 px, then at the
+   size the viewer needs; `PreviewBudgetTests` keeps a preview update under 50 ms at 1024 px and under
+   200 ms at 2048 px on a Mac's GPU (on CI, whose virtual GPU is several times slower, it checks only
+   that the lighter preview costs much less than the standard one). Still open, in this order:
+   - Render what the viewer shows: a fitted photo in a large window needs about 2400 to 3000 px, not
+     the full resolution (a second or more at 24 MP).
+   - Let a lighter render overtake a full-resolution one in progress: today the next update waits for
+     it to finish.
+   - No round trip of the pixels through main memory (see "GPU texture sharing" and "100% view" below).
+   - The 7.5 ms of recalibration on exposure, filters and preflash are inside the upstream engine: to
+     propose upstream, not to patch here.
+   - Not measured yet: what SwiftUI redraws while a slider moves (needs Instruments on the app).
 4. **White balance** (temperature and tint) from the RAW decoder.
 5. **Edits that persist**, with undo and redo.
 6. **Looks**: save and apply, copy between photos, export several photos, adaptive application.

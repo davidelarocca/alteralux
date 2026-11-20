@@ -280,3 +280,91 @@ struct ExportTests {
         #expect(file.profile.contains("sRGB"), "profile: \(file.profile)")
     }
 }
+
+/// Keeps a preview update fast enough to follow a moving control.
+///
+/// Measured on the GPU backend only: the budget is about the Macs the app is used on, not about
+/// the CPU fallback of a machine without a usable GPU. A CI runner has a virtual GPU several
+/// times slower (97 and 303 ms where an Apple M5 takes 20 and 90): there the times are printed
+/// and only their proportion is checked.
+struct PreviewBudgetTests {
+    /// Milliseconds one update may take: at the size shown while a control moves, and at the
+    /// standard preview size. Measured on an Apple M5: about 20 and 100.
+    private static let budgets: [(dimension: Int, milliseconds: Double)] = [(1024, 50), (2048, 200)]
+
+    /// A scene-linear horizontal ramp, larger than the standard preview.
+    private static func rampSource(width: Int, height: Int) throws -> SourceImage {
+        var row = [Float](repeating: 0, count: width * 3)
+        for column in 0 ..< width {
+            let level = 0.02 + 1.5 * Float(column) / Float(width - 1)
+            row[column * 3] = level
+            row[column * 3 + 1] = level * 0.8
+            row[column * 3 + 2] = level * 0.6
+        }
+        let rowBytes = row.withUnsafeBufferPointer { Data(buffer: $0) }
+        var pixels = Data(capacity: rowBytes.count * height)
+        for _ in 0 ..< height {
+            pixels.append(rowBytes)
+        }
+        return try SourceImage.fromF32Pixels(
+            width: UInt32(width), height: UInt32(height), channels: 3, pixels: pixels,
+        )
+    }
+
+    /// The app alternates between the two sizes at every pause of the hand: neither may cost a
+    /// new scaling of the source, which takes longer than the render itself.
+    @Test func switchingPreviewSizesDoesNotScaleTheSourceAgain() async throws {
+        let renderer = try FilmRenderer(dataDirectory: dataDirectory, backend: .automatic)
+        let source = try Self.rampSource(width: 3072, height: 2048)
+        let settings = DevelopSettings()
+        for dimension in [512, 1024] {
+            _ = try await renderer.render(source, settings: settings, quality: .preview(maxDimension: dimension))
+        }
+        for dimension in [512, 1024, 512] {
+            let developed = try await renderer.render(
+                source, settings: settings, quality: .preview(maxDimension: dimension),
+            )
+            #expect(developed.stats.scaleMs < 2, "The source was scaled again for \(dimension) px.")
+        }
+    }
+
+    @Test func aPreviewUpdateStaysWithinItsBudget() async throws {
+        let renderer = try FilmRenderer(dataDirectory: dataDirectory, backend: .automatic)
+        guard renderer.backendName.contains("GPU") else {
+            print("preview budget not measured: the backend is \(renderer.backendName)")
+            return
+        }
+        let source = try Self.rampSource(width: 3072, height: 2048)
+        let isCI = ProcessInfo.processInfo.environment["CI"] != nil
+        var settings = DevelopSettings()
+        var times: [Double] = []
+        for budget in Self.budgets {
+            // The best of several updates: other tests share the GPU while this one runs.
+            var best = Double.infinity
+            for step in 0 ..< 12 {
+                // A new value every time, as a moving slider gives.
+                settings.halationAmount = 1 + Double(step) * 0.05
+                let start = ContinuousClock.now
+                _ = try await renderer.render(
+                    source, settings: settings, quality: .preview(maxDimension: budget.dimension),
+                )
+                let elapsed = ContinuousClock.now - start
+                // The first updates calibrate the pipeline and scale the source.
+                if step >= 2 {
+                    best = min(best, Double(elapsed.components.attoseconds) / 1e15 + Double(elapsed.components.seconds) * 1000)
+                }
+            }
+            print("preview update at \(budget.dimension) px: \(best) ms")
+            times.append(best)
+            if !isCI {
+                #expect(
+                    best < budget.milliseconds,
+                    "A preview update at \(budget.dimension) px took \(best) ms, over its budget of \(budget.milliseconds) ms.",
+                )
+            }
+        }
+        // Whatever the machine, the preview shown while a control moves must be much lighter
+        // than the standard one: it has a quarter of the pixels.
+        #expect(times[0] < times[1] * 0.6, "The 1024 px preview took \(times[0]) ms, the 2048 px one \(times[1]) ms.")
+    }
+}
