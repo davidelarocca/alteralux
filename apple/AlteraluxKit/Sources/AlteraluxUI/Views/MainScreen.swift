@@ -16,42 +16,21 @@ public struct MainWindow: View {
     }
 }
 
-/// The main screen: the photo, with the zoom and the strip of open photos below it, and the
-/// adjustments in an inspector on the right.
+/// The main screen: the library, or the photo being developed.
 struct MainScreen: View {
     @Environment(AppModel.self) private var model
     /// The window's undo manager: the one the Edit menu acts on.
     @Environment(\.undoManager) private var undoManager
-    @State private var showsInspector = true
-
-    /// Width of the adjustments inspector, in points.
-    private enum InspectorWidth {
-        static let minimum: CGFloat = 280
-        static let ideal: CGFloat = 320
-        static let maximum: CGFloat = 440
-    }
 
     var body: some View {
         @Bindable var model = model
 
-        VStack(spacing: 0) {
-            PhotoStage()
-            if !model.photos.isEmpty {
-                ZoomControls()
-                Divider()
-                FilmstripView()
+        Group {
+            if model.showsLibrary {
+                LibraryScreen()
+            } else {
+                DevelopScreen()
             }
-        }
-        .inspector(isPresented: $showsInspector) {
-            InspectorView()
-                .inspectorColumnWidth(
-                    min: InspectorWidth.minimum, ideal: InspectorWidth.ideal, max: InspectorWidth.maximum,
-                )
-        }
-        .navigationTitle(model.selection?.name ?? "alteralux")
-        .navigationSubtitle(model.materialsSummary)
-        .toolbar {
-            MainToolbar(model: model, showsInspector: $showsInspector)
         }
         .fileImporter(
             isPresented: $model.isImporterPresented,
@@ -62,9 +41,10 @@ struct MainScreen: View {
                 model.open(urls)
             }
         }
+        // Photos dropped on the window are opened, folders are added to the library.
         .dropDestination(for: URL.self) { urls, _ in
             guard !urls.isEmpty else { return false }
-            model.open(urls)
+            model.take(urls)
             return true
         }
         .onChange(of: model.settings) { model.settingsDidChange() }
@@ -90,7 +70,44 @@ struct MainScreen: View {
     }
 }
 
-/// The toolbar of the main window: on the leading side open, then previous and next, beside the
+/// The photo being developed, with the zoom and the strip of photos below it, and the
+/// adjustments in an inspector on the right.
+private struct DevelopScreen: View {
+    @Environment(AppModel.self) private var model
+    @State private var showsInspector = true
+
+    /// Width of the adjustments inspector, in points.
+    private enum InspectorWidth {
+        static let minimum: CGFloat = 280
+        static let ideal: CGFloat = 320
+        static let maximum: CGFloat = 440
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            PhotoStage()
+            if !model.photos.isEmpty {
+                ZoomControls()
+                Divider()
+                FilmstripView()
+            }
+        }
+        .inspector(isPresented: $showsInspector) {
+            InspectorView()
+                .inspectorColumnWidth(
+                    min: InspectorWidth.minimum, ideal: InspectorWidth.ideal, max: InspectorWidth.maximum,
+                )
+        }
+        .navigationTitle(model.selection?.name ?? "alteralux")
+        .navigationSubtitle(model.materialsSummary)
+        .toolbar {
+            MainToolbar(model: model, showsInspector: $showsInspector)
+        }
+    }
+}
+
+/// The toolbar while developing: on the leading side the way back to the library (or open, while
+/// no folder was added), then previous and next, beside the
 /// window's title (the photo's name over its film and paper); on the trailing side undo and
 /// redo, then compare, export and the inspector.
 private struct MainToolbar: ToolbarContent {
@@ -99,12 +116,21 @@ private struct MainToolbar: ToolbarContent {
 
     var body: some ToolbarContent {
         ToolbarItem(placement: .navigation) {
-            Button {
-                model.isImporterPresented = true
-            } label: {
-                Label("Open…", systemImage: "folder")
+            if model.hasLibrary {
+                Button {
+                    model.showLibrary()
+                } label: {
+                    Label("Library", systemImage: "square.grid.2x2")
+                }
+                .help("Back to the library")
+            } else {
+                Button {
+                    model.isImporterPresented = true
+                } label: {
+                    Label("Open…", systemImage: "folder")
+                }
+                .help("Open photos")
             }
-            .help("Open photos")
         }
 
         ToolbarItemGroup(placement: .navigation) {

@@ -23,6 +23,8 @@ Sizes are in points, `<width>x<height>`, or `<width>` alone when the height does
 | Screen | View | File | Window | Min | Default | Max | Compact below | Compact behavior |
 |---|---|---|---|---|---|---|---|---|
 | Main window | `MainWindow` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/MainScreen.swift | `MainWindow` | 900x600 | 1280x820 | - | - | - |
+| Library, the folders | `LibrarySidebar` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/LibraryScreen.swift | | 180x548 | 220x768 | 320 | - | - |
+| Library, the photos | `LibraryGrid` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/LibraryGrid.swift | | 580x548 | 1060x768 | - | - | - |
 
 - **View**: the SwiftUI type of the screen's content. **File**: where it is declared, from the repository root.
   A split view (`NavigationSplitView`, `HSplitView`) takes any width, so its content cannot be measured: name
@@ -49,6 +51,10 @@ they must open inside the window, or on screen for a separate window.
 ## Exceptions
 
 Deliberate departures from the rules above, with the reason.
+
+- The library is a split view inside the main window: the window's own row checks the window's sizes, and
+  its two columns have a row each. Their Min is what each gets at the window's Min (900x600 less the
+  toolbar): the list of folders at its narrowest, and the photos beside the list at its widest.
 
 - The main window holds an inspector, which behaves like a split view: its row names the window type as
   View and Window, so the row checks the window's sizes.

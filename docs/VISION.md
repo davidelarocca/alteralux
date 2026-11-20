@@ -135,8 +135,9 @@ hand-drawn controls of the mockups were dropped for the system's
   attribute ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)), and a sidecar beside the photo can be
   added inside the library's folders. Whether the "discarded" mark goes the same way is to decide
   with the library.
-- **Finder tags in the sandbox.** Whether the app can read and write the tags of files in a folder the
-  user has added, with the access the sandbox gives. To verify before designing the tag menu.
+- **Finder tags in the sandbox.** Verified on 2026-11-20 with a probe app signed like this one: in a
+  folder the user has added, tags are read and written with the access the sandbox gives, and so are
+  moving, copying, the Trash and a file beside a photo. The tag menu is still to design.
 - **Automatic white balance.** Which method gives the starting temperature for adaptive recipes, and
   when a photo counts as "too far off". To settle on real photos.
 

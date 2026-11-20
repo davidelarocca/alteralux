@@ -28,6 +28,14 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
   - `EditStore` keeps a photo's adjustments between launches: in an extended
     attribute of the photo, or in a folder of the app's when the photo cannot
     be written ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)).
+  - The library, in `Library/`: `LibraryFolders` remembers the folders the user
+    added (security-scoped bookmarks in a property list) and holds their
+    access; `FolderContents` reads a folder's tree and its photos, in the
+    Finder's order; `FolderWatcher` reports changes on disk (FSEvents,
+    coalesced); `ThumbnailProvider` makes thumbnails with ImageIO, from the
+    preview embedded in the file when there is one, a few at a time, kept in
+    memory and on disk; `PhotoFileActions` moves, copies and trashes files
+    and reads and writes their Finder tags, reporting per file.
   - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
   - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
@@ -77,6 +85,15 @@ open photos, the settings of the selected one and its preview.
   when it changes. Once a settled preview is on screen it decodes ahead the
   1024 px size, then, after a quiet second, the whole photo for the 100% view
   and for export.
+- **Library.** The window shows the library or the photo being developed
+  (`AppModel.showsLibrary`); it opens on the library once a folder was added,
+  unless the app was started on a photo. `LibraryModel` holds the folders
+  with their trees and counts, the folder on screen, its photos, which have
+  adjustments, the filter and the selection; it reads off the main actor and
+  reads again when a `FolderWatcher` reports. A photo of a folder is
+  developed with the folder's photos in the strip, in their order, and the
+  toolbar has the way back. Folders come from a panel, the File menu, a drop
+  on the window or the Finder.
 - **Edits.** `EditHistory` follows the adjustments of the selected photo. A
   change is what happens between two moments of stillness (a whole drag, a
   film chosen, a reset): its first value registers one step in the window's

@@ -1,0 +1,17 @@
+{
+  "appearance": "light",
+  "captured": "2026-11-20T12:55:34Z",
+  "contractSize": "200",
+  "locale": "",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "ThumbnailCell",
+  "size": "200x120",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/ThumbnailCell.swift",
+  "state": "whole-photo",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-20T13:00:36Z",
+  "approvedFrom": "missing"
+}

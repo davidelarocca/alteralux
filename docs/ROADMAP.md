@@ -63,6 +63,19 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   keeps them in the app's container and gets them back too; two changes are undone and redone as two
   steps by the toolbar's buttons and by Command-Z and Shift-Command-Z; the toolbar fits the window at
   its minimum size.
+- Verified on 2026-11-20 with a throwaway probe app signed with this app's two entitlements: inside a
+  folder handed to the app, a security-scoped bookmark is resolved again after a relaunch, files are
+  listed, read, moved, copied and trashed, Finder tags and extended attributes are read and written,
+  a file can be created beside a photo, and changes are reported by FSEvents. No entitlement has to
+  be added for the library. Moving into a folder that was not handed over fails (Cocoa error 513).
+- Measured on 2026-11-20 on 40 RAW and 40 TIFF files of 24 MP, for a 480 px thumbnail: from the
+  preview embedded in a RAW, 12 ms a file (0.15 s for 40, eight at a time); from a TIFF, 0.6 s a file
+  whatever the way, 4.7 s for 40 with ImageIO eight at a time and 20 s with QuickLook, which does not
+  gain from concurrency.
+- Verified by driving the built app on 2026-11-20: a folder opened from the Finder is added to the
+  library and shown (eight photos, an upright one whole, a folder inside it in the list); a photo is
+  developed from the grid with the folder's photos in the strip; back in the library it has its
+  mark; after quitting, the app opens on the library with the folder remembered.
 - **Not verified yet**: RAW files of other cameras, their highlights and metadata; how a white
   balance drag feels under the hand (it is timed through the app model, not by hand); drag and drop,
   trackpad gestures, and the Open panel.
@@ -127,8 +140,21 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - In Italian the Edit menu shows "Ripristina" (Redo) just above "Ripristina regolazioni" (Reset
      Adjustments): the second needs another word.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
-   the actions on a selection (move, copy, tag with the Finder's tags, discard). Needs step 5, and the
-   open questions of the vision on where marks are kept and on tags in the sandbox.
+   the actions on a selection (move, copy, tag with the Finder's tags, discard). Done, the first part:
+   folders added from a panel, the File menu, a drop or the Finder, and remembered between launches;
+   the list of folders with the ones inside them and their counts; the grid with names, a mark on the
+   photos that have adjustments and a filter for them; the size of the thumbnails; a double-click or
+   Return to develop, with the folder's photos in the strip, and the way back in the toolbar; changes
+   on disk noticed. Written without UI and tested, not yet in the interface: moving, copying, the
+   Trash and Finder tags (`PhotoFileActions`). Still open:
+   - The actions on a selection in the interface: Move to, Copy to, Tag, and Discard with its filter
+     and the emptying of the discarded photos into the Trash. Where the "discarded" mark is kept is
+     still to decide.
+   - The grid shows the camera's own preview, not the developed look: that needs a render per photo
+     and a cache.
+   - In the grid the arrow keys move left and right only; the thumbnails kept on disk are never
+     pruned; a folder that cannot be added says so without the reason.
+   - A sidebar entry for photos opened one by one, outside any folder.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
    photos, adaptive to exposure and temperature.
 8. **Crop and straighten.**
