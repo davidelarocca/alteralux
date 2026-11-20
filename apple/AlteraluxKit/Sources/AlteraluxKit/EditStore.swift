@@ -40,6 +40,16 @@ public actor EditStore {
         return Self.decode(data)
     }
 
+    /// Whether anything is kept for the photo at `url`: a cheap look, for marking the photos of a
+    /// folder that have adjustments without reading them.
+    public nonisolated func hasAdjustments(for url: URL) -> Bool {
+        let inPhoto = url.withUnsafeFileSystemRepresentation { path -> Bool in
+            guard let path else { return false }
+            return getxattr(path, Self.attributeName, nil, 0, 0, 0) > 0
+        }
+        return inPhoto || FileManager.default.fileExists(atPath: fallbackFile(for: url).path)
+    }
+
     /// Keeps `settings` for the photo at `url`.
     @discardableResult
     public func save(_ settings: DevelopSettings, for url: URL) throws -> Place {
