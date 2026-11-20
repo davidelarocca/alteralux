@@ -119,7 +119,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.
-   - The setting that collapses or hides the strip of thumbnails.
+   - Done on 2026-11-20: View > Show Strip (Option-Command-S) hides the strip of thumbnails for
+     more room, and the choice is kept.
 3. **Immediate editing.** Measured on 2026-11-20 (see above). Done: the viewer no longer builds
    mipmaps for every frame; while the settings change the preview is rendered at 1024 px, then at the
    size the viewer needs; `PreviewBudgetTests` keeps a preview update under 50 ms at 1024 px and under

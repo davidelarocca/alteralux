@@ -6,6 +6,8 @@ public struct AlteraluxCommands: Commands {
     private let model: AppModel
     /// The size of the library's thumbnails, which Zoom In and Zoom Out change in the library.
     @AppStorage(LibraryGrid.thumbnailSizeKey) private var thumbnailSize = LibraryGrid.defaultThumbnailSize
+    /// Whether the strip of photos shows under the photo being developed.
+    @AppStorage(DevelopScreen.showsStripKey) private var showsStrip = true
 
     public init(model: AppModel) {
         self.model = model
@@ -57,6 +59,9 @@ public struct AlteraluxCommands: Commands {
             )
             .keyboardShortcut("\\", modifiers: [])
             .disabled(model.original == nil || model.showsLibrary)
+            Toggle("Show Strip", isOn: $showsStrip)
+                .keyboardShortcut("s", modifiers: [.command, .option])
+                .disabled(model.showsLibrary)
             Divider()
             Group {
                 Button("Zoom to Fit") { model.zoom(.fit) }
