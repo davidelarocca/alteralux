@@ -74,6 +74,9 @@ public final class AppModel {
     var exportsBesideOriginals = true
     /// An export that found files of an earlier one, and waits to be told what to do with them.
     var exportWaiting: WaitingExport?
+    /// Takes away an exported file that a new export replaces. `nil` moves it to the Trash;
+    /// tests remove it instead, to leave nothing in the Trash of whoever runs them.
+    var discardExport: (@Sendable (URL) throws -> Void)?
     var alertMessage: String?
 
     /// File types offered by the Open panel and accepted by drag and drop.

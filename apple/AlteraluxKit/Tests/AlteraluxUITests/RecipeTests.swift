@@ -304,6 +304,7 @@ struct ExportAgainTests {
         await model.addFolder(folder)
         let photos = model.library.photos
         model.exportOptions.longSide = 64
+        model.discardExport = { try FileManager.default.removeItem(at: $0) }
         let developed = folder.appendingPathComponent(AppModel.developedFolderName)
         let files = { try FileManager.default.contentsOfDirectory(atPath: developed.path).filter { !$0.hasPrefix(".") }.sorted() }
 

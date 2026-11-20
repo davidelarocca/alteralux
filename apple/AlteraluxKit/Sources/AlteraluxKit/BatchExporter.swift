@@ -33,8 +33,9 @@ public enum ExportDestination: Sendable, Equatable {
 public enum ExistingFilePolicy: Sendable, Equatable {
     /// Write the new file beside the old ones, under the first free name ("name 2.jpg").
     case keepBoth
-    /// Write the new file and take the old ones away: a file of the same name is replaced,
-    /// the others are discarded.
+    /// Write the new file and take the old ones away: they are discarded, which in the app
+    /// means the Trash, so a file replaced by mistake can be taken back. Nothing is written
+    /// over.
     case replace
     /// Leave the old files and do not develop the photo again.
     case skip
@@ -166,10 +167,14 @@ public struct BatchExporter: Sendable {
                 var output = written
                 if existing == .replace {
                     if isThere {
-                        output = try manager.replaceItemAt(named, withItemAt: written) ?? named
+                        // The old file of this name goes where the other old ones go, and the
+                        // new one takes its name. If it cannot be taken away both stay: the
+                        // new one under the first free name.
+                        try? discard(named)
+                        let name = PhotoFileActions.exists(named, manager) ? PhotoFileActions.freeURL(for: job.fileName, in: folder) : named
+                        try manager.moveItem(at: written, to: name)
+                        output = name
                     }
-                    // The other files of the photo, of another film, format or number, go once
-                    // the new one is written. One that cannot be taken away stays.
                     let kept = finished.union([output.standardizedFileURL])
                     for file in old where !kept.contains(file.standardizedFileURL) {
                         try? discard(file)
