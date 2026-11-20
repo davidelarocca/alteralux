@@ -72,7 +72,7 @@ public final class AppModel {
     private nonisolated static let draftPreviewDimension = 1024
     private nonisolated static let thumbnailDimension = 240
     /// How long the settings must stay still before the preview is rendered at its full size.
-    private nonisolated static let settleDelay = Duration.milliseconds(150)
+    var settleDelay = Duration.milliseconds(150)
     /// How long the standard preview stays, once the settings are still, before a preview that
     /// takes long replaces it. A render cannot be interrupted: one started at every short pause
     /// would keep the control waiting when the hand takes it up again.
@@ -341,7 +341,8 @@ public final class AppModel {
         slowPreviewRelease = nil
         settle?.cancel()
         settle = Task { [weak self] in
-            try? await Task.sleep(for: Self.settleDelay)
+            guard let delay = self?.settleDelay else { return }
+            try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
             self?.settleChange()
         }
