@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-20T18:09:00Z",
+  "contractSize": "360x80",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "ChoiceListButton",
+  "size": "360x80",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/ChoiceListButton.swift",
+  "state": "closed",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-20T18:12:11Z",
+  "approvedFrom": "missing"
+}
