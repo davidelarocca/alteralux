@@ -7,6 +7,15 @@ enum LibraryFilter: Hashable, CaseIterable {
     case all
     /// Only the photos that have adjustments.
     case adjusted
+    /// Only the photos the user discarded, which the other two hide.
+    case discarded
+}
+
+/// What was read of a folder: its photos, and which carry adjustments and the discarded mark.
+private struct FolderListing: Sendable {
+    var photos: [URL] = []
+    var adjusted: Set<URL> = []
+    var discarded: Set<URL> = []
 }
 
 /// A folder the user added, with what is in it.
@@ -34,6 +43,8 @@ final class LibraryModel {
     private(set) var photos: [URL] = []
     /// Those of `photos` that have adjustments.
     private(set) var adjusted: Set<URL> = []
+    /// Those of `photos` the user discarded: marked, hidden, and still on disk.
+    private(set) var discarded: Set<URL> = []
     var filter = LibraryFilter.all {
         didSet { selection.formIntersection(visiblePhotos) }
     }
@@ -47,6 +58,7 @@ final class LibraryModel {
     @ObservationIgnored let thumbnails: ThumbnailProvider
     @ObservationIgnored private let folders: LibraryFolders
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
+    @ObservationIgnored private let discards: DiscardStore
     @ObservationIgnored private var watchers: [LibraryFolder.ID: Task<Void, Never>] = [:]
     /// The photo a Shift-click or an arrow key starts from.
     @ObservationIgnored private var anchor: URL?
@@ -57,9 +69,14 @@ final class LibraryModel {
     ///   - storeURL: the file where the added folders are remembered.
     ///   - cacheDirectory: where thumbnails are kept between launches; `nil` keeps none on disk.
     ///   - hasAdjustments: whether a photo has adjustments kept for it.
-    init(storeURL: URL, cacheDirectory: URL?, hasAdjustments: @escaping @Sendable (URL) -> Bool) {
+    ///   - discards: where the discarded mark of a photo is kept.
+    init(
+        storeURL: URL, cacheDirectory: URL?, discards: DiscardStore,
+        hasAdjustments: @escaping @Sendable (URL) -> Bool,
+    ) {
         folders = LibraryFolders(storeURL: storeURL)
         thumbnails = ThumbnailProvider(cacheDirectory: cacheDirectory)
+        self.discards = discards
         self.hasAdjustments = hasAdjustments
     }
 
@@ -71,8 +88,9 @@ final class LibraryModel {
     /// The photos the grid shows: those of the folder that pass the filter.
     var visiblePhotos: [URL] {
         switch filter {
-        case .all: photos
-        case .adjusted: photos.filter(adjusted.contains)
+        case .all: photos.filter { !discarded.contains($0) }
+        case .adjusted: photos.filter { adjusted.contains($0) && !discarded.contains($0) }
+        case .discarded: photos.filter(discarded.contains)
         }
     }
 
@@ -127,7 +145,7 @@ final class LibraryModel {
             await select(next.folder.url)
         } else {
             generation += 1
-            show(nil, photos: [], adjusted: [])
+            show(nil, FolderListing())
         }
     }
 
@@ -137,9 +155,9 @@ final class LibraryModel {
         let current = generation
         selectedFolder = folder
         selection = []
-        let (found, marked) = await contents(of: folder)
+        let listing = await contents(of: folder)
         guard current == generation else { return }
-        show(folder, photos: found, adjusted: marked)
+        show(folder, listing)
     }
 
     /// Reads the folders again: something changed on disk, or the app changed it.
@@ -149,9 +167,9 @@ final class LibraryModel {
         }
         guard let folder = selectedFolder else { return }
         let current = generation
-        let (found, marked) = await contents(of: folder)
+        let listing = await contents(of: folder)
         guard current == generation else { return }
-        show(folder, photos: found, adjusted: marked)
+        show(folder, listing)
     }
 
     /// Notes that a photo now has adjustments, or no longer: the mark in the grid follows without
@@ -208,21 +226,88 @@ final class LibraryModel {
         anchor.flatMap { selection.contains($0) ? $0 : nil } ?? visiblePhotos.first(where: selection.contains)
     }
 
+    // MARK: - Actions on photos
+
+    /// Every folder of the library, in the order of the list: the places photos can be moved or
+    /// copied to. The sandbox lets the app write only into folders the user added.
+    var destinations: [FolderNode] {
+        func flattened(_ node: FolderNode) -> [FolderNode] {
+            [node] + node.children.flatMap(flattened)
+        }
+        return roots.compactMap(\.tree).flatMap(flattened)
+    }
+
+    /// Marks photos as discarded, or takes the mark away. They stay on disk; the library hides
+    /// the discarded ones except under their own filter. Returns the photos whose mark changed.
+    @discardableResult
+    func setDiscarded(_ isDiscarded: Bool, for chosen: [URL]) -> [URL] {
+        var changed: [URL] = []
+        for photo in chosen where discarded.contains(photo) != isDiscarded {
+            guard (try? discards.setDiscarded(isDiscarded, for: photo)) != nil else { continue }
+            if isDiscarded {
+                discarded.insert(photo)
+            } else {
+                discarded.remove(photo)
+            }
+            changed.append(photo)
+        }
+        selection.formIntersection(visiblePhotos)
+        return changed
+    }
+
+    /// Moves the discarded photos of the folder on screen to the Trash, and returns what
+    /// happened to each.
+    func emptyDiscarded() async -> [FileActionResult] {
+        let files = photos.filter(discarded.contains)
+        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
+        await refresh()
+        return results
+    }
+
+    /// Moves photos into a folder of the library.
+    func move(_ files: [URL], to folder: URL) async -> [FileActionResult] {
+        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.move(files, to: folder) }.value
+        await refresh()
+        return results
+    }
+
+    /// Copies photos into a folder of the library.
+    func copy(_ files: [URL], to folder: URL) async -> [FileActionResult] {
+        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.copy(files, to: folder) }.value
+        await refresh()
+        return results
+    }
+
+    /// The Finder tags of the selected photos, each with the number of them that carry it.
+    func tagsOfSelection() -> [String: Int] {
+        PhotoFileActions.tags(ofAll: Array(selection))
+    }
+
+    /// Puts a Finder tag on photos, or takes it off.
+    @discardableResult
+    func setTag(_ tag: String, isOn: Bool, for files: [URL]) -> [FileActionResult] {
+        isOn ? PhotoFileActions.addTag(tag, to: files) : PhotoFileActions.removeTag(tag, from: files)
+    }
+
     // MARK: - Reading
 
-    private func show(_ folder: URL?, photos found: [URL], adjusted marked: Set<URL>) {
+    private func show(_ folder: URL?, _ listing: FolderListing) {
         selectedFolder = folder
-        photos = found
-        adjusted = marked
+        photos = listing.photos
+        adjusted = listing.adjusted
+        discarded = listing.discarded
         selection.formIntersection(visiblePhotos)
     }
 
-    /// The photos of a folder and which of them have adjustments, read off the main actor.
-    private func contents(of folder: URL) async -> ([URL], Set<URL>) {
-        let hasAdjustments = hasAdjustments
+    /// The photos of a folder with their marks, read off the main actor.
+    private func contents(of folder: URL) async -> FolderListing {
+        let (hasAdjustments, discards) = (hasAdjustments, discards)
         return await Task.detached(priority: .userInitiated) {
             let found = (try? FolderContents.photos(in: folder)) ?? []
-            return (found, Set(found.filter(hasAdjustments)))
+            return FolderListing(
+                photos: found, adjusted: Set(found.filter(hasAdjustments)),
+                discarded: Set(found.filter(discards.isDiscarded)),
+            )
         }.value
     }
 
