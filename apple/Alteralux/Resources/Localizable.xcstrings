@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ · ISO %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · ISO %@"
+          }
+        }
+      }
+    },
     "100%" : {
       "localizations" : {
         "it" : {
@@ -51,16 +61,6 @@
         }
       }
     },
-    "Actual size" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dimensioni reali"
-          }
-        }
-      }
-    },
     "Add photos" : {
       "localizations" : {
         "it" : {
@@ -91,6 +91,16 @@
         }
       }
     },
+    "Black and White" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bianco e nero"
+          }
+        }
+      }
+    },
     "Camera" : {
       "localizations" : {
         "it" : {
@@ -107,6 +117,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annulla"
+          }
+        }
+      }
+    },
+    "Choose the film" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli la pellicola"
+          }
+        }
+      }
+    },
+    "Color Negatives" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negative colore"
           }
         }
       }
@@ -241,6 +271,46 @@
         }
       }
     },
+    "Film · black and white" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola · bianco e nero"
+          }
+        }
+      }
+    },
+    "Film · color negative" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola · negativa colore"
+          }
+        }
+      }
+    },
+    "Film · motion picture" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola · cinema"
+          }
+        }
+      }
+    },
+    "Film · slide" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola · diapositiva"
+          }
+        }
+      }
+    },
     "Fit" : {
       "localizations" : {
         "it" : {
@@ -271,16 +341,6 @@
         }
       }
     },
-    "Grain size" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dimensione della grana"
-          }
-        }
-      }
-    },
     "HEIC (10-bit)" : {
       "localizations" : {
         "it" : {
@@ -297,16 +357,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alone"
-          }
-        }
-      }
-    },
-    "Halation strength" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Intensità dell'alone"
           }
         }
       }
@@ -351,22 +401,22 @@
         }
       }
     },
-    "Materials" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Materiali"
-          }
-        }
-      }
-    },
     "Medium format" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medio formato"
+          }
+        }
+      }
+    },
+    "Motion Picture" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinema"
           }
         }
       }
@@ -551,6 +601,26 @@
         }
       }
     },
+    "Search" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca"
+          }
+        }
+      }
+    },
+    "Search films" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerca tra le pellicole"
+          }
+        }
+      }
+    },
     "Sharpening" : {
       "localizations" : {
         "it" : {
@@ -587,6 +657,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Salta la stampa. È la scelta abituale per le diapositive."
+          }
+        }
+      }
+    },
+    "Slides" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diapositive"
           }
         }
       }
@@ -651,6 +731,16 @@
         }
       }
     },
+    "Zoom" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom"
+          }
+        }
+      }
+    },
     "Zoom In" : {
       "localizations" : {
         "it" : {
@@ -672,16 +762,6 @@
       }
     },
     "Zoom to Fit" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adatta alla finestra"
-          }
-        }
-      }
-    },
-    "Zoom to fit" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {

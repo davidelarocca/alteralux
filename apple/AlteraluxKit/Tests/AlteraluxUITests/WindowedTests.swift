@@ -65,6 +65,7 @@ enum WindowedTests {
 
 /// A `ParameterSlider` with a value of its own, as a screen holds it. `onChange` reports the
 /// value out: a `Binding(get:set:)` over a plain variable keeps the value SwiftUI read last.
+/// With `isOn` the slider has its switch, and `onSwitch` reports it.
 struct SliderHost: View {
     private let title: LocalizedStringKey
     private let range: ClosedRange<Double>
@@ -73,7 +74,10 @@ struct SliderHost: View {
     private let fractionDigits: Int
     private let showsSign: Bool
     private let onChange: (Double) -> Void
+    private let onSwitch: (Bool) -> Void
+    private let hasSwitch: Bool
     @State private var value: Double
+    @State private var isOn: Bool
 
     init(
         _ title: LocalizedStringKey,
@@ -83,7 +87,9 @@ struct SliderHost: View {
         defaultValue: Double = 0,
         fractionDigits: Int = 1,
         showsSign: Bool = true,
+        isOn: Bool? = nil,
         onChange: @escaping (Double) -> Void = { _ in },
+        onSwitch: @escaping (Bool) -> Void = { _ in },
     ) {
         self.title = title
         _value = State(initialValue: value)
@@ -93,14 +99,18 @@ struct SliderHost: View {
         self.fractionDigits = fractionDigits
         self.showsSign = showsSign
         self.onChange = onChange
+        self.onSwitch = onSwitch
+        hasSwitch = isOn != nil
+        _isOn = State(initialValue: isOn ?? true)
     }
 
     var body: some View {
         ParameterSlider(
             title, value: $value, in: range, step: step, defaultValue: defaultValue,
-            fractionDigits: fractionDigits, showsSign: showsSign,
+            fractionDigits: fractionDigits, showsSign: showsSign, isOn: hasSwitch ? $isOn : nil,
         )
         .padding(Spacing.m)
         .onChange(of: value) { _, new in onChange(new) }
+        .onChange(of: isOn) { _, new in onSwitch(new) }
     }
 }

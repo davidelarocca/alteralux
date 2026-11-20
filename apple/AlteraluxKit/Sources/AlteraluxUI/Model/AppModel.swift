@@ -26,14 +26,6 @@ final class PhotoItem: Identifiable {
     }
 }
 
-/// How the photo is scaled in the viewer.
-enum ZoomCommand: Equatable {
-    case fit
-    case actualSize
-    case zoomIn
-    case zoomOut
-}
-
 /// The state of the app: the film catalogue, the open photos, the settings of
 /// the selected one and its latest developed preview.
 @MainActor
@@ -42,6 +34,8 @@ public final class AppModel {
     // MARK: Catalogue
 
     private(set) var films: [StockInfo] = []
+    /// The films arranged for choosing one: grouped, searchable, each with its emblem.
+    private(set) var filmCatalogue = FilmCatalogue()
     private(set) var papers: [StockInfo] = []
 
     // MARK: Photos
@@ -67,8 +61,15 @@ public final class AppModel {
     /// every request so repeating the same command works.
     private(set) var zoomCommand = ZoomCommand.fit
     private(set) var zoomRequestID = 0
-    /// Viewer scale relative to the photo's actual pixels (1 = 100%).
-    private(set) var viewerScale = 0.0
+    /// How the viewer is showing the photo, as it last reported.
+    private(set) var viewerZoom = ViewerZoom()
+
+    /// The scales the zoom slider covers, relative to actual pixels: 5% to 800%.
+    static let zoomScaleRange = 0.05 ... 8.0
+    /// The zoom slider works on the base 2 logarithm of the scale, so each step multiplies the
+    /// size by the same amount wherever the thumb is.
+    static let zoomLevelRange = log2(zoomScaleRange.lowerBound) ... log2(zoomScaleRange.upperBound)
+    static let zoomLevelStep = 0.1
 
     // MARK: Activity
 
@@ -143,6 +144,17 @@ public final class AppModel {
         photos.count > 1
     }
 
+    /// Whether there is a photo `offset` places from the selected one in the strip.
+    func canSelectAdjacent(offset: Int) -> Bool {
+        guard let index = photos.firstIndex(where: { $0.id == selectedID }) else { return false }
+        return photos.indices.contains(index + offset)
+    }
+
+    /// The selected film as the list shows it, with its kind and its speed.
+    var selectedFilmEntry: FilmEntry? {
+        filmCatalogue.entry(id: settings.filmID)
+    }
+
     var selectedFilm: StockInfo? {
         films.first { $0.id == settings.filmID }
     }
@@ -185,6 +197,7 @@ public final class AppModel {
             let stocks = try renderer.stocks()
             self.renderer = renderer
             films = stocks.filter { $0.kind == .film }
+            filmCatalogue = FilmCatalogue(films: films)
             papers = stocks.filter { $0.kind == .paper }
             requestRender()
         } catch {
@@ -369,11 +382,48 @@ public final class AppModel {
         zoomRequestID += 1
     }
 
+    /// The viewer's scale as the zoom slider reads it: its base 2 logarithm, inside the slider's range.
+    var zoomLevel: Double {
+        Self.zoomLevel(of: viewerZoom.scale)
+    }
+
+    /// Where the fitted photo sits on the zoom slider: its neutral point.
+    var fitZoomLevel: Double {
+        Self.zoomLevel(of: viewerZoom.fitScale)
+    }
+
+    /// Which of the named zooms the viewer is showing, if any.
+    var zoomPreset: ZoomPreset? {
+        if viewerZoom.isFitted {
+            return .fit
+        }
+        return abs(viewerZoom.scale - 1) < Self.actualSizeTolerance ? .actualSize : nil
+    }
+
+    /// A scale counts as 100% within this distance: the readout shows whole percents.
+    private static let actualSizeTolerance = 0.005
+
+    private static func zoomLevel(of scale: Double) -> Double {
+        log2(min(max(scale, zoomScaleRange.lowerBound), zoomScaleRange.upperBound))
+    }
+
+    /// Sets the zoom from the slider. A level within half a step of the fitted photo fits it, so
+    /// the slider stops there and the photo follows the window again.
+    func setZoomLevel(_ level: Double) {
+        if viewerZoom.fitScale > 0, abs(level - fitZoomLevel) < Self.zoomLevelStep / 2 {
+            zoom(.fit)
+        } else {
+            let clamped = min(max(level, Self.zoomLevelRange.lowerBound), Self.zoomLevelRange.upperBound)
+            zoom(.scale(pow(2, clamped)))
+        }
+    }
+
     /// Called by the viewer when its scale changes. Picks the preview
     /// resolution: the fast standard size while the whole photo is in view,
     /// full resolution once the user zooms in far enough to see the difference.
-    func viewerDidChange(scale: Double) {
-        viewerScale = scale
+    func viewerDidChange(_ zoom: ViewerZoom) {
+        viewerZoom = zoom
+        let scale = zoom.scale
         guard let loaded else { return }
         let displayedLongSide = Double(max(loaded.width, loaded.height)) * scale
         let needsFullResolution =

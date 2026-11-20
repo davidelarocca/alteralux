@@ -60,3 +60,4 @@ defaults, and unknown keys are errors.
 | [0003](adr/0003-generate-the-xcode-project.md) | Generate the Xcode project with XcodeGen | Accepted |
 | [0004](adr/0004-ui-in-packages.md) | Keep the screens and the design system in Swift packages | Accepted |
 | [0005](adr/0005-organize-through-the-finder.md) | Organize photos through the Finder, with no catalogue of the app's own | Accepted |
+| [0006](adr/0006-use-the-systems-controls.md) | Build the interface from the system's controls | Accepted |

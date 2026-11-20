@@ -104,6 +104,10 @@ fn catalogue_lists_films_and_papers() {
     assert_eq!(endura.kind, StockKind::Paper);
     let velvia = stocks.iter().find(|s| s.id == "fujifilm_velvia_100").expect("velvia");
     assert!(velvia.is_positive);
+    // Still and motion picture stocks are told apart.
+    assert!(!portra.is_motion_picture);
+    let vision = stocks.iter().find(|s| s.id == "kodak_vision3_250d").expect("vision3 250d");
+    assert!(vision.is_motion_picture);
     // Films come before papers.
     let first_paper = stocks.iter().position(|s| s.kind == StockKind::Paper).unwrap();
     assert!(stocks[..first_paper].iter().all(|s| s.kind == StockKind::Film));

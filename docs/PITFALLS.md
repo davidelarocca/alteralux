@@ -50,5 +50,14 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   `minificationFilter = .trilinear` each preview frame cost the main thread about 30 ms at the commit,
   against 0.1 ms with `.linear`, and the sliders stuttered. The viewer asks for mipmaps only when the
   image is shown below half its size (`ImageScrollView.needsMipmaps`, covered by `ViewerTests`).
+- **A form's content runs under a scroll bar that is always shown.** With "Show scroll bars: Always" the
+  switches of the inspector touched the scroll bar. The form keeps a trailing margin for it
+  (`.contentMargins(.trailing, _, for: .scrollContent)`).
+- **A text field does not take the focus in a test process.** `@FocusState` set in `onAppear` works in
+  the app and not under `swift test`, where the process is not the active app: keys sent to the window
+  go nowhere. A keyboard test makes the field first responder itself, as `FilmPickerTests` does.
+- **A gray tint makes a button in a form look disabled.** Its label takes the tint, and
+  `.foregroundStyle` on the label does not change it. Give the button the label color as its tint,
+  `.tint(.primary)` (the Reset button of the inspector).
 - **`.onKeyPress(.delete)` does not match the Delete key.** `KeyEquivalent.delete` is U+0008 and the key
   arrives as U+007F: match both.

@@ -6,6 +6,7 @@ import Testing
 @MainActor
 private final class Recorder {
     var value: Double
+    var isOn = true
 
     init(_ value: Double) {
         self.value = value
@@ -13,9 +14,10 @@ private final class Recorder {
 }
 
 extension WindowedTests {
-    /// `ParameterSlider` promises two actions without a pointer: the arrow keys move it one
-    /// step, and Delete resets it to its default. The system's "Keyboard navigation" setting
-    /// does not matter: the component takes the focus by itself.
+    /// `ParameterSlider` promises its actions without a pointer: the arrow keys move it one
+    /// step, Delete resets it to its default, and Space flips the switch of a parameter that
+    /// has one. The system's "Keyboard navigation" setting does not matter: the component takes
+    /// the focus by itself.
     @MainActor
     struct ParameterSliderKeyboard {
         private func hostedSlider(value: Double, defaultValue: Double = 0) -> (KeyboardCheck, Recorder) {
@@ -64,6 +66,35 @@ extension WindowedTests {
             keys.press(.rightArrow)
             keys.press(.rightArrow)
             #expect(recorder.value == 5)
+        }
+
+        private func hostedSwitchedSlider(isOn: Bool) -> (KeyboardCheck, Recorder) {
+            let recorder = Recorder(0.5)
+            recorder.isOn = isOn
+            let keys = KeyboardCheck.host {
+                SliderHost(
+                    "Grain", value: 0.5, in: 0 ... 1, isOn: isOn,
+                    onChange: { recorder.value = $0 }, onSwitch: { recorder.isOn = $0 },
+                )
+            }
+            return (keys, recorder)
+        }
+
+        @Test func spaceFlipsTheSwitch() {
+            let (keys, recorder) = hostedSwitchedSlider(isOn: true)
+            defer { keys.close() }
+            keys.press(.space)
+            #expect(!recorder.isOn)
+            keys.press(.space)
+            #expect(recorder.isOn)
+        }
+
+        @Test func aSwitchedOffSliderKeepsItsValue() {
+            let (keys, recorder) = hostedSwitchedSlider(isOn: false)
+            defer { keys.close() }
+            keys.press(.rightArrow)
+            keys.press(.delete)
+            #expect(recorder.value == 0.5)
         }
 
         @Test func deleteResetsToTheDefault() {

@@ -3,60 +3,90 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-/// The adjustments, grouped in the order light travels: materials, camera,
-/// print, film character, scan.
+/// The adjustments, in a form of the system's controls. The film is the heading; under it the
+/// sections follow the path of light: camera, print, film character, scan. A collapsed section
+/// shows its values.
 struct InspectorView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.locale) private var locale
+
+    @AppStorage("inspector.camera.isExpanded") private var showsCamera = true
+    @AppStorage("inspector.print.isExpanded") private var showsPrint = true
+    @AppStorage("inspector.filmCharacter.isExpanded") private var showsFilmCharacter = true
+    @AppStorage("inspector.scan.isExpanded") private var showsScan = true
 
     var body: some View {
         @Bindable var model = model
+        let summary = InspectorSummary(settings: model.settings, locale: locale)
 
         Form {
-            MaterialsSection()
-            CameraSection(settings: $model.settings)
-            if !model.settings.scanFilm {
-                PrintSection(settings: $model.settings)
+            MaterialsHeading()
+            Section {
+                InspectorSection(
+                    "Camera", isExpanded: $showsCamera,
+                    summary: summary.camera(formatName: formatName),
+                ) {
+                    CameraControls(settings: $model.settings)
+                }
             }
-            FilmCharacterSection(settings: $model.settings)
-            Section("Scan") {
-                ParameterSlider(
-                    "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
-                    step: 0.05, defaultValue: 0.7,
-                )
+            if !model.settings.scanFilm {
+                Section {
+                    InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
+                        PrintControls(settings: $model.settings)
+                    }
+                }
+            }
+            Section {
+                InspectorSection(
+                    "Film Character", isExpanded: $showsFilmCharacter, summary: summary.filmCharacter,
+                ) {
+                    FilmCharacterControls(settings: $model.settings)
+                }
+            }
+            Section {
+                InspectorSection("Scan", isExpanded: $showsScan, summary: summary.scan) {
+                    ParameterSlider(
+                        "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
+                        step: 0.05, defaultValue: 0.7,
+                    )
+                }
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
-            } footer: {
-                Text(model.renderSummary)
-                    .font(Typography.technical)
-                    .foregroundStyle(.tertiary)
+                    // The label color, not the window's gray tint: tinted gray, the button
+                    // would read as disabled.
+                    .tint(.primary)
             }
         }
         .formStyle(.grouped)
+        // Room for the scroll bar beside the controls, when the system always shows it.
+        .contentMargins(.trailing, Spacing.l, for: .scrollContent)
         .disabled(model.films.isEmpty)
+    }
+
+    /// The film format in the reader's language, for the summary of the camera section.
+    private var formatName: String {
+        guard let format = FilmFormat(rawValue: model.settings.filmFormatMM) else { return "" }
+        return String(localized: format.title)
     }
 }
 
-/// Film, paper, and whether the film is scanned directly.
-private struct MaterialsSection: View {
+/// The film as the heading of the inspector, and what goes with it: the paper it is printed
+/// on, or the choice to scan it directly.
+private struct MaterialsHeading: View {
     @Environment(AppModel.self) private var model
-
-    /// Choosing a film also applies its defaults (paper, direct scan).
-    private var filmSelection: Binding<String> {
-        Binding(
-            get: { model.settings.filmID },
-            set: { model.chooseFilm($0) },
-        )
-    }
+    @State private var showsFilms = false
 
     var body: some View {
         @Bindable var model = model
 
-        Section("Materials") {
-            Picker("Film", selection: filmSelection) {
-                ForEach(model.films, id: \.id) { film in
-                    Text(film.displayName).tag(film.id)
-                }
+        Section {
+            HeadingButton(caption: caption, title: model.selectedFilm?.displayName ?? "") {
+                showsFilms = true
+            }
+            .help("Choose the film")
+            .popover(isPresented: $showsFilms, arrowEdge: .bottom) {
+                FilmPicker()
             }
             if !model.settings.scanFilm {
                 Picker("Paper", selection: $model.settings.paperID) {
@@ -69,64 +99,68 @@ private struct MaterialsSection: View {
                 .help("Skip the print. The usual choice for slide film.")
         }
     }
-}
 
-private struct CameraSection: View {
-    @Binding var settings: DevelopSettings
-
-    var body: some View {
-        Section("Camera") {
-            ParameterSlider(
-                "Exposure", value: $settings.exposureEV, in: -5 ... 5,
-                step: 0.1, fractionDigits: 1, showsSign: true,
-            )
-            Toggle("Automatic metering", isOn: $settings.autoExposure)
-            Picker("Film format", selection: $settings.filmFormatMM) {
-                Text("110").tag(17.0)
-                Text("35 mm").tag(35.0)
-                Text("Medium format").tag(60.0)
-                Text("Large format").tag(120.0)
-            }
-            .help("Smaller formats show more grain and wider halos.")
+    /// "Film · color negative · ISO 400": what the name under it is.
+    private var caption: Text {
+        guard let film = model.selectedFilmEntry else { return Text("Film") }
+        let kind = switch film.kind {
+        case .colorNegative: Text("Film · color negative")
+        case .slide: Text("Film · slide")
+        case .blackAndWhite: Text("Film · black and white")
+        case .motionPicture: Text("Film · motion picture")
         }
+        guard let iso = film.look.iso else { return kind }
+        return Text("\(kind) · ISO \(Text(verbatim: String(iso)))")
     }
 }
 
-private struct PrintSection: View {
+private struct CameraControls: View {
     @Binding var settings: DevelopSettings
 
     var body: some View {
-        Section("Print") {
-            ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2 ... 3, defaultValue: 1)
-            ParameterSlider(
-                "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
-                step: 1, fractionDigits: 0, showsSign: true,
-            )
-            ParameterSlider(
-                "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
-                step: 1, fractionDigits: 0, showsSign: true,
-            )
+        ParameterSlider(
+            "Exposure", value: $settings.exposureEV, in: -5 ... 5,
+            step: 0.1, fractionDigits: 1, showsSign: true,
+        )
+        Toggle("Automatic metering", isOn: $settings.autoExposure)
+        Picker("Film format", selection: $settings.filmFormatMM) {
+            ForEach(FilmFormat.allCases) { format in
+                Text(format.title).tag(format.rawValue)
+            }
         }
+        .help("Smaller formats show more grain and wider halos.")
     }
 }
 
-private struct FilmCharacterSection: View {
+private struct PrintControls: View {
     @Binding var settings: DevelopSettings
 
     var body: some View {
-        Section("Film Character") {
-            Toggle("Grain", isOn: $settings.grainEnabled)
-            if settings.grainEnabled {
-                ParameterSlider("Grain size", value: $settings.grainParticleArea, in: 0.05 ... 1, defaultValue: 0.2)
-            }
-            Toggle("Halation", isOn: $settings.halationEnabled)
-                .help("The red glow around bright lights.")
-            if settings.halationEnabled {
-                ParameterSlider(
-                    "Halation strength", value: $settings.halationAmount, in: 0 ... 3,
-                    step: 0.05, defaultValue: 1,
-                )
-            }
-        }
+        ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2 ... 3, defaultValue: 1)
+        ParameterSlider(
+            "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
+            step: 1, fractionDigits: 0, showsSign: true,
+        )
+        ParameterSlider(
+            "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
+            step: 1, fractionDigits: 0, showsSign: true,
+        )
+    }
+}
+
+/// Grain and halation: each can be switched off, with its switch on the slider's row.
+private struct FilmCharacterControls: View {
+    @Binding var settings: DevelopSettings
+
+    var body: some View {
+        ParameterSlider(
+            "Grain", value: $settings.grainParticleArea, in: 0.05 ... 1,
+            defaultValue: 0.2, isOn: $settings.grainEnabled,
+        )
+        ParameterSlider(
+            "Halation", value: $settings.halationAmount, in: 0 ... 3,
+            step: 0.05, defaultValue: 1, isOn: $settings.halationEnabled,
+        )
+        .help("The red glow around bright lights.")
     }
 }

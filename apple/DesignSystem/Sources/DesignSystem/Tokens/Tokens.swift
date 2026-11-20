@@ -18,10 +18,22 @@ public enum Radius {
     /// Thumbnails in the photo strip.
     public static let thumbnail: CGFloat = 5
     public static let control: CGFloat = 6
+    /// The emblem of a film in a list.
+    public static let emblem: CGFloat = 5
 }
 
 public enum Typography {
     public static let body = Font.body
+    /// The name of what a window shows: the photo in the toolbar.
+    public static let title = Font.headline
+    /// The name of what a pane is about: the film at the top of the inspector.
+    public static let heading = Font.title2.weight(.semibold)
+    /// A line of context above or under a heading.
+    public static let caption = Font.subheadline
+    /// The title of a section in a pane.
+    public static let sectionHeader = Font.body.weight(.semibold)
+    /// The speed written on a film's emblem.
+    public static let emblem = Font.subheadline.weight(.heavy)
     /// Numeric values next to a control: digits keep their width while they change.
     public static let value = Font.body.monospacedDigit()
     /// Short status labels drawn over the photo.

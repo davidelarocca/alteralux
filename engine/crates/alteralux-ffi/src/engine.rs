@@ -46,6 +46,8 @@ pub struct StockInfo {
     /// instead of printed.
     pub is_positive: bool,
     pub is_black_and_white: bool,
+    /// `true` for motion picture stock (the profile's `use` is `cine`).
+    pub is_motion_picture: bool,
     /// Paper the profile recommends printing on, if any.
     pub target_print: Option<String>,
     /// Available development times in minutes (black & white families only).
@@ -267,6 +269,7 @@ fn list_stocks(data_dir: &Path) -> Result<Vec<StockInfo>, EngineError> {
             kind: if is_paper { StockKind::Paper } else { StockKind::Film },
             is_positive: p.is_positive(),
             is_black_and_white: p.is_bw(),
+            is_motion_picture: p.info.usage == "cine",
             target_print: p.info.target_print.clone(),
             development_times_min: p.data.development_time.clone(),
         });

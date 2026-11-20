@@ -1,7 +1,8 @@
 import DesignSystem
 import SwiftUI
 
-/// The strip of open photos under the viewer.
+/// The strip of open photos under the viewer, with the size and time of the render on screen
+/// at its trailing end.
 struct FilmstripView: View {
     @Environment(AppModel.self) private var model
     @ReduceMotion private var reduceMotion
@@ -10,6 +11,19 @@ struct FilmstripView: View {
     private static let addButtonWidth: CGFloat = 44
 
     var body: some View {
+        HStack(spacing: 0) {
+            thumbnails
+            Text(model.renderSummary)
+                .font(Typography.technical)
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+                .padding(.horizontal, Spacing.m)
+        }
+        .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
+        .background(.bar)
+    }
+
+    private var thumbnails: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Spacing.s) {
@@ -53,7 +67,5 @@ struct FilmstripView: View {
                 }
             }
         }
-        .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
-        .background(.bar)
     }
 }
