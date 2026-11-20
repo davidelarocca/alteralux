@@ -1,8 +1,38 @@
+import CoreGraphics
 import Foundation
 
-// Moving through the photos of the strip.
+// The selected photo, what can be done with it, and moving through the strip.
 
 extension AppModel {
+    var selection: PhotoItem? {
+        photos.first { $0.id == selectedID }
+    }
+
+    var hasPhoto: Bool {
+        selection != nil
+    }
+
+    var canExport: Bool {
+        sources != nil && !isExporting
+    }
+
+    /// The zoom commands act on a photo that is loaded.
+    var canZoom: Bool {
+        sources != nil
+    }
+
+    /// The size of the selected photo, in pixels, once it is open.
+    var photoSize: CGSize? {
+        sources.map { CGSize(width: $0.decoder.width, height: $0.decoder.height) }
+    }
+
+    /// Backend and timing of the last preview render, for diagnostics.
+    var renderSummary: String {
+        guard let preview else { return "" }
+        return "\(preview.stats.backend) · \(preview.width) × \(preview.height) · "
+            + "\(Int(preview.stats.totalMs.rounded())) ms"
+    }
+
     /// Previous and next need another photo to go to.
     var canStepThroughPhotos: Bool {
         photos.count > 1

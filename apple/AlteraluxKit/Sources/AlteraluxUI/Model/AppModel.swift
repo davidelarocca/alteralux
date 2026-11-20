@@ -96,6 +96,10 @@ public final class AppModel {
     private let dataDirectory: URL?
     /// Keeps the adjustments of each photo and the steps to undo.
     let history: EditHistory
+    /// The folders the user added and the photos in them.
+    let library: LibraryModel
+    /// Whether the window shows the library instead of the photo being developed.
+    var showsLibrary = false
     /// The settings the last call of `settingsDidChange` has seen.
     private var seenSettings = DevelopSettings()
 
@@ -112,38 +116,21 @@ public final class AppModel {
                 ? URL.applicationSupportDirectory.appending(path: "Edits")
                 : URL.temporaryDirectory.appending(path: "alteralux-edits-\(ProcessInfo.processInfo.processIdentifier)")
         )
-        history = EditHistory(store: EditStore(fallbackDirectory: edits))
+        let store = EditStore(fallbackDirectory: edits)
+        history = EditHistory(store: store)
+        // The library's own files: in the app's folders, or beside the edits for anything else.
+        let isApp = dataDirectory == nil && editsDirectory == nil
+        library = LibraryModel(
+            storeURL: isApp
+                ? URL.applicationSupportDirectory.appending(path: "Library/folders.plist")
+                : edits.appending(path: "library/folders.plist"),
+            cacheDirectory: isApp
+                ? URL.cachesDirectory.appending(path: "Thumbnails")
+                : edits.appending(path: "library/thumbnails"),
+            hasAdjustments: { store.hasAdjustments(for: $0) },
+        )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
-    }
-
-    var selection: PhotoItem? {
-        photos.first { $0.id == selectedID }
-    }
-
-    var hasPhoto: Bool {
-        selection != nil
-    }
-
-    var canExport: Bool {
-        sources != nil && !isExporting
-    }
-
-    /// The zoom commands act on a photo that is loaded.
-    var canZoom: Bool {
-        sources != nil
-    }
-
-    /// The size of the selected photo, in pixels, once it is open.
-    var photoSize: CGSize? {
-        sources.map { CGSize(width: $0.decoder.width, height: $0.decoder.height) }
-    }
-
-    /// Backend and timing of the last preview render, for diagnostics.
-    var renderSummary: String {
-        guard let preview else { return "" }
-        return "\(preview.stats.backend) · \(preview.width) × \(preview.height) · "
-            + "\(Int(preview.stats.totalMs.rounded())) ms"
     }
 
     // MARK: - Startup
@@ -169,16 +156,29 @@ public final class AppModel {
         } catch {
             alertMessage = error.localizedDescription
         }
+        // The library is where the app opens, unless it was started on a photo.
+        await library.load()
+        if photos.isEmpty, !library.isEmpty {
+            showsLibrary = true
+        }
     }
 
     // MARK: - Opening and selecting
 
     /// Adds photos to the strip and selects the first new one.
     func open(_ urls: [URL]) {
-        var firstNew: PhotoItem?
+        if let first = add(urls) {
+            select(first)
+            showsLibrary = false
+        }
+    }
+
+    /// Adds photos to the strip, and returns the first of them: new, or already there.
+    private func add(_ urls: [URL]) -> PhotoItem? {
+        var first: PhotoItem?
         for url in urls {
             if let existing = photos.first(where: { $0.url == url }) {
-                firstNew = firstNew ?? existing
+                first = first ?? existing
                 continue
             }
             let isScoped = url.startAccessingSecurityScopedResource()
@@ -189,12 +189,26 @@ public final class AppModel {
             initial.scanFilm = settings.scanFilm
             let item = PhotoItem(url: url, settings: history.kept(for: url) ?? initial, isScoped: isScoped)
             photos.append(item)
-            firstNew = firstNew ?? item
+            first = first ?? item
             loadThumbnail(for: item)
         }
-        if let firstNew {
-            select(firstNew)
+        return first
+    }
+
+    /// Puts the photos of a folder in the strip, in their order, and selects one: the photos
+    /// that were there and are not among them leave it.
+    func develop(_ photo: URL, among folderPhotos: [URL]) {
+        let wanted = Set(folderPhotos)
+        for item in photos where !wanted.contains(item.url) {
+            remove(item)
         }
+        _ = add(folderPhotos)
+        let placed = Dictionary(uniqueKeysWithValues: folderPhotos.enumerated().map { ($1, $0) })
+        photos.sort { (placed[$0.url] ?? .max) < (placed[$1.url] ?? .max) }
+        if let item = photos.first(where: { $0.url == photo }) {
+            select(item)
+        }
+        showsLibrary = false
     }
 
     func select(_ item: PhotoItem) {
@@ -293,14 +307,11 @@ public final class AppModel {
 
     private func loadThumbnail(for item: PhotoItem) {
         let url = item.url
-        Task {
-            let image = await Task.detached(priority: .utility) {
-                SendableImage(
-                    ImageLoader.originalPreview(of: url, maxDimension: Self.thumbnailDimension),
-                )
-            }.value
+        Task { [thumbnails = library.thumbnails] in
+            // The same thumbnails as the library's grid: quick, and kept.
+            let image = await thumbnails.thumbnail(for: url, maxDimension: Self.thumbnailDimension)
             if item.thumbnail == nil {
-                item.thumbnail = image.image
+                item.thumbnail = image
             }
         }
     }
@@ -344,6 +355,7 @@ public final class AppModel {
         isAdjusting = false
         if let selection {
             history.settle(selection)
+            noteAdjustmentsInLibrary(of: selection.url)
         }
         requestRender()
     }
