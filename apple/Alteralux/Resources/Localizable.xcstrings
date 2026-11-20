@@ -61,6 +61,166 @@
         }
       }
     },
+    "%lld photos could not be copied." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be copied."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be copied."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile copiare %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile copiare %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos could not be moved to the Trash." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be moved to the Trash."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be moved to the Trash."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile spostare nel Cestino %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile spostare nel Cestino %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos could not be moved." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be moved."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be moved."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile spostare %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile spostare %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld photos could not be tagged." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be tagged."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be tagged."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile mettere il tag a %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile mettere il tag a %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld selected" : {
       "localizations" : {
         "en" : {
@@ -301,6 +461,16 @@
         }
       }
     },
+    "Clear Selection" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togli la selezione"
+          }
+        }
+      }
+    },
     "Color Negatives" : {
       "localizations" : {
         "it" : {
@@ -331,6 +501,26 @@
         }
       }
     },
+    "Copy the selected photos to another folder of the library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia le foto selezionate in un'altra cartella della libreria"
+          }
+        }
+      }
+    },
+    "Copy to…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia in…"
+          }
+        }
+      }
+    },
     "Develop" : {
       "localizations" : {
         "it" : {
@@ -347,6 +537,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto sviluppata"
+          }
+        }
+      }
+    },
+    "Discard" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarta"
+          }
+        }
+      }
+    },
+    "Discarded" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scartate"
           }
         }
       }
@@ -387,6 +597,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Trascina qui i file RAW oppure scegli Apri."
+          }
+        }
+      }
+    },
+    "Empty Discarded…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svuota le scartate…"
           }
         }
       }
@@ -561,6 +781,16 @@
         }
       }
     },
+    "Hide the selected photos. They stay on disk until the discarded photos are emptied." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nascondi le foto selezionate. Restano su disco finché non svuoti le scartate."
+          }
+        }
+      }
+    },
     "Include camera metadata" : {
       "localizations" : {
         "it" : {
@@ -631,6 +861,56 @@
         }
       }
     },
+    "Move the discarded photos of this folder to the Trash" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta nel Cestino le foto scartate di questa cartella"
+          }
+        }
+      }
+    },
+    "Move the discarded photos of this folder to the Trash?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spostare nel Cestino le foto scartate di questa cartella?"
+          }
+        }
+      }
+    },
+    "Move the selected photos to another folder of the library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta le foto selezionate in un'altra cartella della libreria"
+          }
+        }
+      }
+    },
+    "Move to Trash" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta nel Cestino"
+          }
+        }
+      }
+    },
+    "Move to…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta in…"
+          }
+        }
+      }
+    },
     "Next Photo" : {
       "localizations" : {
         "it" : {
@@ -647,6 +927,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuna foto di questa cartella ha ancora regolazioni."
+          }
+        }
+      }
+    },
+    "No photo in this folder is discarded." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto di questa cartella è scartata."
           }
         }
       }
@@ -767,6 +1057,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esposizione di stampa"
+          }
+        }
+      }
+    },
+    "Put a Finder tag on the selected photos, or take it off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metti o togli un tag del Finder alle foto selezionate"
           }
         }
       }
@@ -967,6 +1267,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Si è verificato un problema"
+          }
+        }
+      }
+    },
+    "Tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        }
+      }
+    },
+    "Take Back" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupera"
+          }
+        }
+      }
+    },
+    "Take the selected photos back among the others" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riporta le foto selezionate fra le altre"
           }
         }
       }

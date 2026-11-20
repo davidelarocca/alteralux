@@ -7,6 +7,7 @@ struct LibraryGrid: View {
     @Environment(AppModel.self) private var model
     @Binding var isAddingFolder: Bool
     @AppStorage("library.thumbnailSize") private var thumbnailSize = LibraryGrid.thumbnailSizes.lowerBound + 40
+    @State private var isEmptyingDiscarded = false
 
     /// The widths a thumbnail can have, in points.
     static let thumbnailSizes = 120.0 ... 320.0
@@ -21,8 +22,19 @@ struct LibraryGrid: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.DS.viewerSurround)
+            if !model.library.selection.isEmpty {
+                Divider()
+                LibrarySelectionBar()
+            }
             Divider()
             statusBar
+        }
+        .confirmationDialog(
+            "Move the discarded photos of this folder to the Trash?", isPresented: $isEmptyingDiscarded,
+        ) {
+            Button("Move to Trash", role: .destructive) {
+                Task { await model.emptyDiscarded() }
+            }
         }
     }
 
@@ -45,6 +57,8 @@ struct LibraryGrid: View {
                     Text("Choose a folder.")
                 } else if library.filter == .adjusted {
                     Text("No photo in this folder has adjustments yet.")
+                } else if library.filter == .discarded {
+                    Text("No photo in this folder is discarded.")
                 } else {
                     Text("This folder has no photos.")
                 }
@@ -89,6 +103,16 @@ struct LibraryGrid: View {
             library.clearSelection()
             return .handled
         }
+        .onKeyPress(keys: [.delete, .deleteForward, KeyEquivalent("\u{7F}")]) { _ in
+            guard !library.selection.isEmpty else { return .ignored }
+            model.discardSelection()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            library.selectAll()
+            return .handled
+        }
     }
 
     private var statusBar: some View {
@@ -96,17 +120,19 @@ struct LibraryGrid: View {
         return HStack(spacing: Spacing.s) {
             Group {
                 if library.selection.isEmpty {
-                    Text("\(library.visiblePhotos.count) photos")
-                        + Text(verbatim: " · ") + Text("double-click to develop")
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("double-click to develop"))")
                 } else {
-                    Text("\(library.visiblePhotos.count) photos")
-                        + Text(verbatim: " · ") + Text("\(library.selection.count) selected")
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected"))")
                 }
             }
             .font(Typography.technical)
             .foregroundStyle(.secondary)
             .lineLimit(1)
             Spacer(minLength: Spacing.s)
+            if library.filter == .discarded, !library.visiblePhotos.isEmpty {
+                Button("Empty Discarded…") { isEmptyingDiscarded = true }
+                    .help("Move the discarded photos of this folder to the Trash")
+            }
             ParameterSlider(
                 "Thumbnail size", value: $thumbnailSize, in: Self.thumbnailSizes,
                 step: Self.thumbnailSizeStep, defaultValue: Self.thumbnailSizes.lowerBound + 40,
@@ -175,5 +201,73 @@ private struct LibraryTile: View {
 
     private var label: Text {
         hasAdjustments ? Text("\(photo.lastPathComponent), with adjustments") : Text(verbatim: photo.lastPathComponent)
+    }
+}
+
+/// What can be done with the selected photos: move, copy, tag, discard.
+private struct LibrarySelectionBar: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        let library = model.library
+        HStack(spacing: Spacing.m) {
+            Text("\(library.selection.count) photos")
+                .font(Typography.value)
+                .lineLimit(1)
+            if library.filter == .discarded {
+                Button("Take Back") { model.discardSelection() }
+                    .help("Take the selected photos back among the others")
+            } else {
+                Menu("Move to…") {
+                    destinations { folder in Task { await model.moveSelection(to: folder) } }
+                }
+                .help("Move the selected photos to another folder of the library")
+                Menu("Copy to…") {
+                    destinations { folder in Task { await model.copySelection(to: folder) } }
+                }
+                .help("Copy the selected photos to another folder of the library")
+                Menu("Tag") {
+                    ForEach(model.tagChoices, id: \.name) { choice in
+                        Button {
+                            model.toggleTag(choice.name)
+                        } label: {
+                            // A check when every selected photo has the tag, a dash when some do.
+                            if choice.carriedBy > 0 {
+                                Label {
+                                    Text(verbatim: choice.name)
+                                } icon: {
+                                    Image(systemName: choice.carriedBy == library.selection.count ? "checkmark" : "minus")
+                                }
+                            } else {
+                                Text(verbatim: choice.name)
+                            }
+                        }
+                    }
+                }
+                .help("Put a Finder tag on the selected photos, or take it off")
+                Button("Discard") { model.discardSelection() }
+                    .help("Hide the selected photos. They stay on disk until the discarded photos are emptied.")
+            }
+            Spacer(minLength: Spacing.s)
+            Button("Clear Selection") { library.clearSelection() }
+                .buttonStyle(.borderless)
+        }
+        .menuStyle(.button)
+        .fixedSize(horizontal: false, vertical: true)
+        .controlSize(.small)
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.xs)
+        .background(.bar)
+    }
+
+    /// The folders of the library as menu items, the folder on screen left out.
+    private func destinations(_ choose: @escaping (URL) -> Void) -> some View {
+        ForEach(model.library.destinations.filter { $0.url != model.library.selectedFolder }) { folder in
+            Button {
+                choose(folder.url)
+            } label: {
+                Label(folder.name, systemImage: "folder")
+            }
+        }
     }
 }

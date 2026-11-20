@@ -34,6 +34,7 @@ struct LibraryScreen: View {
                 Picker("Show", selection: $library.filter) {
                     Text("All").tag(LibraryFilter.all)
                     Text("With Adjustments").tag(LibraryFilter.adjusted)
+                    Text("Discarded").tag(LibraryFilter.discarded)
                 }
                 .pickerStyle(.segmented)
                 .help("Choose which photos of the folder are shown")

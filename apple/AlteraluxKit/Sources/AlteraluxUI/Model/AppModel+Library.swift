@@ -1,3 +1,5 @@
+import AlteraluxKit
+import AppKit
 import Foundation
 
 // The library as the screens ask for it: adding folders, going from a folder to a photo and back.
@@ -54,6 +56,96 @@ extension AppModel {
     /// Whether there is a library to go back to.
     var hasLibrary: Bool {
         !library.isEmpty
+    }
+
+    // MARK: - Actions on the selection
+
+    /// The selected photos, in the order of the grid.
+    var selectedPhotos: [URL] {
+        library.visiblePhotos.filter(library.selection.contains)
+    }
+
+    /// Discards the selected photos: they are marked and hidden, and stay on disk. Under the
+    /// filter of the discarded photos it takes them back instead.
+    func discardSelection() {
+        let discarding = library.filter != .discarded
+        let changed = library.setDiscarded(discarding, for: selectedPhotos)
+        registerUndo(ofDiscarding: changed, wasDiscarded: !discarding)
+    }
+
+    /// Registers the way back from a discard, or from taking one back, as one step of undo.
+    private func registerUndo(ofDiscarding photos: [URL], wasDiscarded: Bool) {
+        guard let undoManager = history.undoManager, !photos.isEmpty else { return }
+        undoManager.beginUndoGrouping()
+        undoManager.registerUndo(withTarget: self) { model in
+            let changed = model.library.setDiscarded(wasDiscarded, for: photos)
+            model.registerUndo(ofDiscarding: changed, wasDiscarded: !wasDiscarded)
+        }
+        undoManager.endUndoGrouping()
+    }
+
+    /// Moves the discarded photos of the folder on screen to the Trash.
+    func emptyDiscarded() async {
+        let failed = await library.emptyDiscarded().count { !$0.succeeded }
+        if failed > 0 {
+            alertMessage = String(localized: "\(failed) photos could not be moved to the Trash.")
+        }
+    }
+
+    /// Moves the selected photos into a folder of the library.
+    func moveSelection(to folder: URL) async {
+        let results = await library.move(selectedPhotos, to: folder)
+        let failed = results.count { !$0.succeeded }
+        if failed > 0 {
+            alertMessage = String(localized: "\(failed) photos could not be moved.")
+        }
+        registerUndo(ofMoving: results)
+    }
+
+    /// Registers the way back from a move: each photo returns to the folder it came from.
+    private func registerUndo(ofMoving results: [FileActionResult]) {
+        let moved = results.compactMap { result in
+            result.destination.flatMap { $0 == result.source ? nil : (from: $0, to: result.source) }
+        }
+        guard let undoManager = history.undoManager, !moved.isEmpty else { return }
+        undoManager.beginUndoGrouping()
+        undoManager.registerUndo(withTarget: self) { model in
+            Task {
+                var back: [FileActionResult] = []
+                for photo in moved {
+                    back += await model.library.move([photo.from], to: photo.to.deletingLastPathComponent())
+                }
+                model.registerUndo(ofMoving: back)
+            }
+        }
+        undoManager.endUndoGrouping()
+    }
+
+    /// Copies the selected photos into a folder of the library.
+    func copySelection(to folder: URL) async {
+        let failed = await library.copy(selectedPhotos, to: folder).count { !$0.succeeded }
+        if failed > 0 {
+            alertMessage = String(localized: "\(failed) photos could not be copied.")
+        }
+    }
+
+    /// The tags to offer for the selection: the Finder's own labels and the tags the selected
+    /// photos already carry, each with the number of selected photos that have it.
+    var tagChoices: [(name: String, carriedBy: Int)] {
+        let carried = library.tagsOfSelection()
+        let labels = NSWorkspace.shared.fileLabels.filter { !$0.isEmpty }
+        let names = labels + carried.keys.filter { !labels.contains($0) }.sorted()
+        return names.map { ($0, carried[$0] ?? 0) }
+    }
+
+    /// Puts a tag on the selected photos, or takes it off when all of them have it.
+    func toggleTag(_ tag: String) {
+        let photos = selectedPhotos
+        let carried = library.tagsOfSelection()[tag] ?? 0
+        let failed = library.setTag(tag, isOn: carried < photos.count, for: photos).count { !$0.succeeded }
+        if failed > 0 {
+            alertMessage = String(localized: "\(failed) photos could not be tagged.")
+        }
     }
 
     /// Tells the library a photo's adjustments were kept, so its mark in the grid follows.
