@@ -29,6 +29,9 @@ main actor (`PhotoDecoder`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
 The selected photo is decoded for each preview at the size of that preview, and whole for the 100% view
 and for export. White balance is chosen in the RAW decoder, before the engine sees the photo.
 
+A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
+opened again. Undo and redo are the window's own.
+
 The engine works linear in, linear out: every transfer function and color conversion is done by macOS
 (Core Image, ColorSync), never by the engine. Parameters cross the bridge as a JSON patch over the engine
 defaults, and unknown keys are errors.
@@ -65,3 +68,4 @@ defaults, and unknown keys are errors.
 | [0005](adr/0005-organize-through-the-finder.md) | Organize photos through the Finder, with no catalogue of the app's own | Accepted |
 | [0006](adr/0006-use-the-systems-controls.md) | Build the interface from the system's controls | Accepted |
 | [0007](adr/0007-decode-each-preview-at-its-size.md) | Decode each preview at its size, with Core Image | Accepted |
+| [0008](adr/0008-keep-edits-in-the-photo.md) | Keep a photo's adjustments in the photo itself | Accepted |

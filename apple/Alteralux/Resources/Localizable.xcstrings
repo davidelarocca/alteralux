@@ -551,6 +551,26 @@
         }
       }
     },
+    "Redo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina"
+          }
+        }
+      }
+    },
+    "Redo the change" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina la modifica"
+          }
+        }
+      }
+    },
     "Remove from Strip" : {
       "localizations" : {
         "it" : {
@@ -747,6 +767,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tinta"
+          }
+        }
+      }
+    },
+    "Undo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla"
+          }
+        }
+      }
+    },
+    "Undo the last change" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annulla l'ultima modifica"
           }
         }
       }

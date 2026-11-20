@@ -25,6 +25,9 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
   - `DevelopSettings` is the app's model of an edit (`Codable`). It converts to
     the engine's JSON patch; tests check that the engine accepts it and that
     each value lands on the intended parameter.
+  - `EditStore` keeps a photo's adjustments between launches: in an extended
+    attribute of the photo, or in a folder of the app's when the photo cannot
+    be written ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)).
   - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
   - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
@@ -74,6 +77,14 @@ open photos, the settings of the selected one and its preview.
   when it changes. Once a settled preview is on screen it decodes ahead the
   1024 px size, then, after a quiet second, the whole photo for the 100% view
   and for export.
+- **Edits.** `EditHistory` follows the adjustments of the selected photo. A
+  change is what happens between two moments of stillness (a whole drag, a
+  film chosen, a reset): its first value registers one step in the window's
+  `UndoManager`, and when the settings have stood still for 150 ms the
+  adjustments are written with `EditStore`. They are also written when
+  another photo is selected or a photo leaves the strip, and read when a
+  photo is opened. Undoing a step of a photo that is not on screen selects
+  it. The toolbar's two buttons and the Edit menu act on the same manager.
 - **White balance.** Temperature and tint of a RAW, at the top of the Camera
   section. The sliders start from the camera's values and stop there: beside
   them the settings go back to `nil`, so "as shot" stays true on any photo.

@@ -4,28 +4,6 @@ import AppKit
 import Observation
 import UniformTypeIdentifiers
 
-/// One photo in the strip, with its own adjustments.
-@MainActor
-@Observable
-final class PhotoItem: Identifiable {
-    let id = UUID()
-    let url: URL
-    var settings: DevelopSettings
-    var thumbnail: CGImage?
-    /// Whether the app holds a security-scoped access on `url` to release.
-    fileprivate let isScoped: Bool
-
-    var name: String {
-        url.lastPathComponent
-    }
-
-    fileprivate init(url: URL, settings: DevelopSettings, isScoped: Bool) {
-        self.url = url
-        self.settings = settings
-        self.isScoped = isScoped
-    }
-}
-
 /// The state of the app: the film catalogue, the open photos, the settings of
 /// the selected one and its latest developed preview.
 @MainActor
@@ -116,11 +94,27 @@ public final class AppModel {
 
     /// Where the engine's `data` folder is. `nil` means the app bundle's resources.
     private let dataDirectory: URL?
+    /// Keeps the adjustments of each photo and the steps to undo.
+    let history: EditHistory
+    /// The settings the last call of `settingsDidChange` has seen.
+    private var seenSettings = DevelopSettings()
 
-    /// - Parameter dataDirectory: the engine's `data` folder; the app passes
-    ///   nothing and ships it in its resources, tests pass the submodule's.
-    public init(dataDirectory: URL? = nil) {
+    /// - Parameters:
+    ///   - dataDirectory: the engine's `data` folder; the app passes nothing and ships it in
+    ///     its resources, tests pass the submodule's.
+    ///   - editsDirectory: where the adjustments of photos that cannot be written are kept. The
+    ///     app passes nothing and keeps them in its Application Support folder; anything else
+    ///     that passes nothing (a test, a preview) gets a temporary folder, never the user's.
+    public init(dataDirectory: URL? = nil, editsDirectory: URL? = nil) {
         self.dataDirectory = dataDirectory
+        let edits = editsDirectory ?? (
+            dataDirectory == nil
+                ? URL.applicationSupportDirectory.appending(path: "Edits")
+                : URL.temporaryDirectory.appending(path: "alteralux-edits-\(ProcessInfo.processInfo.processIdentifier)")
+        )
+        history = EditHistory(store: EditStore(fallbackDirectory: edits))
+        history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
+        history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
 
     var selection: PhotoItem? {
@@ -154,29 +148,6 @@ public final class AppModel {
     func canSelectAdjacent(offset: Int) -> Bool {
         guard let index = photos.firstIndex(where: { $0.id == selectedID }) else { return false }
         return photos.indices.contains(index + offset)
-    }
-
-    /// The selected film as the list shows it, with its kind and its speed.
-    var selectedFilmEntry: FilmEntry? {
-        filmCatalogue.entry(id: settings.filmID)
-    }
-
-    var selectedFilm: StockInfo? {
-        films.first { $0.id == settings.filmID }
-    }
-
-    var selectedPaper: StockInfo? {
-        papers.first { $0.id == settings.paperID }
-    }
-
-    /// "Portra 400 → Portra Endura", shown under the window title.
-    var materialsSummary: String {
-        guard hasPhoto, let film = selectedFilm else { return "" }
-        if settings.scanFilm {
-            return film.displayName
-        }
-        guard let paper = selectedPaper else { return film.displayName }
-        return "\(film.displayName) → \(paper.displayName)"
     }
 
     /// Backend and timing of the last preview render, for diagnostics.
@@ -222,12 +193,12 @@ public final class AppModel {
                 continue
             }
             let isScoped = url.startAccessingSecurityScopedResource()
-            // A new photo starts from the look currently on screen.
+            // A photo comes back as it was left; a new one starts from the look on screen.
             var initial = DevelopSettings()
             initial.filmID = settings.filmID
             initial.paperID = settings.paperID
             initial.scanFilm = settings.scanFilm
-            let item = PhotoItem(url: url, settings: initial, isScoped: isScoped)
+            let item = PhotoItem(url: url, settings: history.kept(for: url) ?? initial, isScoped: isScoped)
             photos.append(item)
             firstNew = firstNew ?? item
             loadThumbnail(for: item)
@@ -239,9 +210,18 @@ public final class AppModel {
 
     func select(_ item: PhotoItem) {
         guard item.id != selectedID else { return }
-        selection?.settings = settings
+        if let selection {
+            // What was being changed on the photo before is kept now.
+            selection.settings = settings
+            history.settle(selection)
+            settle?.cancel()
+            settle = nil
+            isAdjusting = false
+        }
         selectedID = item.id
         settings = item.settings
+        seenSettings = settings
+        history.follow(item)
         showsOriginal = false
         // A newly selected photo starts fitted to the window: as large as the last one if that
         // was fitted too, and otherwise at a size the viewer has yet to report.
@@ -255,9 +235,18 @@ public final class AppModel {
     /// Removes a photo from the strip (the file itself is untouched).
     func remove(_ item: PhotoItem) {
         guard let index = photos.firstIndex(where: { $0.id == item.id }) else { return }
+        if item.id == selectedID {
+            item.settings = settings
+        }
+        history.settle(item)
+        history.forget(item)
         photos.remove(at: index)
         if item.isScoped {
-            item.url.stopAccessingSecurityScopedResource()
+            // The adjustments are written while the photo can still be reached.
+            Task { [history] in
+                await history.waitUntilSaved()
+                item.url.stopAccessingSecurityScopedResource()
+            }
         }
         guard item.id == selectedID else { return }
         selectedID = nil
@@ -348,9 +337,14 @@ public final class AppModel {
     /// While a control moves the preview is rendered smaller, so it keeps up with the hand; the
     /// preview the viewer needs follows as soon as the settings stay still.
     func settingsDidChange() {
-        selection?.settings = settings
-        guard let sources, renderer != nil else { return }
-        sources.settingsDidChange(settings)
+        // Called once per change, whoever calls: the screen when it sees one, and the model
+        // when it makes one itself.
+        guard settings != seenSettings else { return }
+        seenSettings = settings
+        guard let item = selection else { return }
+        item.settings = settings
+        history.change(of: item)
+        sources?.settingsDidChange(settings)
         isAdjusting = true
         holdsSlowPreview = true
         slowPreviewRelease?.cancel()
@@ -358,11 +352,36 @@ public final class AppModel {
         settle?.cancel()
         settle = Task { [weak self] in
             try? await Task.sleep(for: Self.settleDelay)
-            guard !Task.isCancelled, let self else { return }
-            isAdjusting = false
-            requestRender()
+            guard !Task.isCancelled else { return }
+            self?.settleChange()
         }
         requestRender()
+    }
+
+    /// Ends the change in progress, as the settings standing still for a moment does: it
+    /// becomes one step of undo, it is kept with the photo, and the preview is rendered at the
+    /// size the viewer needs.
+    func settleChange() {
+        guard isAdjusting else { return }
+        settle?.cancel()
+        settle = nil
+        isAdjusting = false
+        if let selection {
+            history.settle(selection)
+        }
+        requestRender()
+    }
+
+    /// Puts back the adjustments of a photo, for undo and redo, and shows that photo.
+    private func restore(_ restored: DevelopSettings, to item: PhotoItem) {
+        guard photos.contains(where: { $0 === item }) else { return }
+        item.settings = restored
+        if item.id == selectedID {
+            settings = restored
+            settingsDidChange()
+        } else {
+            select(item)
+        }
     }
 
     /// Lets a preview that takes long through, once the settled one has been on screen for a
@@ -378,35 +397,6 @@ public final class AppModel {
                 requestRender()
             }
         }
-    }
-
-    /// Chooses a film and applies what follows from it: slides are scanned
-    /// directly, negatives are printed on the paper their profile recommends,
-    /// and black and white negatives on a black and white print stock.
-    func chooseFilm(_ id: String) {
-        settings.filmID = id
-        guard let film = selectedFilm else { return }
-        settings.scanFilm = film.isPositive
-        if let target = film.targetPrint, papers.contains(where: { $0.id == target }) {
-            settings.paperID = target
-            return
-        }
-        // The black and white profiles recommend no paper, and on a color paper they print
-        // orange: a neutral gray comes out as a strong orange. Pair them with a black and white
-        // print stock.
-        let blackAndWhitePaper = papers.first(where: \.isBlackAndWhite)
-        if film.isBlackAndWhite, selectedPaper?.isBlackAndWhite != true, let blackAndWhitePaper {
-            settings.paperID = blackAndWhitePaper.id
-        }
-    }
-
-    /// Restores the default adjustments, keeping the chosen film and paper.
-    func resetAdjustments() {
-        var fresh = DevelopSettings()
-        fresh.filmID = settings.filmID
-        fresh.paperID = settings.paperID
-        fresh.scanFilm = settings.scanFilm
-        settings = fresh
     }
 
     // MARK: - Viewer
@@ -526,17 +516,6 @@ public final class AppModel {
     }
 
     // MARK: - Export
-
-    /// The name proposed for an exported file: the photo's name, the film as the user reads it,
-    /// and the format's extension ("IMG_0042 Kodak Portra 400.jpg").
-    nonisolated static func exportFileName(
-        source: URL, film: String, format: ExportOptions.Format,
-    ) -> String {
-        let baseName = source.deletingPathExtension().lastPathComponent
-        // A film's name must not read as a path in the save panel.
-        let filmName = film.replacing("/", with: "-").replacing(":", with: "-")
-        return "\(baseName) \(filmName).\(format.fileExtension)"
-    }
 
     /// Asks where to save the developed photo, and writes it there.
     func export() async {

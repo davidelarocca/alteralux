@@ -121,6 +121,39 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     }
 }
 
+// MARK: - Decoding
+
+public extension DevelopSettings {
+    /// Reads settings saved by any version of the app: a value that was not saved, because the
+    /// version that wrote them did not have it yet, takes its default.
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = DevelopSettings()
+        filmID = try values.decodeIfPresent(String.self, forKey: .filmID) ?? defaults.filmID
+        paperID = try values.decodeIfPresent(String.self, forKey: .paperID) ?? defaults.paperID
+        scanFilm = try values.decodeIfPresent(Bool.self, forKey: .scanFilm) ?? defaults.scanFilm
+        temperature = try values.decodeIfPresent(Double.self, forKey: .temperature)
+        tint = try values.decodeIfPresent(Double.self, forKey: .tint)
+        exposureEV = try values.decodeIfPresent(Double.self, forKey: .exposureEV) ?? defaults.exposureEV
+        autoExposure = try values.decodeIfPresent(Bool.self, forKey: .autoExposure) ?? defaults.autoExposure
+        filmFormatMM = try values.decodeIfPresent(Double.self, forKey: .filmFormatMM) ?? defaults.filmFormatMM
+        printExposure = try values.decodeIfPresent(Double.self, forKey: .printExposure) ?? defaults.printExposure
+        yellowFilterShift = try values.decodeIfPresent(Double.self, forKey: .yellowFilterShift) ?? defaults.yellowFilterShift
+        magentaFilterShift = try values.decodeIfPresent(Double.self, forKey: .magentaFilterShift) ?? defaults.magentaFilterShift
+        preflashExposure = try values.decodeIfPresent(Double.self, forKey: .preflashExposure) ?? defaults.preflashExposure
+        grainEnabled = try values.decodeIfPresent(Bool.self, forKey: .grainEnabled) ?? defaults.grainEnabled
+        grainParticleArea = try values.decodeIfPresent(Double.self, forKey: .grainParticleArea) ?? defaults.grainParticleArea
+        halationEnabled = try values.decodeIfPresent(Bool.self, forKey: .halationEnabled) ?? defaults.halationEnabled
+        halationAmount = try values.decodeIfPresent(Double.self, forKey: .halationAmount) ?? defaults.halationAmount
+        scatterAmount = try values.decodeIfPresent(Double.self, forKey: .scatterAmount) ?? defaults.scatterAmount
+        couplersEnabled = try values.decodeIfPresent(Bool.self, forKey: .couplersEnabled) ?? defaults.couplersEnabled
+        couplersAmount = try values.decodeIfPresent(Double.self, forKey: .couplersAmount) ?? defaults.couplersAmount
+        sharpenRadius = try values.decodeIfPresent(Double.self, forKey: .sharpenRadius) ?? defaults.sharpenRadius
+        sharpenAmount = try values.decodeIfPresent(Double.self, forKey: .sharpenAmount) ?? defaults.sharpenAmount
+        advancedJSON = try values.decodeIfPresent(String.self, forKey: .advancedJSON)
+    }
+}
+
 // MARK: - White balance
 
 public extension DevelopSettings {

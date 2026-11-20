@@ -20,6 +20,8 @@ public struct MainWindow: View {
 /// adjustments in an inspector on the right.
 struct MainScreen: View {
     @Environment(AppModel.self) private var model
+    /// The window's undo manager: the one the Edit menu acts on.
+    @Environment(\.undoManager) private var undoManager
     @State private var showsInspector = true
 
     /// Width of the adjustments inspector, in points.
@@ -66,6 +68,7 @@ struct MainScreen: View {
             return true
         }
         .onChange(of: model.settings) { model.settingsDidChange() }
+        .onChange(of: undoManager, initial: true) { model.history.undoManager = undoManager }
         .sheet(isPresented: $model.isExportPresented) { ExportSheet() }
         .alert("Something went wrong", isPresented: isAlertPresented) {
             Button("OK", role: .cancel) {}
@@ -88,8 +91,8 @@ struct MainScreen: View {
 }
 
 /// The toolbar of the main window: on the leading side open, then previous and next, beside the
-/// window's title (the photo's name over its film and paper); on the trailing side compare,
-/// export and the inspector.
+/// window's title (the photo's name over its film and paper); on the trailing side undo and
+/// redo, then compare, export and the inspector.
 private struct MainToolbar: ToolbarContent {
     @Bindable var model: AppModel
     @Binding var showsInspector: Bool
@@ -120,6 +123,24 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Next Photo")
             .disabled(!model.canSelectAdjacent(offset: 1))
+        }
+
+        ToolbarItemGroup(placement: .primaryAction) {
+            Button {
+                model.undo()
+            } label: {
+                Label("Undo", systemImage: "arrow.uturn.backward")
+            }
+            .help("Undo the last change")
+            .disabled(!model.canUndo)
+
+            Button {
+                model.redo()
+            } label: {
+                Label("Redo", systemImage: "arrow.uturn.forward")
+            }
+            .help("Redo the change")
+            .disabled(!model.canRedo)
         }
 
         ToolbarItemGroup(placement: .primaryAction) {
