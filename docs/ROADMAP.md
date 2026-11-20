@@ -201,7 +201,15 @@ pull request per step, or per part of a long one; a merged branch is deleted.
 8. **Crop and straighten.** Decided on 2026-11-20
    ([ADR 0010](adr/0010-crop-before-the-engine.md)): the photo is framed before the engine, so the
    grain keeps its size relative to the finished picture; the frame belongs to the photo, not to
-   recipes. The controls are still to be drawn and shown before they are built.
+   recipes. Done: Crop in the toolbar, in the photo's menu and in the Edit menu (Option-Command-C)
+   shows the whole photo developed with a frame over it, as Photos does: its edges, corners and
+   inside are dragged; a shape (free, the photo's own, square, 4:5, 2:3, 9:16, upright or lying
+   down); a slider straightens the photo up to 45 degrees either way, and the frame shrinks to stay
+   inside the turned photo and comes back when it is turned back; Reset, Cancel (Escape) and Done
+   (Return), which is one step of undo. The previews, the 100% view, the strip and the exports are
+   all of the framed picture. Seen in the built app on 2026-11-20 with real pointer drags. Still
+   open: Return and Escape were not pressed in the built app; quarter turns and flips; the
+   library's thumbnails show the whole photo, as they show no other adjustment.
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
    and return the files, so the shortcut saves them (for example in a subfolder beside the originals)

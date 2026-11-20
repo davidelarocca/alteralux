@@ -339,6 +339,43 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct CropFrameSnapshots {
+        private let source = "\(components)/CropFrame.swift"
+        private let sizes = ["380x260"]
+
+        /// A frame over part of a photo, and one over the whole of it.
+        private func frame(_ rect: CGRect) -> some View {
+            ZStack(alignment: .topLeading) {
+                Color.DS.thumbnailPlaceholder
+                    .frame(width: 320, height: 213)
+                    .offset(x: 30, y: 23.5)
+                CropFrame(rect: rect, onDrag: { _, _ in }, onDragEnd: {})
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color.DS.viewerSurround)
+        }
+
+        @Test func overPartOfThePhoto() {
+            #expect(Snapshot.verify("CropFrame", sizes: sizes, state: "part", locale: "en", source: source) {
+                frame(CGRect(x: 90, y: 50, width: 200, height: 160))
+            } == [])
+        }
+
+        @Test func overTheWholePhoto() {
+            #expect(Snapshot.verify("CropFrame", sizes: sizes, state: "whole", locale: "en", source: source) {
+                frame(CGRect(x: 30, y: 23.5, width: 320, height: 213))
+            } == [])
+        }
+
+        /// Laid out left to right in every language: the photo is not mirrored.
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("CropFrame", sizes: sizes, state: "part", locale: "ar", source: source) {
+                frame(CGRect(x: 90, y: 50, width: 200, height: 160))
+            } == [])
+        }
+    }
+
+    @MainActor
     struct FormSheetSnapshots {
         private let source = "\(components)/FormSheet.swift"
         private let sizes = ["420x300"]

@@ -24,6 +24,9 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     public var temperature: Double?
     /// The tint that goes with ``temperature``. `nil` leaves what the camera recorded.
     public var tint: Double?
+    /// How the photo is straightened and cut, before the engine sees it (ADR 0010). `nil` keeps
+    /// the whole photo. It is never sent to the engine.
+    public var crop: PhotoCrop?
 
     // MARK: Camera
 
@@ -88,6 +91,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         scanFilm: Bool = false,
         temperature: Double? = nil,
         tint: Double? = nil,
+        crop: PhotoCrop? = nil,
         exposureEV: Double = 0,
         autoExposure: Bool = true,
         filmFormatMM: Double = 35,
@@ -113,6 +117,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.scanFilm = scanFilm
         self.temperature = temperature
         self.tint = tint
+        self.crop = crop
         self.exposureEV = exposureEV
         self.autoExposure = autoExposure
         self.filmFormatMM = filmFormatMM
@@ -148,6 +153,7 @@ public extension DevelopSettings {
         scanFilm = try values.decodeIfPresent(Bool.self, forKey: .scanFilm) ?? defaults.scanFilm
         temperature = try values.decodeIfPresent(Double.self, forKey: .temperature)
         tint = try values.decodeIfPresent(Double.self, forKey: .tint)
+        crop = try values.decodeIfPresent(PhotoCrop.self, forKey: .crop)
         exposureEV = try values.decodeIfPresent(Double.self, forKey: .exposureEV) ?? defaults.exposureEV
         autoExposure = try values.decodeIfPresent(Bool.self, forKey: .autoExposure) ?? defaults.autoExposure
         filmFormatMM = try values.decodeIfPresent(Double.self, forKey: .filmFormatMM) ?? defaults.filmFormatMM

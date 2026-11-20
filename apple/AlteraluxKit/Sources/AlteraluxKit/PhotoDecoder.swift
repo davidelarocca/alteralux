@@ -48,23 +48,45 @@ public actor PhotoDecoder {
         height = Int(extent.height)
     }
 
+    /// The size of the whole photo, in pixels.
+    public nonisolated var size: CGSize {
+        CGSize(width: width, height: height)
+    }
+
+    /// The long side of the photo framed by `crop`, in pixels: the whole photo's for `nil`.
+    public nonisolated func longSide(framedBy crop: PhotoCrop?) -> Int {
+        guard let crop else { return max(width, height) }
+        let framed = crop.framedSize(of: size)
+        return max(1, Int(max(framed.width, framed.height).rounded()))
+    }
+
     /// Decodes the photo.
     ///
     /// - Parameters:
     ///   - maxDimension: the long side of the result, in pixels; `nil` or 0 for the whole photo.
     ///   - whiteBalance: what to take as neutral in a RAW; `nil` for what the camera recorded.
     ///     Ignored for other files.
+    ///   - crop: how to straighten and cut the photo; `nil` for the whole of it. `maxDimension`
+    ///     is then the long side of the framed picture.
     public nonisolated func decode(
-        maxDimension: Int? = nil, whiteBalance: WhiteBalance? = nil,
+        maxDimension: Int? = nil, whiteBalance: WhiteBalance? = nil, crop: PhotoCrop? = nil,
     ) async throws -> LoadedImage {
         let limit = maxDimension.flatMap { $0 > 0 ? $0 : nil }
-        let pixels = try await pixels(maxDimension: limit, whiteBalance: whiteBalance)
+        let pixels = try await pixels(maxDimension: limit, whiteBalance: whiteBalance, crop: crop)
         // Handing the pixels to the engine copies them: not while holding the decoder.
         return try pixels.loaded(from: url, isRaw: isRaw)
     }
 
     /// The pixels out of Core Image, before they are handed to the engine.
-    func pixels(maxDimension: Int?, whiteBalance: WhiteBalance?) throws -> DecodedPixels {
+    func pixels(maxDimension: Int?, whiteBalance: WhiteBalance?, crop: PhotoCrop? = nil) throws -> DecodedPixels {
+        let crop = crop.flatMap { $0.isWhole ? nil : $0 }
+        // The whole photo is decoded at the size that gives the framed picture the size asked.
+        let framedLongSide = longSide(framedBy: crop)
+        let maxDimension = maxDimension.flatMap { limit -> Int? in
+            guard limit < framedLongSide else { return nil }
+            let whole = Double(limit) * Double(max(width, height)) / Double(framedLongSide)
+            return Int(whole.rounded(.up))
+        }
         let image: CIImage
         if let rawFilter {
             image = try ImageLoader.rawImage(
@@ -76,6 +98,6 @@ public actor PhotoDecoder {
         } else {
             throw AlteraluxError.unreadableImage(url)
         }
-        return try ImageLoader.pixels(of: image, url: url)
+        return try ImageLoader.pixels(of: crop.map { ImageLoader.framed(image, by: $0) } ?? image, url: url)
     }
 }

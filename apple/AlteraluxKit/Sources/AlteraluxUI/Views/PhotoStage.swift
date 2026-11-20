@@ -18,7 +18,15 @@ struct PhotoStage: View {
             // A fixed neutral grey to judge colors against.
             Color.DS.viewerSurround.ignoresSafeArea()
 
-            if let image = displayedImage, let photoSize = model.photoSize {
+            if let session = model.cropSession {
+                // The whole photo, once it is developed whole.
+                if let preview = model.preview, model.previewCrop == nil {
+                    CropEditor(image: preview.cgImage, session: session)
+                } else {
+                    ProgressView()
+                        .controlSize(.large)
+                }
+            } else if let image = displayedImage, let photoSize = model.photoSize {
                 ZoomableImageView(
                     image: image,
                     pixelSize: photoSize,

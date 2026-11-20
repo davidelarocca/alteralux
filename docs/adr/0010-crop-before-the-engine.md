@@ -54,5 +54,6 @@ pipeline does not read them.
   smaller format.
 - The automatic meter reads the framed picture, so a crop can change the exposure it suggests.
 - A tight crop is exported from fewer pixels, so its export is faster.
-- Thumbnails in the library and the strip show the framed picture.
+- The strip's thumbnails, developed with the photo's adjustments, show the framed picture. The
+  library's show the photo as the system draws it, whole, like every other adjustment.
 - The bridge and the engine are untouched: the comparison with the upstream pipeline keeps holding.

@@ -77,6 +77,8 @@ struct DevelopPhotoMenu: View {
             .disabled(!model.canPasteAdjustments)
         Button("Reset Adjustments") { model.resetAdjustments() }
             .disabled(!model.hasPhoto)
+        Button("Crop and Straighten") { model.beginCrop() }
+            .disabled(!model.canCrop || model.isCropping)
         Divider()
         Button("Export…") { model.presentExport() }
             .disabled(!model.canPresentExport)

@@ -71,6 +71,7 @@ extension AppModel {
     /// Goes back to the library, keeping what was being changed.
     func showLibrary() {
         settleChange()
+        cancelCrop()
         showsLibrary = true
     }
 

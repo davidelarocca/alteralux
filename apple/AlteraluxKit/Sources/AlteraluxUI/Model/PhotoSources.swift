@@ -1,8 +1,8 @@
 import AlteraluxKit
 import Foundation
 
-/// The selected photo as the engine gets it: decoded when asked, at the size and with the white
-/// balance asked, and kept for as long as it can be used again.
+/// The selected photo as the engine gets it: decoded when asked, at the size, with the white
+/// balance and with the frame asked, and kept for as long as it can be used again.
 ///
 /// A preview is decoded at its own size, which takes a fraction of the time of the whole photo;
 /// the whole photo is decoded for the 100% view and for export. One of these exists per selected
@@ -18,25 +18,37 @@ final class PhotoSources {
     /// keeps the decoder busy for some tenths of a second, so it waits for a quiet moment.
     static let wholePhotoDelay = Duration.seconds(1)
 
-    /// The white balance of what is kept. A change of it makes all of that useless.
-    private var whiteBalance: WhiteBalance?
-    /// Counts the changes of white balance, to tell a decode that ends after one.
+    /// What the pixels kept were decoded with, apart from their size.
+    private struct Decoding: Equatable {
+        var whiteBalance: WhiteBalance?
+        var crop: PhotoCrop?
+    }
+
+    /// The white balance and the frame of what is kept. A change of either makes all of it
+    /// useless.
+    private var kind = Decoding()
+    /// Counts the changes of white balance or frame, to tell a decode that ends after one.
     private var epoch = 0
     private var whole: LoadedImage?
     /// The reduced sizes, the latest used first.
     private var reduced: [(dimension: Int, image: LoadedImage)] = []
     private var decoding: [Int: Task<LoadedImage, any Error>] = [:]
     private var preparation: Task<Void, Never>?
-    /// The white balance of what is being decoded ahead.
-    private var preparedWhiteBalance: WhiteBalance?
+    /// The white balance and the frame of what is being decoded ahead.
+    private var preparedKind: Decoding?
 
     init(decoder: PhotoDecoder) {
         self.decoder = decoder
     }
 
-    /// The long side of the whole photo, in pixels.
-    var longSide: Int {
-        max(decoder.width, decoder.height)
+    /// The long side of the photo framed by `crop`, in pixels.
+    func longSide(framedBy crop: PhotoCrop?) -> Int {
+        decoder.longSide(framedBy: crop)
+    }
+
+    /// What `settings` ask to decode, apart from the size.
+    private func kind(for settings: DevelopSettings) -> Decoding {
+        Decoding(whiteBalance: whiteBalance(for: settings), crop: settings.crop.flatMap { $0.isWhole ? nil : $0 })
     }
 
     /// The white balance `settings` give this photo: `nil` when it is not a RAW.
@@ -47,12 +59,13 @@ final class PhotoSources {
     /// The photo decoded for `settings`.
     ///
     /// - Parameter dimension: the long side, in pixels; 0, or anything not smaller than the
-    ///   photo, for the whole of it.
+    ///   framed photo, for the whole of it.
     func source(dimension: Int, settings: DevelopSettings) async throws -> LoadedImage {
-        let dimension = dimension <= 0 || dimension >= longSide ? 0 : dimension
-        let whiteBalance = whiteBalance(for: settings)
-        if whiteBalance != self.whiteBalance {
-            self.whiteBalance = whiteBalance
+        let wanted = kind(for: settings)
+        let framedLongSide = longSide(framedBy: wanted.crop)
+        let dimension = dimension <= 0 || dimension >= framedLongSide ? 0 : dimension
+        if wanted != kind {
+            kind = wanted
             epoch += 1
             whole = nil
             reduced.removeAll()
@@ -66,7 +79,9 @@ final class PhotoSources {
         }
         let decoder = decoder
         let task = Task {
-            try await decoder.decode(maxDimension: dimension, whiteBalance: whiteBalance)
+            try await decoder.decode(
+                maxDimension: dimension, whiteBalance: wanted.whiteBalance, crop: wanted.crop,
+            )
         }
         decoding[dimension] = task
         let started = epoch
@@ -87,7 +102,7 @@ final class PhotoSources {
     /// the 100% view and for export.
     func prepare(lighterDimension: Int, settings: DevelopSettings) {
         guard preparation == nil else { return }
-        preparedWhiteBalance = whiteBalance(for: settings)
+        preparedKind = kind(for: settings)
         preparation = Task { [weak self] in
             _ = try? await self?.source(dimension: lighterDimension, settings: settings)
             try? await Task.sleep(for: Self.wholePhotoDelay)
@@ -100,11 +115,11 @@ final class PhotoSources {
         }
     }
 
-    /// Stops decoding ahead when `settings` ask for another white balance: what was being
-    /// decoded is of no use, and the decoder must be free for the new one. Any other change
-    /// leaves it going, since it decodes the same pixels.
+    /// Stops decoding ahead when `settings` ask for another white balance or another frame: what
+    /// was being decoded is of no use, and the decoder must be free for the new one. Any other
+    /// change leaves it going, since it decodes the same pixels.
     func settingsDidChange(_ settings: DevelopSettings) {
-        guard preparation != nil, whiteBalance(for: settings) != preparedWhiteBalance else { return }
+        guard preparation != nil, kind(for: settings) != preparedKind else { return }
         preparation?.cancel()
         preparation = nil
     }
