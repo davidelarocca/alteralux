@@ -62,7 +62,8 @@ draft pull request per step.
 3. **Immediate editing.** Measured on 2026-11-20 (see above). Done: the viewer no longer builds
    mipmaps for every frame; while the settings change the preview is rendered at 1024 px, then at the
    size the viewer needs; `PreviewBudgetTests` keeps a preview update under 50 ms at 1024 px and under
-   200 ms at 2048 px on the GPU. Still open, in this order:
+   200 ms at 2048 px on a Mac's GPU (on CI, whose virtual GPU is several times slower, it checks only
+   that the lighter preview costs much less than the standard one). Still open, in this order:
    - Render what the viewer shows: a fitted photo in a large window needs about 2400 to 3000 px, not
      the full resolution (a second or more at 24 MP).
    - Let a lighter render overtake a full-resolution one in progress: today the next update waits for
