@@ -17,13 +17,13 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     public func attach(_ model: AppModel) {
         self.model = model
         guard !pending.isEmpty else { return }
-        model.open(pending)
+        model.take(pending)
         pending = []
     }
 
     public func application(_: NSApplication, open urls: [URL]) {
         if let model {
-            model.open(urls)
+            model.take(urls)
         } else {
             pending += urls
         }

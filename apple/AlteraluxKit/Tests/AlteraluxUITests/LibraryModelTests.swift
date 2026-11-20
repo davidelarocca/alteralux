@@ -127,6 +127,38 @@ struct LibraryModelTests {
         #expect(model.adjusted.count == 2)
     }
 
+    @Test func aClickSelectsAndTheKeysMoveThroughThePhotos() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+
+        model.click(photos[0])
+        #expect(model.selection == [photos[0]])
+        // Command adds and takes away, Shift takes everything up to the photo.
+        model.click(photos[2], toggling: true)
+        #expect(model.selection == [photos[0], photos[2]])
+        model.click(photos[2], toggling: true)
+        #expect(model.selection == [photos[0]])
+        model.click(photos[0])
+        model.click(photos[2], extending: true)
+        #expect(model.selection == Set(photos))
+        model.click(photos[1])
+        #expect(model.selection == [photos[1]] && model.focusedPhoto == photos[1])
+
+        model.moveSelection(by: 1)
+        #expect(model.selection == [photos[2]])
+        model.moveSelection(by: 1)
+        #expect(model.selection == [photos[2]])
+        model.moveSelection(by: -5)
+        #expect(model.selection == [photos[0]] && model.focusedPhoto == photos[0])
+        model.selectAll()
+        #expect(model.selection.count == 3)
+        model.clearSelection()
+        #expect(model.selection.isEmpty && model.focusedPhoto == nil)
+    }
+
     @Test func whatChangesOnDiskShowsInTheLibrary() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
@@ -169,5 +201,119 @@ struct LibraryModelTests {
         #expect(second.roots.count == 1)
         #expect(second.roots.first?.tree == nil && second.roots.first?.folder.isAvailable == false)
         #expect(second.selectedFolder == nil && second.photos.isEmpty)
+    }
+}
+
+/// The library and the photo being developed, in one window.
+@MainActor
+struct LibraryInTheAppTests {
+    /// A folder of four test pictures, and where a model keeps what it remembers.
+    private struct Fixture {
+        let root: URL
+        let shoot: URL
+
+        @MainActor
+        init() throws {
+            let pictures = try WindowedTests.writeTestPictures(count: 4)
+            root = pictures[0].deletingLastPathComponent()
+            shoot = root.appendingPathComponent("Shoot")
+            try FileManager.default.createDirectory(at: shoot, withIntermediateDirectories: true)
+            for picture in pictures {
+                try FileManager.default.moveItem(at: picture, to: shoot.appendingPathComponent(picture.lastPathComponent))
+            }
+        }
+
+        /// A model as a launch of the app gives it.
+        @MainActor
+        func model() -> AppModel {
+            AppModel(dataDirectory: WindowedTests.engineData, editsDirectory: root.appendingPathComponent("support"))
+        }
+
+        func remove() {
+            try? FileManager.default.removeItem(at: root)
+        }
+    }
+
+    private func wait(_ what: String, until condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now + .seconds(60)
+        while !condition() {
+            try #require(ContinuousClock.now < deadline, "Waited 60 seconds for \(what).")
+            try await Task.sleep(for: .milliseconds(20))
+        }
+    }
+
+    @Test func aFolderAddedOpensTheLibraryAndTheNextLaunchStartsThere() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let first = fixture.model()
+        await first.start()
+        #expect(!first.showsLibrary && !first.hasLibrary)
+
+        await first.addFolder(fixture.shoot)
+        #expect(first.showsLibrary && first.hasLibrary)
+        #expect(first.library.photos.count == 4)
+
+        let second = fixture.model()
+        await second.start()
+        #expect(second.showsLibrary)
+        #expect(second.library.photos.count == 4)
+    }
+
+    @Test func aPhotoOfAFolderIsDevelopedWithTheFolderInTheStrip() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        await model.addFolder(fixture.shoot)
+        let photos = model.library.photos
+
+        model.develop(photos[2])
+        #expect(!model.showsLibrary)
+        #expect(model.photos.map(\.url) == photos)
+        #expect(model.selection?.url == photos[2])
+        // Previous and next walk the folder.
+        model.selectAdjacent(offset: 1)
+        #expect(model.selection?.url == photos[3])
+
+        // Back in the library, another photo: the strip is the same folder, not twice.
+        model.showLibrary()
+        #expect(model.showsLibrary)
+        model.develop(photos[0])
+        #expect(model.photos.map(\.url) == photos && model.selection?.url == photos[0])
+    }
+
+    @Test func onlyThePhotosShownGoToTheStrip() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        await model.addFolder(fixture.shoot)
+        let photos = model.library.photos
+
+        // One photo gets adjustments, and its mark in the grid.
+        model.develop(photos[1])
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        model.showLibrary()
+        try await wait("the mark on the adjusted photo") { model.library.adjusted == [photos[1]] }
+
+        model.library.filter = .adjusted
+        model.develop(photos[1])
+        #expect(model.photos.map(\.url) == [photos[1]])
+        #expect(model.settings.exposureEV == 0.5)
+    }
+
+    @Test func foldersGoToTheLibraryAndPhotosAreOpened() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let loose = try WindowedTests.writeTestPictures(count: 1)
+        defer { try? FileManager.default.removeItem(at: loose[0].deletingLastPathComponent()) }
+        let model = fixture.model()
+
+        model.take([fixture.shoot])
+        try await wait("the folder in the library") { model.hasLibrary && model.showsLibrary }
+        #expect(model.photos.isEmpty)
+
+        model.take(loose)
+        #expect(!model.showsLibrary)
+        #expect(model.photos.map(\.url) == loose)
     }
 }

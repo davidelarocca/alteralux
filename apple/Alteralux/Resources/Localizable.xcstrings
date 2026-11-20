@@ -11,6 +11,96 @@
         }
       }
     },
+    "%@, with adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, con regolazioni"
+          }
+        }
+      }
+    },
+    "%lld photos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld foto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld selected" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selected"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selected"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selezionata"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld selezionate"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "100%" : {
       "localizations" : {
         "it" : {
@@ -61,6 +151,46 @@
         }
       }
     },
+    "Add a Folder" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi una cartella"
+          }
+        }
+      }
+    },
+    "Add a folder of photos to the library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi una cartella di foto alla libreria"
+          }
+        }
+      }
+    },
+    "Add Folder to Library…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi cartella alla libreria…"
+          }
+        }
+      }
+    },
+    "Add Folder…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi cartella…"
+          }
+        }
+      }
+    },
     "Add photos" : {
       "localizations" : {
         "it" : {
@@ -81,12 +211,32 @@
         }
       }
     },
+    "All" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutte"
+          }
+        }
+      }
+    },
     "Automatic metering" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esposimetro automatico"
+          }
+        }
+      }
+    },
+    "Back to the library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Torna alla libreria"
           }
         }
       }
@@ -121,12 +271,32 @@
         }
       }
     },
+    "Choose a folder." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli una cartella."
+          }
+        }
+      }
+    },
     "Choose the film" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scegli la pellicola"
+          }
+        }
+      }
+    },
+    "Choose which photos of the folder are shown" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli quali foto della cartella mostrare"
           }
         }
       }
@@ -161,6 +331,16 @@
         }
       }
     },
+    "Develop" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa"
+          }
+        }
+      }
+    },
     "Developed photo" : {
       "localizations" : {
         "it" : {
@@ -177,6 +357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Display P3"
+          }
+        }
+      }
+    },
+    "double-click to develop" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "doppio clic per sviluppare"
           }
         }
       }
@@ -321,6 +511,16 @@
         }
       }
     },
+    "Folders" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartelle"
+          }
+        }
+      }
+    },
     "Format" : {
       "localizations" : {
         "it" : {
@@ -391,6 +591,16 @@
         }
       }
     },
+    "Library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Libreria"
+          }
+        }
+      }
+    },
     "Magenta filter" : {
       "localizations" : {
         "it" : {
@@ -427,6 +637,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto successiva"
+          }
+        }
+      }
+    },
+    "No photo in this folder has adjustments yet." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto di questa cartella ha ancora regolazioni."
+          }
+        }
+      }
+    },
+    "No Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto"
           }
         }
       }
@@ -571,6 +801,16 @@
         }
       }
     },
+    "Remove from Library" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi dalla libreria"
+          }
+        }
+      }
+    },
     "Remove from Strip" : {
       "localizations" : {
         "it" : {
@@ -651,6 +891,16 @@
         }
       }
     },
+    "Show" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra"
+          }
+        }
+      }
+    },
     "Show Original" : {
       "localizations" : {
         "it" : {
@@ -667,6 +917,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra o nascondi le regolazioni"
+          }
+        }
+      }
+    },
+    "Size of the thumbnails" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione delle miniature"
           }
         }
       }
@@ -727,6 +987,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il colore della luce, in kelvin. Valori più bassi rendono la foto più fredda."
+          }
+        }
+      }
+    },
+    "The library shows the photos of the folders you add, as they are on disk." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La libreria mostra le foto delle cartelle che aggiungi, così come sono su disco."
+          }
+        }
+      }
+    },
+    "This folder cannot be reached. It may be on a disk that is not connected." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa cartella non è raggiungibile. Potrebbe trovarsi su un disco non collegato."
+          }
+        }
+      }
+    },
+    "This folder has no photos." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questa cartella non contiene foto."
+          }
+        }
+      }
+    },
+    "Thumbnail size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione delle miniature"
           }
         }
       }
@@ -801,6 +1101,16 @@
         }
       }
     },
+    "With Adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con regolazioni"
+          }
+        }
+      }
+    },
     "Yellow filter" : {
       "localizations" : {
         "it" : {
@@ -867,6 +1177,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "alteralux per macOS su GitHub"
+          }
+        }
+      }
+    },
+    "“%@” could not be added to the library." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile aggiungere “%@” alla libreria."
           }
         }
       }

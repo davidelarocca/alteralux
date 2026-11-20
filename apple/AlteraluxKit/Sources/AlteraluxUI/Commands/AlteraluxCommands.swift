@@ -20,6 +20,8 @@ public struct AlteraluxCommands: Commands {
         CommandGroup(replacing: .newItem) {
             Button("Open…") { model.isImporterPresented = true }
                 .keyboardShortcut("o")
+            Button("Add Folder to Library…") { model.chooseFolder() }
+                .keyboardShortcut("o", modifiers: [.command, .shift])
         }
         CommandGroup(replacing: .importExport) {
             Button("Export…") { model.isExportPresented = true }
@@ -32,6 +34,10 @@ public struct AlteraluxCommands: Commands {
                 .disabled(!model.hasPhoto)
         }
         CommandGroup(before: .toolbar) {
+            Button("Library") { model.showLibrary() }
+                .keyboardShortcut("l")
+                .disabled(!model.hasLibrary || model.showsLibrary)
+            Divider()
             Toggle(
                 "Show Original",
                 isOn: Binding(

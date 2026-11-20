@@ -48,6 +48,8 @@ final class LibraryModel {
     @ObservationIgnored private let folders: LibraryFolders
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
     @ObservationIgnored private var watchers: [LibraryFolder.ID: Task<Void, Never>] = [:]
+    /// The photo a Shift-click or an arrow key starts from.
+    @ObservationIgnored private var anchor: URL?
     /// Counts the folders shown, to drop what was read for one that is no longer on screen.
     @ObservationIgnored private var generation = 0
 
@@ -164,6 +166,46 @@ final class LibraryModel {
         } else {
             adjusted.remove(listed)
         }
+    }
+
+    // MARK: - Selection
+
+    /// A click on a photo of the grid: it becomes the selection; with Command it joins or leaves
+    /// it; with Shift everything from the last photo clicked to this one joins it.
+    func click(_ photo: URL, toggling: Bool = false, extending: Bool = false) {
+        let shown = visiblePhotos
+        if extending, let anchor, let first = shown.firstIndex(of: anchor), let last = shown.firstIndex(of: photo) {
+            selection.formUnion(shown[min(first, last) ... max(first, last)])
+        } else if toggling {
+            selection.formSymmetricDifference([photo])
+            anchor = photo
+        } else {
+            selection = [photo]
+            anchor = photo
+        }
+    }
+
+    /// Moves a single selection to the photo before or after it, for the arrow keys.
+    func moveSelection(by offset: Int) {
+        let shown = visiblePhotos
+        guard !shown.isEmpty else { return }
+        let current = anchor.flatMap(shown.firstIndex) ?? (offset > 0 ? -1 : shown.count)
+        let target = shown[min(max(current + offset, 0), shown.count - 1)]
+        selection = [target]
+        anchor = target
+    }
+
+    func selectAll() {
+        selection = Set(visiblePhotos)
+    }
+
+    func clearSelection() {
+        selection = []
+    }
+
+    /// The photo the keyboard acts on: the last one clicked or moved to, when it is selected.
+    var focusedPhoto: URL? {
+        anchor.flatMap { selection.contains($0) ? $0 : nil } ?? visiblePhotos.first(where: selection.contains)
     }
 
     // MARK: - Reading

@@ -13,16 +13,29 @@ extension AppModel {
         }
     }
 
-    /// Takes what was dropped on the window or chosen in a panel: folders go to the library,
-    /// photos are opened.
-    func take(_ urls: [URL]) async {
+    /// Asks which folder to add. The panel belongs to the library screen, so that is shown.
+    func chooseFolder() {
+        showsLibrary = true
+        isFolderImporterPresented = true
+    }
+
+    /// Takes what was dropped on the window, chosen in a panel or opened from the Finder: photos
+    /// are opened at once, folders are added to the library.
+    func take(_ urls: [URL]) {
         let folders = urls.filter { (try? $0.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true }
-        for folder in folders {
-            await addFolder(folder)
-        }
         let files = urls.filter { !folders.contains($0) }
         if !files.isEmpty {
             open(files)
+        }
+        guard !folders.isEmpty else { return }
+        Task {
+            for folder in folders {
+                await addFolder(folder)
+            }
+            // Photos that came with the folders are what the user asked to see.
+            if !files.isEmpty {
+                showsLibrary = false
+            }
         }
     }
 

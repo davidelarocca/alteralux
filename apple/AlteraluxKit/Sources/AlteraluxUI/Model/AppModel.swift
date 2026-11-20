@@ -59,6 +59,9 @@ public final class AppModel {
     // MARK: Presentation
 
     var isImporterPresented = false
+    /// The panel for adding a folder to the library.
+    var isFolderImporterPresented = false
+
     var isExportPresented = false
     var alertMessage: String?
 
@@ -120,13 +123,12 @@ public final class AppModel {
         history = EditHistory(store: store)
         // The library's own files: in the app's folders, or beside the edits for anything else.
         let isApp = dataDirectory == nil && editsDirectory == nil
+        let beside = URL(fileURLWithPath: edits.path + "-library", isDirectory: true)
         library = LibraryModel(
             storeURL: isApp
                 ? URL.applicationSupportDirectory.appending(path: "Library/folders.plist")
-                : edits.appending(path: "library/folders.plist"),
-            cacheDirectory: isApp
-                ? URL.cachesDirectory.appending(path: "Thumbnails")
-                : edits.appending(path: "library/thumbnails"),
+                : beside.appending(path: "folders.plist"),
+            cacheDirectory: isApp ? URL.cachesDirectory.appending(path: "Thumbnails") : beside.appending(path: "thumbnails"),
             hasAdjustments: { store.hasAdjustments(for: $0) },
         )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
