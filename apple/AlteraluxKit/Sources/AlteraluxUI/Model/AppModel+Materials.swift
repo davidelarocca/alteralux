@@ -21,11 +21,16 @@ extension AppModel {
 
     /// "Portra 400 → Portra Endura", shown under the window title.
     var materialsSummary: String {
-        guard hasPhoto, let film = selectedFilm else { return "" }
-        if settings.scanFilm {
+        hasPhoto ? materials(of: settings) : ""
+    }
+
+    /// The film and the paper of `settings` as the user reads them: "Portra 400 → Portra Endura",
+    /// or the film alone when it is scanned directly.
+    func materials(of settings: DevelopSettings) -> String {
+        guard let film = films.first(where: { $0.id == settings.filmID }) else { return "" }
+        guard !settings.scanFilm, let paper = papers.first(where: { $0.id == settings.paperID }) else {
             return film.displayName
         }
-        guard let paper = selectedPaper else { return film.displayName }
         return "\(film.displayName) → \(paper.displayName)"
     }
 
@@ -63,9 +68,21 @@ extension AppModel {
     nonisolated static func exportFileName(
         source: URL, film: String, format: ExportOptions.Format,
     ) -> String {
-        let baseName = source.deletingPathExtension().lastPathComponent
+        "\(exportName(source: source, film: film)).\(format.fileExtension)"
+    }
+
+    /// The name of an exported file without its extension: the photo's name and the film.
+    ///
+    /// - Parameter namesKind: put the kind of the original after its name ("IMG_0042 CR3 Kodak
+    ///   Portra 400"): for a photo with a twin of another kind beside it, as a camera that
+    ///   saves RAW and JPEG leaves, whose exports would otherwise take the same name.
+    nonisolated static func exportName(source: URL, film: String, namesKind: Bool = false) -> String {
+        var baseName = source.deletingPathExtension().lastPathComponent
+        if namesKind, !source.pathExtension.isEmpty {
+            baseName += " \(source.pathExtension.uppercased())"
+        }
         // A film's name must not read as a path in the save panel.
         let filmName = film.replacing("/", with: "-").replacing(":", with: "-")
-        return "\(baseName) \(filmName).\(format.fileExtension)"
+        return "\(baseName) \(filmName)"
     }
 }

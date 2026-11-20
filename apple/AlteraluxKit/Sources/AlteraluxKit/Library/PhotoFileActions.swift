@@ -126,7 +126,7 @@ public enum PhotoFileActions {
     }
 
     /// The first name in `folder` that is not taken: `name.ext`, then `name 2.ext`, `name 3.ext`.
-    private static func freeURL(for name: String, in folder: URL) -> URL {
+    static func freeURL(for name: String, in folder: URL) -> URL {
         let manager = FileManager.default
         let first = folder.appendingPathComponent(name)
         if !exists(first, manager) {
@@ -146,7 +146,7 @@ public enum PhotoFileActions {
     }
 
     /// True for anything at the path, including a link whose target is gone.
-    private static func exists(_ url: URL, _ manager: FileManager) -> Bool {
+    static func exists(_ url: URL, _ manager: FileManager) -> Bool {
         (try? manager.attributesOfItem(atPath: url.path)) != nil
     }
 

@@ -35,6 +35,10 @@ final class EditHistory {
     @ObservationIgnored private var isChangeOpen = false
     /// The saves, one after the other, so the latest is the one that stays.
     @ObservationIgnored private var saving: Task<Void, Never>?
+    /// What is on its way to the photos and not written yet, so a look at what a photo keeps
+    /// does not have to wait for the disk. `settings` is `nil` for adjustments being forgotten.
+    @ObservationIgnored private var pending: [URL: (settings: DevelopSettings?, write: Int)] = [:]
+    @ObservationIgnored private var writes = 0
     @ObservationIgnored private var observers: [any NSObjectProtocol] = []
 
     init(store: EditStore) {
@@ -43,7 +47,44 @@ final class EditHistory {
 
     /// The adjustments kept for the photo at `url`, if any.
     func kept(for url: URL) -> DevelopSettings? {
-        store.load(for: url)
+        if let pending = pending[url] {
+            return pending.settings
+        }
+        return store.load(for: url)
+    }
+
+    /// Keeps adjustments decided away from the develop screen, for photos that may not be in the
+    /// strip: a recipe or a paste on a selection of the library, and their undo. `nil` forgets a
+    /// photo's adjustments, as if it had never had any.
+    func keep(_ changes: [(photo: URL, settings: DevelopSettings?)]) {
+        guard !changes.isEmpty else { return }
+        writes += 1
+        let write = writes
+        for change in changes {
+            pending[change.photo] = (change.settings, write)
+        }
+        saving = Task { [store, previous = saving, report] in
+            await previous?.value
+            var failure: (any Error)?
+            for change in changes {
+                do {
+                    if let settings = change.settings {
+                        try await store.save(settings, for: change.photo)
+                    } else {
+                        try await store.remove(for: change.photo)
+                    }
+                } catch {
+                    failure = failure ?? error
+                }
+                if pending[change.photo]?.write == write {
+                    pending[change.photo] = nil
+                }
+            }
+            // One message for the whole selection, not one per photo.
+            if let failure {
+                report(failure)
+            }
+        }
     }
 
     /// Starts following `item`: its adjustments as they are now are where a change starts from.
@@ -72,8 +113,16 @@ final class EditHistory {
         let url = item.url
         let kept = item.keptSettings
         item.keptSettings = settings
+        writes += 1
+        let write = writes
+        pending[url] = (settings, write)
         saving = Task { [store, previous = saving, report] in
             await previous?.value
+            defer {
+                if pending[url]?.write == write {
+                    pending[url] = nil
+                }
+            }
             do {
                 try await store.save(settings, for: url)
             } catch {

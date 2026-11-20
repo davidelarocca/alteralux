@@ -48,15 +48,18 @@ public struct ExportOptions: Sendable, Equatable, Codable {
     public var quality: Double
     /// Copy camera metadata (EXIF, lens, date, location) from the original.
     public var copiesMetadata: Bool
+    /// The long side of the exported photo, in pixels. `nil` for the size of the original.
+    public var longSide: Int?
 
     public init(
         format: Format = .jpeg, colorProfile: ColorProfile = .sRGB, quality: Double = 0.92,
-        copiesMetadata: Bool = true,
+        copiesMetadata: Bool = true, longSide: Int? = nil,
     ) {
         self.format = format
         self.colorProfile = colorProfile
         self.quality = quality
         self.copiesMetadata = copiesMetadata
+        self.longSide = longSide
     }
 }
 

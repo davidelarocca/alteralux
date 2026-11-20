@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-20T14:44:46Z",
+  "contractSize": "420x300",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "FormSheet",
+  "size": "420x300",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/FormSheet.swift",
+  "state": "options",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-20T14:47:03Z",
+  "approvedFrom": "missing"
+}

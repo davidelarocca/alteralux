@@ -21,7 +21,8 @@ Code: `apple/DesignSystem/`. Gallery: `GalleryView`, shown from its Xcode previe
 |---|---|---|---|
 | `Spacing` | `CGFloat` | `xxs`, `xs`, `s`, `m`, `l`, `xl` | 2, 4, 8, 12, 16, 24 pt |
 | `Radius` | `CGFloat` | `thumbnail`, `control`, `emblem` | |
-| `Typography` | `Font` | `body`, `heading`, `caption`, `emblem`, `value`, `badge`, `technical` | built on system text styles |
+| `Typography` | `Font` | `body`, `heading`, `sheetTitle`, `caption`, `emblem`, `value`, `badge`, `technical` | built on system text styles |
+| `SheetSize` | `CGFloat` | `width` | 420 pt: every sheet has it |
 | `Motion` | `Animation` | `quick`, `standard`, `moving(_:reduced:)` | durations live only here |
 | Colors | `Color` | `Color.DS.viewerSurround`, `thumbnailPlaceholder`, `hairline` | in `Colors.xcassets` |
 | Emblem inks | `FilmEmblem.Ink` | `violet`, `gold`, `petrol`, ... | the colors film emblems are made of; used only there |
@@ -45,6 +46,8 @@ Motion gets no animation, or a fade for a transition.
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |
+| Asking for a name | the name of a new recipe, another name for one | system alert with a text field |
+| Options before acting, or a progress that can be stopped | export options, the export of several photos | `FormSheet`: it follows the look of the system's alert (bold title, wide round buttons), so the two read as one family |
 
 ## Adding or changing a component
 

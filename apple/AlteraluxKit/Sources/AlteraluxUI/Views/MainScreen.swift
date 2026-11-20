@@ -109,7 +109,7 @@ private struct DevelopScreen: View {
 /// The toolbar while developing: on the leading side the way back to the library (or open, while
 /// no folder was added), then previous and next, beside the
 /// window's title (the photo's name over its film and paper); on the trailing side undo and
-/// redo, then compare, export and the inspector.
+/// redo, then compare, the recipes, export and the inspector.
 private struct MainToolbar: ToolbarContent {
     @Bindable var model: AppModel
     @Binding var showsInspector: Bool
@@ -176,13 +176,17 @@ private struct MainToolbar: ToolbarContent {
             .help("Compare with the original")
             .disabled(model.original == nil)
 
+            RecipeMenu(model: model, savesNew: true) { model.apply($0) }
+                .help("Give this photo a recipe, or save its look as one")
+                .disabled(!model.hasPhoto)
+
             Button {
-                model.isExportPresented = true
+                model.presentExport()
             } label: {
                 Label("Export…", systemImage: "square.and.arrow.up")
             }
             .help("Export the developed photo")
-            .disabled(!model.canExport)
+            .disabled(!model.canPresentExport)
 
             Button {
                 showsInspector.toggle()

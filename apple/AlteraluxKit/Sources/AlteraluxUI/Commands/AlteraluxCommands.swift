@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The app's menu commands: File (Open, Export), Edit (Reset), View (compare,
+/// The app's menu commands: File (Open, Export), Edit (Reset, copy and paste adjustments), View (compare,
 /// zoom, previous and next photo), About and Help.
 public struct AlteraluxCommands: Commands {
     private let model: AppModel
@@ -24,9 +24,17 @@ public struct AlteraluxCommands: Commands {
                 .keyboardShortcut("o", modifiers: [.command, .shift])
         }
         CommandGroup(replacing: .importExport) {
-            Button("Export…") { model.isExportPresented = true }
+            Button("Export…") { model.presentExport() }
                 .keyboardShortcut("e")
-                .disabled(!model.canExport)
+                .disabled(!model.canPresentExport)
+        }
+        CommandGroup(after: .pasteboard) {
+            Button("Copy Adjustments") { model.copyAdjustments() }
+                .keyboardShortcut("c", modifiers: [.command, .shift])
+                .disabled(!model.canCopyAdjustments)
+            Button("Paste Adjustments") { model.pasteAdjustments() }
+                .keyboardShortcut("v", modifiers: [.command, .shift])
+                .disabled(!model.canPasteAdjustments)
         }
         CommandGroup(after: .undoRedo) {
             Button("Reset Adjustments") { model.resetAdjustments() }

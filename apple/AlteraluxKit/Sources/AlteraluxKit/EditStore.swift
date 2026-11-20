@@ -70,6 +70,21 @@ public actor EditStore {
         return .store
     }
 
+    /// Forgets the adjustments kept for the photo at `url`, as if it had never been adjusted.
+    ///
+    /// What a later version of the app wrote into the photo is not this version's to remove: it
+    /// stays in the photo. A photo with nothing kept is not an error; a photo that holds
+    /// adjustments but cannot be written (locked, read-only) is.
+    public func remove(for url: URL) throws {
+        if let data = Self.attribute(of: url), !Self.isLaterFormat(data) {
+            try Self.removeAttribute(of: url)
+        }
+        let fallback = fallbackFile(for: url)
+        if FileManager.default.fileExists(atPath: fallback.path) {
+            try FileManager.default.removeItem(at: fallback)
+        }
+    }
+
     /// The file that holds the adjustments of a photo that cannot be written: named after the
     /// photo's path, which is all that identifies it without writing to it.
     nonisolated func fallbackFile(for url: URL) -> URL {
@@ -106,6 +121,20 @@ public actor EditStore {
             var data = Data(count: size)
             let read = data.withUnsafeMutableBytes { getxattr(path, attributeName, $0.baseAddress, size, 0, 0) }
             return read == size ? data : nil
+        }
+    }
+
+    private static func removeAttribute(of url: URL) throws {
+        let failure = url.withUnsafeFileSystemRepresentation { path -> Int32? in
+            guard let path else { return EINVAL }
+            if removexattr(path, attributeName, 0) == 0 {
+                return nil
+            }
+            // Gone between the look and now: nothing left to remove.
+            return errno == ENOATTR ? nil : errno
+        }
+        if let failure {
+            throw POSIXError(POSIXErrorCode(rawValue: failure) ?? .EIO)
         }
     }
 

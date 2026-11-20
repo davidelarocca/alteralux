@@ -42,7 +42,12 @@ they must open inside the window, or on screen for a separate window.
 
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
-| `ExportSheet` | Main window, Export | sheet | 420 wide | fits inside the 900 pt window |
+| `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
+| `RecipeMenu` | Main window, the toolbar's Recipe button; Library, Recipe of the selection's bar | system menu | system | system |
+| Name of a recipe | `RecipeMenu`, Save as New Recipe… and Rename | system alert with a text field | system | centered in the window |
+| Deleting a recipe | `RecipeMenu`, Delete | system confirmation dialog | system | centered in the window |
+| Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
+| Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
 | `FilmPicker` | Main window, the film heading of the inspector | popover | 300x420 | opens under the heading, inside the window |
 | Open panel | Main window, Open | system file importer | system | system |
 | Save panel | `ExportSheet`, Export | system save panel | system | separate window |
@@ -55,6 +60,11 @@ Deliberate departures from the rules above, with the reason.
 - The library is a split view inside the main window: the window's own row checks the window's sizes, and
   its two columns have a row each. Their Min is what each gets at the window's Min (900x600 less the
   toolbar): the list of folders at its narrowest, and the photos beside the list at its widest.
+
+- With photos selected the library's grid has `LibrarySelectionBar` under it. It never cuts a title:
+  where the column is too narrow for every action side by side, clearing the selection becomes an
+  icon, then moving, copying and tagging go into one menu. A layout test measures the grid with a
+  selection.
 
 - The main window holds an inspector, which behaves like a split view: its row names the window type as
   View and Window, so the row checks the window's sizes.
