@@ -235,7 +235,10 @@ branch of its own. What was said, in the order to take it:
   items for the developed photo turned off in the library. Still open: the pinch was not tried on
   a trackpad; holding a key to compare with the original; type-to-select by name.
 - Things that reach past the window's edge when the window is made small: to find one by one in
-  the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
+  the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix. Checked on 2026-11-20 at the
+  smallest window (900 × 600), in Italian: the develop screen with the adjustments open, the export
+  sheet, the list of films, the library with its sidebar, the bar of the selection and its list of
+  tags all stay inside. The user's own examples are still to be asked for.
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)
   is the reference the user likes; `FormSheet` follows it. The rest of the app is to be gone
   through the same way, screen by screen, shown to the user before it is built.
