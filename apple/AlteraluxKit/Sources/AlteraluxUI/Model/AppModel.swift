@@ -87,16 +87,18 @@ public final class AppModel {
     /// File types offered by the Open panel and accepted by drag and drop.
     static let openableTypes: [UTType] = [.rawImage, .image]
 
-    /// Long side of the standard live preview, in pixels.
-    private nonisolated static let standardPreviewDimension = 2048
     /// Long side of the lighter preview shown while the settings are changing.
     private nonisolated static let draftPreviewDimension = 1024
     private nonisolated static let thumbnailDimension = 240
     /// How long the settings must stay still before the preview is rendered at its full size.
     private nonisolated static let settleDelay = Duration.milliseconds(150)
+    /// How long the standard preview stays, once the settings are still, before a preview that
+    /// takes long replaces it. A render cannot be interrupted: one started at every short pause
+    /// would keep the control waiting when the hand takes it up again.
+    private nonisolated static let slowPreviewDelay = Duration.milliseconds(400)
 
-    /// Long side the viewer currently needs, in pixels (0 = full resolution).
-    private var previewDimension = AppModel.standardPreviewDimension
+    /// Long side of the photo as the viewer shows it, in display pixels (0 until it reports).
+    private var displayedLongSide = 0.0
 
     private var renderer: FilmRenderer?
     private var renderLoop: Task<Void, Never>?
@@ -105,9 +107,10 @@ public final class AppModel {
     /// Set while the settings are changing: a slider is being dragged, a key is held down.
     private var isAdjusting = false
     private var settle: Task<Void, Never>?
-    /// Set when the settings settle on a photo shown at full resolution: the standard preview
-    /// comes first, because the full one takes a second or more.
-    private var needsStandardFirst = false
+    /// Set from a change of the settings until they have been still for a while: meanwhile the
+    /// standard preview stands in for one that takes long.
+    private var holdsSlowPreview = false
+    private var slowPreviewRelease: Task<Void, Never>?
     /// Whether the preview on screen is smaller than the one the viewer needs.
     private var previewIsDraft = false
     /// The load whose lighter preview has been prepared.
@@ -237,7 +240,11 @@ public final class AppModel {
         selectedID = item.id
         settings = item.settings
         showsOriginal = false
-        // A newly selected photo starts fitted to the window.
+        // A newly selected photo starts fitted to the window: as large as the last one if that
+        // was fitted too, and otherwise at a size the viewer has yet to report.
+        if !viewerZoom.isFitted {
+            displayedLongSide = 0
+        }
         zoom(.fit)
         loadSelection()
     }
@@ -283,6 +290,10 @@ public final class AppModel {
         original = nil
         preview = nil
         isLoading = true
+        // Whatever was held back belonged to the photo before.
+        slowPreviewRelease?.cancel()
+        slowPreviewRelease = nil
+        holdsSlowPreview = false
         Task {
             do {
                 async let decoded = Task.detached(priority: .userInitiated) {
@@ -291,7 +302,7 @@ public final class AppModel {
                 async let system = Task.detached(priority: .userInitiated) {
                     SendableImage(
                         ImageLoader.originalPreview(
-                            of: url, maxDimension: Self.standardPreviewDimension,
+                            of: url, maxDimension: PreviewSize.standard,
                         ),
                     )
                 }.value
@@ -335,15 +346,32 @@ public final class AppModel {
         selection?.settings = settings
         guard loaded != nil, renderer != nil else { return }
         isAdjusting = true
+        holdsSlowPreview = true
+        slowPreviewRelease?.cancel()
+        slowPreviewRelease = nil
         settle?.cancel()
         settle = Task { [weak self] in
             try? await Task.sleep(for: Self.settleDelay)
             guard !Task.isCancelled, let self else { return }
             isAdjusting = false
-            needsStandardFirst = true
             requestRender()
         }
         requestRender()
+    }
+
+    /// Lets a preview that takes long through, once the settled one has been on screen for a
+    /// while without the settings changing again.
+    private func releaseSlowPreviewLater() {
+        guard slowPreviewRelease == nil else { return }
+        slowPreviewRelease = Task { [weak self] in
+            try? await Task.sleep(for: Self.slowPreviewDelay)
+            guard !Task.isCancelled, let self else { return }
+            slowPreviewRelease = nil
+            holdsSlowPreview = false
+            if previewIsDraft {
+                requestRender()
+            }
+        }
     }
 
     /// Chooses a film and applies what follows from it: slides are scanned
@@ -382,57 +410,23 @@ public final class AppModel {
         zoomRequestID += 1
     }
 
-    /// The viewer's scale as the zoom slider reads it: its base 2 logarithm, inside the slider's range.
-    var zoomLevel: Double {
-        Self.zoomLevel(of: viewerZoom.scale)
-    }
-
-    /// Where the fitted photo sits on the zoom slider: its neutral point.
-    var fitZoomLevel: Double {
-        Self.zoomLevel(of: viewerZoom.fitScale)
-    }
-
-    /// Which of the named zooms the viewer is showing, if any.
-    var zoomPreset: ZoomPreset? {
-        if viewerZoom.isFitted {
-            return .fit
-        }
-        return abs(viewerZoom.scale - 1) < Self.actualSizeTolerance ? .actualSize : nil
-    }
-
-    /// A scale counts as 100% within this distance: the readout shows whole percents.
-    private static let actualSizeTolerance = 0.005
-
-    private static func zoomLevel(of scale: Double) -> Double {
-        log2(min(max(scale, zoomScaleRange.lowerBound), zoomScaleRange.upperBound))
-    }
-
-    /// Sets the zoom from the slider. A level within half a step of the fitted photo fits it, so
-    /// the slider stops there and the photo follows the window again.
-    func setZoomLevel(_ level: Double) {
-        if viewerZoom.fitScale > 0, abs(level - fitZoomLevel) < Self.zoomLevelStep / 2 {
-            zoom(.fit)
-        } else {
-            let clamped = min(max(level, Self.zoomLevelRange.lowerBound), Self.zoomLevelRange.upperBound)
-            zoom(.scale(pow(2, clamped)))
-        }
-    }
-
-    /// Called by the viewer when its scale changes. Picks the preview
-    /// resolution: the fast standard size while the whole photo is in view,
-    /// full resolution once the user zooms in far enough to see the difference.
+    /// Called by the viewer when its scale changes. The preview follows the size of the photo
+    /// on screen: see `PreviewSize`.
     func viewerDidChange(_ zoom: ViewerZoom) {
         viewerZoom = zoom
-        let scale = zoom.scale
         guard let loaded else { return }
-        let displayedLongSide = Double(max(loaded.width, loaded.height)) * scale
-        let needsFullResolution =
-            displayedLongSide > Double(Self.standardPreviewDimension) * 1.15
-        let dimension = needsFullResolution ? 0 : Self.standardPreviewDimension
-        if dimension != previewDimension {
-            previewDimension = dimension
+        let current = previewDimension(for: loaded)
+        displayedLongSide = Double(max(loaded.width, loaded.height)) * zoom.scale
+        if previewDimension(for: loaded) != current {
             requestRender()
         }
+    }
+
+    /// Long side of the preview the viewer needs of `photo`, in pixels (0 = full resolution).
+    private func previewDimension(for photo: LoadedImage) -> Int {
+        PreviewSize.dimension(
+            displayedLongSide: displayedLongSide, photoLongSide: max(photo.width, photo.height),
+        )
     }
 
     // MARK: - Rendering
@@ -452,8 +446,9 @@ public final class AppModel {
         while needsRender, let loaded, let renderer {
             needsRender = false
             let generation = loadGeneration
-            let dimension = nextRenderDimension()
-            let isDraft = dimension != previewDimension
+            let isSettled = !isAdjusting
+            let dimension = nextRenderDimension(for: loaded)
+            let isDraft = dimension != previewDimension(for: loaded)
             do {
                 let developed = try await renderer.render(
                     loaded, settings: settings, quality: .preview(maxDimension: dimension),
@@ -462,6 +457,9 @@ public final class AppModel {
                 if generation == loadGeneration {
                     preview = developed
                     previewIsDraft = isDraft
+                    if isSettled, holdsSlowPreview {
+                        releaseSlowPreviewLater()
+                    }
                 }
             } catch {
                 alertMessage = error.localizedDescription
@@ -485,20 +483,18 @@ public final class AppModel {
     }
 
     /// The long side of the next render (0 = full resolution): the lighter preview while the
-    /// settings change, then what the viewer needs, through the standard preview when that is
-    /// the full resolution.
-    private func nextRenderDimension() -> Int {
+    /// settings change, then what the viewer needs, with the standard preview standing in for
+    /// one that takes long until the settings have been still for a while.
+    private func nextRenderDimension(for photo: LoadedImage) -> Int {
         if isAdjusting {
             return Self.draftPreviewDimension
         }
-        if needsStandardFirst {
-            needsStandardFirst = false
-            if previewDimension == 0 {
-                needsRender = true
-                return Self.standardPreviewDimension
-            }
+        let dimension = previewDimension(for: photo)
+        let photoLongSide = max(photo.width, photo.height)
+        if holdsSlowPreview, PreviewSize.comesAfterStandard(dimension, photoLongSide: photoLongSide) {
+            return PreviewSize.standard
         }
-        return previewDimension
+        return dimension
     }
 
     /// Updates the strip thumbnail with the developed look.
