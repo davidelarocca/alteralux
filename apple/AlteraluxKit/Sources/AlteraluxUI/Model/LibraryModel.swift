@@ -96,8 +96,11 @@ final class LibraryModel {
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
     @ObservationIgnored private let discards: DiscardStore
     @ObservationIgnored private var watchers: [LibraryFolder.ID: Task<Void, Never>] = [:]
-    /// The photo a Shift-click or an arrow key starts from.
+    /// The photo a Shift-click or a Shift-arrow extends the selection from.
     @ObservationIgnored private var anchor: URL?
+    /// The photo the keys are on: the last one clicked or reached. With Shift it moves while the
+    /// anchor stays.
+    @ObservationIgnored private var cursor: URL?
     /// Counts the folders shown, to drop what was read for one that is no longer on screen.
     @ObservationIgnored private var generation = 0
 
@@ -313,16 +316,23 @@ final class LibraryModel {
             selection = [photo]
             anchor = photo
         }
+        cursor = photo
     }
 
-    /// Moves a single selection to the photo before or after it, for the arrow keys.
-    func moveSelection(by offset: Int) {
+    /// Moves a single selection to the photo before or after it, for the arrow keys; with Shift
+    /// the selection grows from where it started to that photo.
+    func moveSelection(by offset: Int, extending: Bool = false) {
         let shown = visiblePhotos
         guard !shown.isEmpty else { return }
-        let current = anchor.flatMap(shown.firstIndex) ?? (offset > 0 ? -1 : shown.count)
+        let current = (cursor ?? anchor).flatMap(shown.firstIndex) ?? (offset > 0 ? -1 : shown.count)
         let target = shown[min(max(current + offset, 0), shown.count - 1)]
-        selection = [target]
-        anchor = target
+        if extending, anchor != nil {
+            click(target, extending: true)
+        } else {
+            selection = [target]
+            anchor = target
+            cursor = target
+        }
     }
 
     /// The photos a rectangle dragged over the grid covers become the selection, as in the
@@ -333,6 +343,7 @@ final class LibraryModel {
         selection = toggling ? before.symmetricDifference(covered) : before.union(covered)
         if let first = visiblePhotos.first(where: covered.contains) {
             anchor = first
+            cursor = first
         }
     }
 
@@ -346,7 +357,7 @@ final class LibraryModel {
 
     /// The photo the keyboard acts on: the last one clicked or moved to, when it is selected.
     var focusedPhoto: URL? {
-        anchor.flatMap { selection.contains($0) ? $0 : nil } ?? visiblePhotos.first(where: selection.contains)
+        [cursor, anchor].lazy.compactMap(\.self).first(where: selection.contains) ?? visiblePhotos.first(where: selection.contains)
     }
 
     // MARK: - Actions on photos

@@ -1,6 +1,7 @@
 import AlteraluxKit
 import AppKit
 import DesignSystem
+import QuickLook
 import SwiftUI
 
 /// The photos of the folder on screen, in a grid, with the count and the size of the thumbnails
@@ -8,8 +9,12 @@ import SwiftUI
 struct LibraryGrid: View {
     @Environment(AppModel.self) private var model
     @Binding var isAddingFolder: Bool
-    @AppStorage("library.thumbnailSize") private var thumbnailSize = LibraryGrid.thumbnailSizes.lowerBound + 40
+    @AppStorage(LibraryGrid.thumbnailSizeKey) private var thumbnailSize = LibraryGrid.defaultThumbnailSize
     @State private var isEmptyingDiscarded = false
+    /// The photo Quick Look shows, while it is open.
+    @State private var quickLookItem: URL?
+    /// The thumbnail size a pinch started from, while the grid is pinched.
+    @State private var pinchBase: Double?
     /// Where each photo of the grid is drawn, in the grid's own space, for the rectangle that
     /// selects by dragging.
     @State private var tileFrames: [URL: CGRect] = [:]
@@ -31,7 +36,10 @@ struct LibraryGrid: View {
 
     /// The widths a thumbnail can have, in points.
     static let thumbnailSizes = 120.0 ... 320.0
-    private static let thumbnailSizeStep = 20.0
+    static let thumbnailSizeStep = 20.0
+    static let defaultThumbnailSize = thumbnailSizes.lowerBound + 40
+    /// Where the size of the thumbnails is kept: the grid's slider and the View menu share it.
+    static let thumbnailSizeKey = "library.thumbnailSize"
     /// A thumbnail is this much less tall than wide: room for an upright photo and a wide one.
     private static let tileProportion = 0.75
     /// The name of the grid's scrolling space, where photos and the rectangle are placed.
@@ -173,37 +181,20 @@ struct LibraryGrid: View {
             .focusEffectDisabled()
             .simultaneousGesture(TapGesture().onEnded { hasKeys = true })
             .onAppear { hasKeys = true }
-            .onKeyPress(.leftArrow) {
-                library.moveSelection(by: -1)
-                reveal(library.focusedPhoto, in: rows)
-                return .handled
-            }
-            .onKeyPress(.rightArrow) {
-                library.moveSelection(by: 1)
-                reveal(library.focusedPhoto, in: rows)
-                return .handled
-            }
-            .onKeyPress(.upArrow) { move(in: rows, rowsDown: -1) }
-            .onKeyPress(.downArrow) { move(in: rows, rowsDown: 1) }
-            .onKeyPress(.return) {
-                guard let photo = library.focusedPhoto else { return .ignored }
-                model.develop(photo)
-                return .handled
-            }
-            .onKeyPress(.escape) {
-                library.clearSelection()
-                return .handled
-            }
-            .onKeyPress(keys: [.delete, .deleteForward, KeyEquivalent("\u{7F}")]) { _ in
-                guard !library.selection.isEmpty else { return .ignored }
-                model.discardSelection()
-                return .handled
-            }
-            .onKeyPress(keys: ["a"]) { press in
-                guard press.modifiers.contains(.command) else { return .ignored }
-                library.selectAll()
-                return .handled
-            }
+            .modifier(LibraryGridKeys(
+                rows: rows, pageRows: max(1, Int(proxy.size.height / (height + Spacing.xl))),
+                reveal: { reveal($0, in: rows) }, quickLook: $quickLookItem,
+            ))
+            // Pinching the grid makes the thumbnails larger or smaller, as in Photos.
+            .gesture(MagnifyGesture().onChanged { pinch in
+                let base = pinchBase ?? thumbnailSize
+                pinchBase = base
+                thumbnailSize = min(max(base * pinch.magnification, Self.thumbnailSizes.lowerBound), Self.thumbnailSizes.upperBound)
+            }.onEnded { _ in
+                pinchBase = nil
+                thumbnailSize = (thumbnailSize / Self.thumbnailSizeStep).rounded() * Self.thumbnailSizeStep
+            })
+            .quickLookPreview($quickLookItem, in: quickLookItems)
         }
     }
 
@@ -280,19 +271,11 @@ struct LibraryGrid: View {
         }
     }
 
-    /// Goes to the photo above or below the one the keys are on, or to the first photo when
-    /// none is selected yet.
-    private func move(in rows: LibraryRows, rowsDown: Int) -> KeyPress.Result {
+    /// What Quick Look goes through with its arrows: the selected photos when there are several,
+    /// all those shown otherwise, as in the Finder.
+    private var quickLookItems: [URL] {
         let library = model.library
-        if let photo = library.focusedPhoto {
-            if let target = rows.photo(from: photo, rowsDown: rowsDown) {
-                library.click(target)
-            }
-        } else {
-            library.moveSelection(by: rowsDown)
-        }
-        reveal(library.focusedPhoto, in: rows)
-        return .handled
+        return library.selection.count > 1 ? library.visiblePhotos.filter(library.selection.contains) : library.visiblePhotos
     }
 
     /// Scrolls the grid as little as needed to bring the row of a photo the keys reached in sight.
@@ -329,7 +312,7 @@ struct LibraryGrid: View {
             }
             ParameterSlider(
                 "Thumbnail size", value: $thumbnailSize, in: Self.thumbnailSizes,
-                step: Self.thumbnailSizeStep, defaultValue: Self.thumbnailSizes.lowerBound + 40,
+                step: Self.thumbnailSizeStep, defaultValue: Self.defaultThumbnailSize,
             )
             .labelsHidden()
             .frame(width: Self.sliderWidth)
@@ -403,6 +386,7 @@ private struct LibraryTile: View {
             .frame(width: size.width)
         }
         .contentShape(.rect)
+        .contextMenu { LibraryPhotoMenu(photo: photo) }
         .onTapGesture(count: 2) { model.develop(photo) }
         .gesture(TapGesture().modifiers(.command).onEnded { model.library.click(photo, toggling: true) })
         .gesture(TapGesture().modifiers(.shift).onEnded { model.library.click(photo, extending: true) })

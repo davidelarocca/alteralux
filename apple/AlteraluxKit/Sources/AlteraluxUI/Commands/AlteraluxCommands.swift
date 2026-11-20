@@ -4,6 +4,8 @@ import SwiftUI
 /// zoom, previous and next photo), About and Help.
 public struct AlteraluxCommands: Commands {
     private let model: AppModel
+    /// The size of the library's thumbnails, which Zoom In and Zoom Out change in the library.
+    @AppStorage(LibraryGrid.thumbnailSizeKey) private var thumbnailSize = LibraryGrid.defaultThumbnailSize
 
     public init(model: AppModel) {
         self.model = model
@@ -54,19 +56,22 @@ public struct AlteraluxCommands: Commands {
                 ),
             )
             .keyboardShortcut("\\", modifiers: [])
-            .disabled(model.original == nil)
+            .disabled(model.original == nil || model.showsLibrary)
             Divider()
             Group {
                 Button("Zoom to Fit") { model.zoom(.fit) }
                     .keyboardShortcut("9")
                 Button("Actual Size") { model.zoom(.actualSize) }
                     .keyboardShortcut("0")
-                Button("Zoom In") { model.zoom(.zoomIn) }
-                    .keyboardShortcut("+")
-                Button("Zoom Out") { model.zoom(.zoomOut) }
-                    .keyboardShortcut("-")
             }
-            .disabled(!model.canZoom)
+            .disabled(!model.canZoom || model.showsLibrary)
+            // In the library they make the thumbnails larger or smaller, as in the Finder.
+            Button("Zoom In") { model.showsLibrary ? resizeThumbnails(by: 1) : model.zoom(.zoomIn) }
+                .keyboardShortcut("+")
+                .disabled(model.showsLibrary ? thumbnailSize >= LibraryGrid.thumbnailSizes.upperBound : !model.canZoom)
+            Button("Zoom Out") { model.showsLibrary ? resizeThumbnails(by: -1) : model.zoom(.zoomOut) }
+                .keyboardShortcut("-")
+                .disabled(model.showsLibrary ? thumbnailSize <= LibraryGrid.thumbnailSizes.lowerBound : !model.canZoom)
             Divider()
             Group {
                 Button("Previous Photo") { model.selectAdjacent(offset: -1) }
@@ -74,11 +79,17 @@ public struct AlteraluxCommands: Commands {
                 Button("Next Photo") { model.selectAdjacent(offset: 1) }
                     .keyboardShortcut(.rightArrow)
             }
-            .disabled(!model.canStepThroughPhotos)
+            .disabled(!model.canStepThroughPhotos || model.showsLibrary)
             Button("Remove from Strip") { model.removeSelection() }
                 .keyboardShortcut(.delete)
-                .disabled(!model.hasPhoto)
+                .disabled(!model.hasPhoto || model.showsLibrary)
             Divider()
         }
+    }
+
+    /// Makes the library's thumbnails a step larger or smaller.
+    private func resizeThumbnails(by steps: Double) {
+        let size = thumbnailSize + steps * LibraryGrid.thumbnailSizeStep
+        thumbnailSize = min(max(size, LibraryGrid.thumbnailSizes.lowerBound), LibraryGrid.thumbnailSizes.upperBound)
     }
 }

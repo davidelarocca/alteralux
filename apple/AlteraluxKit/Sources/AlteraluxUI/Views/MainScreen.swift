@@ -88,6 +88,7 @@ private struct DevelopScreen: View {
     var body: some View {
         VStack(spacing: 0) {
             PhotoStage()
+                .contextMenu { DevelopPhotoMenu() }
             if !model.photos.isEmpty {
                 ZoomControls()
                 Divider()
@@ -99,6 +100,16 @@ private struct DevelopScreen: View {
                 .inspectorColumnWidth(
                     min: InspectorWidth.minimum, ideal: InspectorWidth.ideal, max: InspectorWidth.maximum,
                 )
+        }
+        // Escape goes back to the library, as in Photos. A sheet or a list over the window
+        // takes its own Escape first.
+        .background {
+            if model.hasLibrary {
+                Button("Library") { model.showLibrary() }
+                    .keyboardShortcut(.cancelAction)
+                    .opacity(0)
+                    .accessibilityHidden(true)
+            }
         }
         .navigationTitle(model.selection?.name ?? "alteralux")
         .navigationSubtitle(model.materialsSummary)

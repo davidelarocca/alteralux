@@ -160,6 +160,28 @@ struct LibraryModelTests {
         #expect(model.selection.isEmpty && model.focusedPhoto == nil)
     }
 
+    /// Shift with the arrow keys grows the selection from the photo it started on, and the keys
+    /// go on from the photo they reached.
+    @Test func shiftAndTheArrowsGrowTheSelection() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+
+        model.click(photos[0])
+        model.moveSelection(by: 1, extending: true)
+        #expect(model.selection == [photos[0], photos[1]] && model.focusedPhoto == photos[1])
+        model.moveSelection(by: 1, extending: true)
+        #expect(model.selection == Set(photos) && model.focusedPhoto == photos[2])
+        // Without Shift the keys go on from where they were, with that photo alone.
+        model.moveSelection(by: -1)
+        #expect(model.selection == [photos[1]])
+        // To the first photo, as Home does.
+        model.moveSelection(by: -photos.count)
+        #expect(model.selection == [photos[0]])
+    }
+
     /// A rectangle dragged over the grid selects what it covers, as in the Finder.
     @Test func aRectangleDraggedOverThePhotosSelectsThem() async throws {
         let fixture = try Fixture()
