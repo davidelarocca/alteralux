@@ -82,6 +82,29 @@ public actor ThumbnailProvider {
         return result?.image
     }
 
+    /// Keeps the thumbnails on disk under `limit` bytes, removing the ones written longest ago.
+    /// A thumbnail removed is made again when it is next asked for. Synchronous: call it off the
+    /// main thread.
+    public nonisolated func pruneDiskCache(toAtMost limit: Int64) {
+        guard let cacheDirectory else { return }
+        let keys: Set<URLResourceKey> = [.fileSizeKey, .contentModificationDateKey]
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: cacheDirectory, includingPropertiesForKeys: Array(keys),
+        ) else { return }
+        var thumbnails = files.filter { $0.pathExtension == "jpg" }.map { file in
+            let values = try? file.resourceValues(forKeys: keys)
+            return (file: file, size: Int64(values?.fileSize ?? 0), date: values?.contentModificationDate ?? .distantPast)
+        }
+        var total = thumbnails.reduce(0) { $0 + $1.size }
+        guard total > limit else { return }
+        thumbnails.sort { $0.date < $1.date }
+        for thumbnail in thumbnails where total > limit {
+            if (try? FileManager.default.removeItem(at: thumbnail.file)) != nil {
+                total -= thumbnail.size
+            }
+        }
+    }
+
     /// Removes all cached images and waits for outstanding cache writes to finish.
     public func removeAll() async {
         isClearing = true

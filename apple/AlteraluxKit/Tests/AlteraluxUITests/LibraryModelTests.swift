@@ -160,6 +160,34 @@ struct LibraryModelTests {
         #expect(model.selection.isEmpty && model.focusedPhoto == nil)
     }
 
+    /// The order and the filters are kept for the next launch.
+    @Test func theOrderAndTheFiltersAreKeptForTheNextLaunch() throws {
+        let suite = "alteralux-tests-\(UUID().uuidString)"
+        let preferences = try #require(UserDefaults(suiteName: suite))
+        defer { preferences.removePersistentDomain(forName: suite) }
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(suite)
+        defer { try? FileManager.default.removeItem(at: root) }
+        func launch() -> LibraryModel {
+            LibraryModel(
+                storeURL: root.appendingPathComponent("folders.plist"), cacheDirectory: nil,
+                discards: DiscardStore(fallbackDirectory: root.appendingPathComponent("discarded")),
+                preferences: preferences, hasAdjustments: { _ in false },
+            )
+        }
+
+        let first = launch()
+        #expect(first.sort == .name && first.sortsAscending && first.kinds == .all)
+        first.sort = .date
+        first.sortsAscending = false
+        first.kinds = .raw
+        first.filter = .discarded
+        first.tagFilter = "Print"
+
+        let next = launch()
+        #expect(next.sort == .date && !next.sortsAscending && next.kinds == .raw)
+        #expect(next.filter == .discarded && next.tagFilter == "Print")
+    }
+
     /// Shift with the arrow keys grows the selection from the photo it started on, and the keys
     /// go on from the photo they reached.
     @Test func shiftAndTheArrowsGrowTheSelection() async throws {

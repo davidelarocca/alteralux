@@ -42,7 +42,7 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     and reads and writes their Finder tags, reporting per file; `DiscardStore`
     keeps a photo's "discarded" mark in the photo, like its adjustments;
     `PhotoInfoReader` reads what the grid shows and sorts a photo by, without
-    decoding it: its shape, its date, whether it is a RAW, its size and its
+    decoding it: its shape, the date it was taken, whether it is a RAW, its size and its
     Finder tags with their colors.
   - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.

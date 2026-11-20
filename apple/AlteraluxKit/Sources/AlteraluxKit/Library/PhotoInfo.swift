@@ -24,7 +24,8 @@ public struct PhotoInfo: Sendable, Equatable {
     /// Width over height of the photo as it is shown, after the rotation the camera recorded.
     /// 1.5 when the file does not say.
     public let aspectRatio: Double
-    /// When the file was created, as the Finder shows it.
+    /// When the photo was taken, as the camera recorded it; when the file was created, as the
+    /// Finder shows it, for a photo that does not say.
     public let date: Date?
     /// Whether the file is a camera RAW.
     public let isRaw: Bool
@@ -75,9 +76,10 @@ public enum PhotoInfoReader {
     /// Reads a photo's library details without decoding its pixels.
     public static func info(of photo: URL) -> PhotoInfo {
         let values = try? photo.resourceValues(forKeys: [.creationDateKey, .fileSizeKey])
+        let properties = imageProperties(of: photo)
         return PhotoInfo(
-            aspectRatio: aspectRatio(of: photo),
-            date: values?.creationDate,
+            aspectRatio: properties.map(aspectRatio) ?? PhotoInfo.unknownAspectRatio,
+            date: properties.flatMap(dateTaken) ?? values?.creationDate,
             isRaw: ImageLoader.isRawFile(photo),
             fileSize: values?.fileSize.map(Int64.init),
             tags: tags(of: photo),
@@ -114,10 +116,34 @@ public enum PhotoInfoReader {
         }
     }
 
-    private static func aspectRatio(of photo: URL) -> Double {
+    private static func imageProperties(of photo: URL) -> [String: Any]? {
+        guard let source = CGImageSourceCreateWithURL(photo as CFURL, nil) else { return nil }
+        return CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
+    }
+
+    /// When the photo was taken: the EXIF original date, with its offset from UTC when the
+    /// camera recorded one, in the Mac's time zone otherwise.
+    static func dateTaken(from properties: [String: Any]) -> Date? {
+        let exif = properties[kCGImagePropertyExifDictionary as String] as? [String: Any]
+        let tiff = properties[kCGImagePropertyTIFFDictionary as String] as? [String: Any]
         guard
-            let source = CGImageSourceCreateWithURL(photo as CFURL, nil),
-            let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any],
+            let text = exif?[kCGImagePropertyExifDateTimeOriginal as String] as? String
+            ?? tiff?[kCGImagePropertyTIFFDateTime as String] as? String
+        else { return nil }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        if let offset = exif?[kCGImagePropertyExifOffsetTimeOriginal as String] as? String {
+            formatter.dateFormat = "yyyy:MM:dd HH:mm:ssXXX"
+            if let date = formatter.date(from: text + offset) {
+                return date
+            }
+        }
+        formatter.dateFormat = "yyyy:MM:dd HH:mm:ss"
+        return formatter.date(from: text)
+    }
+
+    private static func aspectRatio(of properties: [String: Any]) -> Double {
+        guard
             let width = (properties[kCGImagePropertyPixelWidth as String] as? NSNumber)?.doubleValue,
             let height = (properties[kCGImagePropertyPixelHeight as String] as? NSNumber)?.doubleValue,
             width > 0,

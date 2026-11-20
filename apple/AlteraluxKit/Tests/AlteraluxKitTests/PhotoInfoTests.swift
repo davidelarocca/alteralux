@@ -120,6 +120,33 @@ struct PhotoInfoTests {
         #expect(PhotoInfoReader.info(of: file).date == storedDate)
     }
 
+    /// A photo that says when it was taken is dated by it, not by its file, which a copy renews.
+    @Test func readsTheDateThePhotoWasTaken() throws {
+        let context = try #require(
+            CGContext(
+                data: nil, width: 8, height: 8, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+            ),
+        )
+        let image = try #require(context.makeImage())
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-taken-\(UUID().uuidString).jpg")
+        defer { try? FileManager.default.removeItem(at: url) }
+        let destination = try #require(CGImageDestinationCreateWithURL(url as CFURL, UTType.jpeg.identifier as CFString, 1, nil))
+        let exif: [String: Any] = [
+            kCGImagePropertyExifDateTimeOriginal as String: "2024:07:14 18:30:05",
+            kCGImagePropertyExifOffsetTimeOriginal as String: "+02:00",
+        ]
+        CGImageDestinationAddImage(destination, image, [kCGImagePropertyExifDictionary as String: exif] as CFDictionary)
+        #expect(CGImageDestinationFinalize(destination))
+
+        #expect(PhotoInfoReader.info(of: url).date == ISO8601DateFormatter().date(from: "2024-07-14T16:30:05Z"))
+        // Without an offset the time is the Mac's own.
+        var local = DateComponents(year: 2024, month: 7, day: 14, hour: 18, minute: 30, second: 5)
+        local.calendar = Calendar(identifier: .gregorian)
+        let properties = [kCGImagePropertyExifDictionary as String: [kCGImagePropertyExifDateTimeOriginal as String: "2024:07:14 18:30:05"]]
+        #expect(PhotoInfoReader.dateTaken(from: properties) == local.date)
+    }
+
     @Test func readsFileSizeInBytes() throws {
         let fixture = try Fixture()
         defer { fixture.remove() }

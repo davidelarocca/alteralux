@@ -172,8 +172,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      first. Copying and tagging are not steps of undo.
    - The grid shows the camera's own preview, not the developed look: that needs a render per photo
      and a cache.
-   - The thumbnails kept on disk are never pruned. Fixed on 2026-11-20: the arrow keys move in
-     every direction, and a folder that cannot be added says why.
+   - Fixed on 2026-11-20: the arrow keys move in every direction, a folder that cannot be added
+     says why, and the thumbnails kept on disk are pruned at launch to 512 MB, oldest first.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
@@ -225,9 +225,9 @@ branch of its own. What was said, in the order to take it:
   Seen in the built app on 2026-11-20: the tag list, a new tag made with a color and written to the
   file, a photo opening without the adjustments; with real pointer events on a folder of 40 test
   pictures, a click on a photo and between them, a rectangle that scrolls the grid when held at its
-  bottom edge, and the arrow keys bringing the photo they reach in sight. Still open: the date is
-  the file's, not the one of the shot; one tag at a time; the order and the filters are not kept
-  between launches.
+  bottom edge, and the arrow keys bringing the photo they reach in sight. The date is the one the
+  photo was taken (the file's for a photo that does not say), and the order and the filters (what
+  is shown, the kinds, the tag) are kept between launches. Still open: one tag at a time.
 - Mouse and keyboard, asked on 2026-11-20 ("everything must feel intuitive"). Done, checked in the
   built app: Shift with the arrows, Home, End, Page Up and Down in the grid; Space for Quick Look;
   Zoom In and Out and a pinch for the thumbnails; a menu on a secondary click on a photo, in the
