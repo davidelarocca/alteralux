@@ -15,19 +15,19 @@ scanner, the way real film works.
 
 Early development. Nothing to download yet.
 
-| Phase | What | State |
-|---|---|---|
-| 1 | Swift bridge to the Rust engine | done |
-| 2 | SwiftUI app: open RAW, pick film and paper, live preview, export | in progress |
-| 3 | Photos editing extension | planned |
-| 4 | Finder Quick Action and Shortcuts actions for batch processing | planned |
-
-Implemented so far (engine, image decoding and export are covered by automated
+What works today (engine, image decoding and export are covered by automated
 tests; the interface is young and needs testing on real photos): opening RAW,
-TIFF, HEIC, JPEG, PNG and EXR files, choosing
-film and paper, the main adjustments with a live preview, zoom, comparison with
-the original, several photos side by side in a strip, and export to JPEG,
-10-bit HEIC, 16-bit TIFF or PNG with an embedded sRGB or Display P3 profile.
+TIFF, HEIC, JPEG, PNG and EXR files, choosing film and paper, the main
+adjustments with a live preview, zoom, comparison with the original, several
+photos side by side in a strip, and export to JPEG, 10-bit HEIC, 16-bit TIFF
+or PNG with an embedded sRGB or Display P3 profile.
+
+What it is meant to become, and what version 1.0 means, is in
+[docs/VISION.md](docs/VISION.md); what is done and what comes next, in order,
+is in [docs/ROADMAP.md](docs/ROADMAP.md). In short, before 1.0: white balance,
+edits that persist with undo and redo, a library over the Finder's folders,
+recipes, crop, camera and lens corrections, workflows from the Finder, and a
+notarized release. An integration with Photos comes after 1.0.
 
 ## Goals
 
@@ -38,7 +38,8 @@ the original, several photos side by side in a strip, and export to JPEG,
 - **Fast.** The GPU (Metal) preview updates while you drag the sliders; full
   resolution renders run on export.
 - **Integrated.** RAW decoding with Apple's own Core Image RAW engine (the one
-  Photos uses), a Photos editing extension, Finder Quick Actions and Shortcuts.
+  Photos uses), the Finder's folders and tags instead of a catalogue of its
+  own, Finder Quick Actions and Shortcuts.
 
 ## How it works
 
@@ -121,7 +122,8 @@ engine/crates/alteralux-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)
 scripts/                         setup, build and verification scripts
-docs/                            architecture, design system, decisions, roadmap
+snapshots/                       approved images of the components and screens, compared by the tests
+docs/                            vision, roadmap, architecture, design system, decisions
 ```
 
 ## License and credits
