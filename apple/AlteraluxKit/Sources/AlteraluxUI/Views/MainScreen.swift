@@ -72,11 +72,14 @@ struct MainScreen: View {
 
 /// The photo being developed, with the zoom and the strip of photos below it, and the
 /// adjustments in an inspector on the right.
-private struct DevelopScreen: View {
+struct DevelopScreen: View {
     @Environment(AppModel.self) private var model
     /// A photo opens on its own, the whole window for it; the adjustments are a click away and
     /// stay open from one photo to the next once opened.
     @State private var showsInspector = false
+    /// The strip of the photos under the photo, which the View menu hides for more room.
+    @AppStorage(DevelopScreen.showsStripKey) private var showsStrip = true
+    static let showsStripKey = "develop.showsStrip"
 
     /// Width of the adjustments inspector, in points.
     private enum InspectorWidth {
@@ -91,8 +94,10 @@ private struct DevelopScreen: View {
                 .contextMenu { DevelopPhotoMenu() }
             if !model.photos.isEmpty {
                 ZoomControls()
-                Divider()
-                FilmstripView()
+                if showsStrip {
+                    Divider()
+                    FilmstripView()
+                }
             }
         }
         .inspector(isPresented: $showsInspector) {
