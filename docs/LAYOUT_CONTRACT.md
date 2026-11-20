@@ -50,7 +50,7 @@ they must open inside the window, or on screen for a separate window.
 | Deleting a recipe | `RecipeMenu`, Delete | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
-| `FilmPicker` | Main window, the film heading of the inspector | popover | 300x420 | opens under the heading, inside the window |
+| `FilmPicker` | Main window, the film heading of the inspector | popover | 300 wide, 420 to 640 tall: the inspector's height less 130 | opens under the heading, inside the window |
 | Open panel | Main window, Open | system file importer | system | system |
 | Save panel | `ExportSheet`, Export | system save panel | system | separate window |
 | About panel | App menu | system About panel | system | separate window |

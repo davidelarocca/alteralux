@@ -120,7 +120,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    of the strip, at its trailing end, and the paper's name written whole under its caption; the
    size and time of each render are no longer on screen but in the system log (category
    `render`). The sliders keep their title above them: one row per slider was proposed and
-   turned down. Still open:
+   turned down. The film list has the system's search field (`SearchField`, with the
+   magnifying glass and the button that clears it), no lines between the films, and grows
+   with the window: 13 films in view at the default size instead of 8. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.
