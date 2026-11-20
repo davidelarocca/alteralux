@@ -476,4 +476,46 @@ extension WindowedTests {
             } == [])
         }
     }
+
+    @MainActor
+    struct SearchFieldSnapshots {
+        private let source = "\(components)/SearchField.swift"
+        /// The width of the film list it sits on.
+        private let sizes = ["300x52"]
+
+        private func field(_ text: String, prompt: String = "Search") -> some View {
+            SearchField("Search films", prompt: prompt, text: .constant(text))
+                .padding(Spacing.m)
+        }
+
+        @Test func empty() {
+            #expect(Snapshot.verify("SearchField", sizes: sizes, state: "empty", source: source) {
+                field("")
+            } == [])
+        }
+
+        @Test func typed() {
+            #expect(Snapshot.verify("SearchField", sizes: sizes, state: "typed", source: source) {
+                field("Portra")
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("SearchField", sizes: sizes, state: "long-text", source: source) {
+                field("", prompt: "A long prompt that has more words than the field has room for")
+            } == [])
+        }
+
+        @Test func disabled() {
+            #expect(Snapshot.verify("SearchField", sizes: sizes, state: "disabled", source: source) {
+                field("Portra").disabled(true)
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("SearchField", sizes: sizes, state: "typed", locale: "ar", source: source) {
+                field("Portra")
+            } == [])
+        }
+    }
 }

@@ -14,6 +14,8 @@ struct InspectorView: View {
     @AppStorage("inspector.print.isExpanded") private var showsPrint = true
     @AppStorage("inspector.filmCharacter.isExpanded") private var showsFilmCharacter = true
     @AppStorage("inspector.scan.isExpanded") private var showsScan = true
+    /// The inspector's height: the film list grows with it.
+    @State private var height: CGFloat?
 
     var body: some View {
         @Bindable var model = model
@@ -22,7 +24,7 @@ struct InspectorView: View {
         )
 
         Form {
-            MaterialsHeading()
+            MaterialsHeading(paneHeight: height)
             InspectorSection(
                 "Camera", isExpanded: $showsCamera,
                 summary: summary.camera(
@@ -62,6 +64,7 @@ struct InspectorView: View {
         // shows it: the controls keep clear of it and the form stays centered without it.
         .contentMargins(.horizontal, Spacing.s, for: .scrollContent)
         .disabled(model.films.isEmpty)
+        .onGeometryChange(for: CGFloat.self, of: \.size.height) { height = $0 }
     }
 
     /// The film format in the reader's language, for the summary of the camera section.
@@ -75,6 +78,8 @@ struct InspectorView: View {
 /// on, or the choice to scan it directly.
 private struct MaterialsHeading: View {
     @Environment(AppModel.self) private var model
+    /// The inspector's height, for the film list to grow with it.
+    let paneHeight: CGFloat?
     @State private var showsFilms = false
 
     var body: some View {
@@ -86,7 +91,7 @@ private struct MaterialsHeading: View {
             }
             .help("Choose the film")
             .popover(isPresented: $showsFilms, arrowEdge: .bottom) {
-                FilmPicker()
+                FilmPicker(paneHeight: paneHeight)
             }
             if !model.settings.scanFilm {
                 // The paper's name is long: it gets the row's whole width, under its caption,
