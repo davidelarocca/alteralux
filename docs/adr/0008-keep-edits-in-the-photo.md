@@ -42,6 +42,10 @@ and opened with `ditto`). It is lost on services and disks that do not carry ext
 - Undo and redo are the window's `UndoManager`: one step per change (a whole drag, a film chosen, a
   reset), not per value. They are not kept between launches.
 
+- The "discarded" mark of the library is kept the same way (decided on 2026-11-20): an extended
+  attribute of the photo, `io.github.davidelarocca.alteralux.discarded#S`, or a file in the app's
+  folder when the photo cannot be written (`DiscardStore`).
+
 `EditStore` (AlteraluxKit) does the reading and writing; `EditHistory` (AlteraluxUI) decides when and
 registers the undo steps.
 
@@ -62,7 +66,6 @@ registers the undo steps.
   attribute changes see the file as changed.
 - Adjustments do not travel through services that drop extended attributes: the sidecar is the answer
   when the library exists.
-- The "discarded" mark of the library can be kept the same way.
 - A change made in the last tenth of a second before quitting is not kept.
 - Tests of the app model keep the fallback folder out of the user's Library: a model given the
   engine's data folder, as tests do, uses a temporary folder unless told otherwise.

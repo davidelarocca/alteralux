@@ -35,7 +35,8 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     coalesced); `ThumbnailProvider` makes thumbnails with ImageIO, from the
     preview embedded in the file when there is one, a few at a time, kept in
     memory and on disk; `PhotoFileActions` moves, copies and trashes files
-    and reads and writes their Finder tags, reporting per file.
+    and reads and writes their Finder tags, reporting per file; `DiscardStore`
+    keeps a photo's "discarded" mark in the photo, like its adjustments.
   - `FilmRenderer` runs renders on its own queue, off Swift's cooperative
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
   - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
@@ -93,7 +94,12 @@ open photos, the settings of the selected one and its preview.
   reads again when a `FolderWatcher` reports. A photo of a folder is
   developed with the folder's photos in the strip, in their order, and the
   toolbar has the way back. Folders come from a panel, the File menu, a drop
-  on the window or the Finder.
+  on the window or the Finder. With photos selected a bar offers the actions:
+  move and copy to another folder of the library (the sandbox lets the app
+  write only into folders the user added), Finder tags, and discard, which
+  marks a photo and hides it; the discarded photos have a filter of their
+  own, where they are taken back or emptied into the Trash. Discarding and
+  moving are steps of the window's undo.
 - **Edits.** `EditHistory` follows the adjustments of the selected photo. A
   change is what happens between two moments of stillness (a whole drag, a
   film chosen, a reset): its first value registers one step in the window's
