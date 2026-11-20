@@ -79,14 +79,21 @@ produces this JSON.
 Building a pipeline (spectral LUTs, enlarger calibration) is expensive;
 running it is cheap by comparison. The engine keeps the last calibrated
 pipeline and reuses it when only non-calibration parameters change. This is
-the common case: exposure, grain, halation and scanner settings. The cache key
+the common case: grain, halation, couplers and scanner settings. Moving the
+exposure, the print filters or the preflash builds a new pipeline, about 9 ms
+on an Apple M5: with `print_exposure_compensation` on, which is the default,
+the exposure is part of the calibration. The cache key
 mirrors the upstream GUI's `preview_pipeline_cache_key`. A test checks that a
 warm engine and a fresh one give identical pixels across a sequence of edits.
 
 ### Previews
 
-`RenderRequest.maxDimension` downsizes the source with Catmull-Rom (cached per
-source image) before rendering, as the upstream GUI does. The simulation scales
+`RenderRequest.maxDimension` downsizes the source with Catmull-Rom before
+rendering, as the upstream GUI does. The source keeps its last three sizes: the
+app alternates between a small preview while a control moves and a larger one
+when it stops, and scaling a 24 MP photo takes about 250 ms, far more than
+rendering the preview. `SourceImage.preparePreview(maxDimension:)` scales ahead
+of time. The simulation scales
 grain and halation from the physical film format, so a preview looks like the
 full render.
 

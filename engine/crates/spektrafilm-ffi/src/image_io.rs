@@ -22,13 +22,19 @@ pub enum PixelFormat {
 
 /// A scene-linear source image owned by the engine.
 ///
-/// Created once per opened photo; every render of that photo reuses it. A
-/// downscaled copy for interactive previews is cached alongside it.
+/// Created once per opened photo; every render of that photo reuses it. The
+/// downscaled copies for interactive previews are cached alongside it.
 #[derive(uniffi::Object)]
 pub struct SourceImage {
     pub(crate) image: Arc<ImageBuf>,
-    preview: Mutex<Option<(u32, Arc<ImageBuf>)>>,
+    /// Most recently used first. The app alternates between a small size while
+    /// a control moves and a larger one when it stops: scaling a 24 MP source
+    /// takes about 250 ms, far more than rendering the preview.
+    previews: Mutex<Vec<(u32, Arc<ImageBuf>)>>,
 }
+
+/// How many preview sizes a source keeps. At 2048 px a copy is about 33 MB.
+const CACHED_PREVIEW_SIZES: usize = 3;
 
 #[uniffi::export]
 impl SourceImage {
@@ -80,11 +86,18 @@ impl SourceImage {
     pub fn height(&self) -> u32 {
         self.image.height
     }
+
+    /// Scales the source for previews of `max_dimension` ahead of time, so the
+    /// first render at that size does not wait for it. Does nothing when the
+    /// size is already cached or is not smaller than the source.
+    pub fn prepare_preview(&self, max_dimension: u32) {
+        let _ = self.scaled_for(max_dimension);
+    }
 }
 
 impl SourceImage {
     pub(crate) fn new(image: ImageBuf) -> Self {
-        Self { image: Arc::new(image), preview: Mutex::new(None) }
+        Self { image: Arc::new(image), previews: Mutex::new(Vec::new()) }
     }
 
     /// The image to render for a request limited to `max_dimension` pixels on
@@ -95,15 +108,17 @@ impl SourceImage {
         if max_dimension == 0 || max_dimension >= long_side {
             return None;
         }
-        let mut cache = self.preview.lock().unwrap_or_else(|p| p.into_inner());
-        if let Some((dim, img)) = cache.as_ref() {
-            if *dim == max_dimension {
-                return Some(img.clone());
-            }
+        let mut cache = self.previews.lock().unwrap_or_else(|p| p.into_inner());
+        if let Some(index) = cache.iter().position(|(dim, _)| *dim == max_dimension) {
+            let entry = cache.remove(index);
+            let scaled = entry.1.clone();
+            cache.insert(0, entry);
+            return Some(scaled);
         }
         let factor = max_dimension as f32 / long_side as f32;
         let scaled = Arc::new(resize(&self.image, factor));
-        *cache = Some((max_dimension, scaled.clone()));
+        cache.insert(0, (max_dimension, scaled.clone()));
+        cache.truncate(CACHED_PREVIEW_SIZES);
         Some(scaled)
     }
 }
@@ -228,5 +243,20 @@ mod tests {
         assert_eq!((a.width, a.height), (100, 50));
         let b = src.scaled_for(100).unwrap();
         assert!(Arc::ptr_eq(&a, &b));
+    }
+
+    #[test]
+    fn alternating_preview_sizes_are_both_kept() {
+        let src = SourceImage::new(ImageBuf::from_data(400, 200, vec![from_f32(0.5); 400 * 200 * 3]));
+        let small = src.scaled_for(100).unwrap();
+        let large = src.scaled_for(200).unwrap();
+        assert!(Arc::ptr_eq(&small, &src.scaled_for(100).unwrap()));
+        assert!(Arc::ptr_eq(&large, &src.scaled_for(200).unwrap()));
+        src.prepare_preview(50);
+        assert_eq!(src.previews.lock().unwrap().len(), 3);
+        // A fourth size drops the one used longest ago.
+        let _ = src.scaled_for(25);
+        let kept: Vec<u32> = src.previews.lock().unwrap().iter().map(|(dim, _)| *dim).collect();
+        assert_eq!(kept, vec![25, 50, 200]);
     }
 }

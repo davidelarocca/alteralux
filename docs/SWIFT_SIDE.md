@@ -62,8 +62,17 @@ open photos, the settings of the selected one and its preview.
   while the whole photo is in view, and at full resolution once the viewer
   shows more pixels than that. The viewer's zoom is measured against the full
   photo, so swapping previews does not move the picture.
+- **While the settings change.** The preview is rendered at 1024 px, about a
+  quarter of the work, so it follows a moving control. When the settings have
+  stayed still for 150 ms the preview the viewer needs is rendered; a photo
+  shown at full resolution gets the 2048 px preview first, because the full
+  one takes a second or more. The strip's thumbnail follows the settled
+  preview only. The photo is scaled for the 1024 px preview as soon as it is
+  on screen (`FilmRenderer.preparePreview`), so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
   `CGImage` through a layer. Core Animation color-manages it for the display.
+  The layer reduces the image through mipmaps only below half size
+  (`ImageScrollView.needsMipmaps`): see `docs/PITFALLS.md`.
 - **Memory.** Only the selected photo's decoded pixels are kept; the strip
   holds small thumbnails.
 - **Sandbox.** Access to opened files is kept for as long as they are in the

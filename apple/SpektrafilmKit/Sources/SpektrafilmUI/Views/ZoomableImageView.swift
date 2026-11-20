@@ -44,6 +44,8 @@ final class ImageScrollView: NSScrollView {
 
     private let imageView = ImageLayerView()
     private var pixelSize = CGSize.zero
+    /// Width in pixels of the image on screen (a preview is smaller than the photo).
+    private var imagePixelWidth = CGFloat.zero
     /// While set, the photo is kept fitted to the view as the window resizes.
     private var fitsView = true
     private var reportedScale = -1.0
@@ -89,12 +91,32 @@ final class ImageScrollView: NSScrollView {
         imageView.image = image
         // Only a full-resolution image has real pixels worth showing unsmoothed.
         imageView.showsRealPixels = CGFloat(image.width) >= newSize.width - 1
-        guard newSize != pixelSize else { return }
-        // A different photo: start fitted.
-        pixelSize = newSize
-        fitsView = true
-        updateDocumentSize()
-        zoomToFit()
+        imagePixelWidth = CGFloat(image.width)
+        if newSize != pixelSize {
+            // A different photo: start fitted.
+            pixelSize = newSize
+            fitsView = true
+            updateDocumentSize()
+            zoomToFit()
+        }
+        updateFiltering()
+    }
+
+    /// Whether an image needs mipmaps to be shown at a size: only when it is reduced to less
+    /// than half, where plain linear filtering skips pixels and the picture aliases.
+    ///
+    /// Core Animation builds the mipmaps on the main thread when the image is set, about 30 ms
+    /// for a preview: at the sizes a preview is normally shown, that would be paid on every
+    /// update for nothing.
+    static func needsMipmaps(imagePixels: CGFloat, displayedPixels: CGFloat) -> Bool {
+        displayedPixels > 0 && imagePixels > displayedPixels * 2
+    }
+
+    private func updateFiltering() {
+        // The document is the photo at one pixel per display pixel at magnification 1.
+        imageView.usesMipmaps = Self.needsMipmaps(
+            imagePixels: imagePixelWidth, displayedPixels: pixelSize.width * magnification,
+        )
     }
 
     func perform(_ command: ZoomCommand) {
@@ -191,6 +213,7 @@ final class ImageScrollView: NSScrollView {
     }
 
     private func reportScale() {
+        updateFiltering()
         let scale = Double(magnification)
         guard abs(scale - reportedScale) > 0.0001 else { return }
         reportedScale = scale
@@ -231,6 +254,15 @@ private final class ImageLayerView: NSView {
         fatalError("init(coder:) is not supported")
     }
 
+    /// Reduce the image through mipmaps. See `ImageScrollView.needsMipmaps`.
+    var usesMipmaps = false {
+        didSet {
+            if usesMipmaps != oldValue {
+                needsDisplay = true
+            }
+        }
+    }
+
     override var wantsUpdateLayer: Bool {
         true
     }
@@ -239,7 +271,7 @@ private final class ImageLayerView: NSView {
         guard let layer else { return }
         layer.contents = image
         layer.contentsGravity = .resize
-        layer.minificationFilter = .trilinear
+        layer.minificationFilter = usesMipmaps ? .trilinear : .linear
         layer.magnificationFilter = showsRealPixels ? .nearest : .linear
     }
 }

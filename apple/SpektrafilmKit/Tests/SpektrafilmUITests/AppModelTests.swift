@@ -103,4 +103,48 @@ struct AppModelTests {
         #expect(model.zoomRequestID == first + 2)
         #expect(model.zoomCommand == .actualSize)
     }
+
+    /// While the settings change the preview is the lighter one, so it keeps up with a moving
+    /// control; the full one follows when they stay still.
+    @Test func thePreviewIsLighterWhileTheSettingsChange() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 2400, height: 1600).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        try await waitForPreview(of: model, longSide: 1024)
+        try await waitForPreview(of: model, longSide: 2048)
+        #expect(model.alertMessage == nil)
+    }
+
+    /// A full-resolution render takes a second or more on a large photo: when the settings
+    /// settle, the standard preview is shown first.
+    @Test func aPhotoShownAtFullResolutionSettlesThroughTheStandardPreview() async throws {
+        let photo = try #require(WindowedTests.writeTestPictures(count: 1, width: 2400, height: 1600).first)
+        defer { try? FileManager.default.removeItem(at: photo.deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open([photo])
+        try await waitForPreview(of: model, longSide: 2048)
+        // The viewer shows the photo at 100%: more pixels than the standard preview has.
+        model.viewerDidChange(scale: 1)
+        try await waitForPreview(of: model, longSide: 2400)
+
+        model.settings.exposureEV = 0.5
+        model.settingsDidChange()
+        try await waitForPreview(of: model, longSide: 1024)
+        try await waitForPreview(of: model, longSide: 2048)
+        try await waitForPreview(of: model, longSide: 2400)
+        #expect(model.alertMessage == nil)
+    }
+
+    private func waitForPreview(of model: AppModel, longSide: Int) async throws {
+        let deadline = ContinuousClock.now + .seconds(60)
+        while model.preview.map({ max($0.width, $0.height) }) != longSide {
+            try #require(ContinuousClock.now < deadline, "No preview of \(longSide) px in 60 seconds.")
+            try await Task.sleep(for: .milliseconds(5))
+        }
+    }
 }
