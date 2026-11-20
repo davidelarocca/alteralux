@@ -46,11 +46,11 @@ enum WindowedTests {
 
     /// Writes `count` test pictures as PNG files into a new temporary folder and returns their
     /// URLs. The caller removes the folder (the parent of the files).
-    static func writeTestPictures(count: Int) throws -> [URL] {
+    static func writeTestPictures(count: Int, width: Int = 240, height: Int = 120) throws -> [URL] {
         let folder = FileManager.default.temporaryDirectory
             .appendingPathComponent("spektrafilm-tests-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let picture = try #require(testPicture())
+        let picture = try #require(testPicture(width: width, height: height))
         return try (1 ... count).map { index in
             let url = folder.appendingPathComponent("Picture \(index).png")
             let destination = try #require(

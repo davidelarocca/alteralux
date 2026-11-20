@@ -46,5 +46,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   from the keyboard takes the focus itself with `.focusable(interactions: .edit)`, as `ParameterSlider`
   does. Its accessibility increment is a tenth of the range unless `accessibilityAdjustableAction` says
   otherwise. Caught by `ParameterSliderKeyboardTests`.
+- **A trilinear layer filter builds mipmaps on the main thread for every new image.** With
+  `minificationFilter = .trilinear` each preview frame cost the main thread about 30 ms at the commit,
+  against 0.1 ms with `.linear`, and the sliders stuttered. The viewer asks for mipmaps only when the
+  image is shown below half its size (`ImageScrollView.needsMipmaps`, covered by `ViewerTests`).
 - **`.onKeyPress(.delete)` does not match the Delete key.** `KeyEquivalent.delete` is U+0008 and the key
   arrives as U+007F: match both.
