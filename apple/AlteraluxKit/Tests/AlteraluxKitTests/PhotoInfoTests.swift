@@ -192,4 +192,27 @@ struct PhotoInfoTests {
         #expect(Set(infos.keys) == Set(photos))
         #expect(infos[missing] == PhotoInfo())
     }
+
+    /// A tag written with a color keeps it while other tags come and go: set by name through
+    /// the system, it would lose it.
+    @Test func aTagKeepsItsColorWhenOthersAreAddedAndRemoved() throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-tests-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appendingPathComponent("photo.jpg")
+        try Data("pixels".utf8).write(to: file)
+        let missing = folder.appendingPathComponent("missing.jpg")
+
+        #expect(PhotoFileActions.addTag(FinderTag(name: "Trip", color: .green), to: [file, missing]).map(\.succeeded) == [true, false])
+        #expect(PhotoFileActions.addTag("Plain", to: [file]).first?.succeeded == true)
+        // A tag of a name already there is not added again, whatever its color.
+        _ = PhotoFileActions.addTag(FinderTag(name: "Trip", color: .red), to: [file])
+        #expect(PhotoInfoReader.tags(of: file) == [FinderTag(name: "Trip", color: .green), FinderTag(name: "Plain")])
+        #expect(PhotoFileActions.tags(of: file) == ["Trip", "Plain"])
+
+        _ = PhotoFileActions.removeTag("Plain", from: [file])
+        #expect(PhotoInfoReader.tags(of: file) == [FinderTag(name: "Trip", color: .green)])
+        _ = PhotoFileActions.removeTag("Trip", from: [file])
+        #expect(PhotoInfoReader.tags(of: file).isEmpty && PhotoFileActions.tags(of: file).isEmpty)
+    }
 }

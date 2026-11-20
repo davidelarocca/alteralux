@@ -4,6 +4,13 @@ import Foundation
 
 // The library as the screens ask for it: adding folders, going from a folder to a photo and back.
 
+/// A Finder tag to offer for the selected photos: its color, and how many of them carry it.
+struct TagChoice: Equatable {
+    let name: String
+    let color: FinderTagColor?
+    let carriedBy: Int
+}
+
 extension AppModel {
     /// Adds a folder the user chose to the library, and shows it.
     func addFolder(_ url: URL) async {
@@ -131,18 +138,41 @@ extension AppModel {
 
     /// The tags to offer for the selection: the Finder's own labels and the tags the selected
     /// photos already carry, each with the number of selected photos that have it.
-    var tagChoices: [(name: String, carriedBy: Int)] {
+    /// The Finder's labels come with their colors; a tag of the user's has the color the
+    /// photos carry it with, if any.
+    var tagChoices: [TagChoice] {
         let carried = library.tagsOfSelection()
-        let labels = NSWorkspace.shared.fileLabels.filter { !$0.isEmpty }
-        let names = labels + carried.keys.filter { !labels.contains($0) }.sorted()
-        return names.map { ($0, carried[$0] ?? 0) }
+        // The first of the Finder's labels is "none": not a tag to put on a photo.
+        let labels = NSWorkspace.shared.fileLabels.enumerated().dropFirst().filter { !$0.element.isEmpty }
+        var choices = labels.map { TagChoice(name: $0.element, color: FinderTagColor(rawValue: $0.offset), carriedBy: carried[$0.element] ?? 0) }
+        // The tags the photos carry beyond the Finder's labels, with their color once the
+        // folder has been read again.
+        let colors = Dictionary(library.tagsInFolder.map { ($0.name, $0.color) }, uniquingKeysWith: { first, _ in first })
+        for name in carried.keys.sorted() where !choices.contains(where: { $0.name == name }) {
+            choices.append(TagChoice(name: name, color: colors[name].flatMap(\.self), carriedBy: carried[name] ?? 0))
+        }
+        return choices
     }
 
     /// Puts a tag on the selected photos, or takes it off when all of them have it.
-    func toggleTag(_ tag: String) {
+    ///
+    /// - Parameter color: the color a tag takes on the photos that did not have it.
+    func toggleTag(_ tag: String, color: FinderTagColor? = nil) {
         let photos = selectedPhotos
         let carried = library.tagsOfSelection()[tag] ?? 0
-        let failed = library.setTag(tag, isOn: carried < photos.count, for: photos).count { !$0.succeeded }
+        setTag(FinderTag(name: tag, color: color), isOn: carried < photos.count)
+    }
+
+    /// Puts a tag of the user's own on the selected photos: a name, and a color if they chose
+    /// one. Whether `name` can be a tag: anything but blank.
+    func addTag(named name: String, color: FinderTagColor?) {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        setTag(FinderTag(name: name, color: color), isOn: true)
+    }
+
+    private func setTag(_ tag: FinderTag, isOn: Bool) {
+        let failed = library.setTag(tag, isOn: isOn, for: selectedPhotos).count { !$0.succeeded }
         if failed > 0 {
             alertMessage = String(localized: "\(failed) photos could not be tagged.")
         }

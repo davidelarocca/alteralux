@@ -77,17 +77,23 @@ public enum PhotoFileActions {
         return counts
     }
 
-    /// Adds one tag to each file, after the tags it already has. A file that has it is left alone.
-    public static func addTag(_ tag: String, to files: [URL]) -> [FileActionResult] {
+    /// Adds one tag to each file, with its color, after the tags it already has. A file that
+    /// has a tag of that name is left alone.
+    public static func addTag(_ tag: FinderTag, to files: [URL]) -> [FileActionResult] {
         changeTags(of: files) { current in
-            current.contains(tag) ? current : current + [tag]
+            current.contains { $0.name == tag.name } ? current : current + [tag]
         }
     }
 
-    /// Removes one tag from each file, keeping the others in their order.
+    /// Adds one tag without a color to each file.
+    public static func addTag(_ tag: String, to files: [URL]) -> [FileActionResult] {
+        addTag(FinderTag(name: tag), to: files)
+    }
+
+    /// Removes one tag from each file, keeping the others in their order and with their colors.
     public static func removeTag(_ tag: String, from files: [URL]) -> [FileActionResult] {
         changeTags(of: files) { current in
-            current.filter { $0 != tag }
+            current.filter { $0.name != tag }
         }
     }
 
@@ -150,16 +156,16 @@ public enum PhotoFileActions {
         (try? manager.attributesOfItem(atPath: url.path)) != nil
     }
 
-    private static func changeTags(of files: [URL], _ change: ([String]) -> [String]) -> [FileActionResult] {
+    private static func changeTags(of files: [URL], _ change: ([FinderTag]) -> [FinderTag]) -> [FileActionResult] {
         files.map { file in
             do {
-                let current = try file.resourceValues(forKeys: [.tagNamesKey]).tagNames ?? []
+                guard FileManager.default.fileExists(atPath: file.path) else {
+                    throw CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: file.path])
+                }
+                let current = PhotoInfoReader.tags(of: file)
                 let updated = change(current)
                 if updated != current {
-                    var values = URLResourceValues()
-                    values.tagNames = updated
-                    var mutable = file
-                    try mutable.setResourceValues(values)
+                    try PhotoInfoReader.write(updated, to: file)
                 }
                 return FileActionResult(source: file, destination: file)
             } catch {

@@ -226,7 +226,7 @@ private struct LibraryTile: View {
                     }
                 }
             HStack(spacing: Spacing.xs) {
-                HStack(spacing: -Spacing.xxs) {
+                HStack(spacing: Spacing.xxs) {
                     ForEach(tags.compactMap(\.color), id: \.self) { color in
                         Circle()
                             .fill(color.swatch)
@@ -274,20 +274,5 @@ private struct LibraryTile: View {
             return Text("\(photo.lastPathComponent), discarded")
         }
         return hasAdjustments ? Text("\(photo.lastPathComponent), with adjustments") : Text(verbatim: photo.lastPathComponent)
-    }
-}
-
-private extension FinderTagColor {
-    /// The color the Finder draws this tag with: the system's own.
-    var swatch: Color {
-        switch self {
-        case .gray: .gray
-        case .green: .green
-        case .purple: .purple
-        case .blue: .blue
-        case .yellow: .yellow
-        case .red: .red
-        case .orange: .orange
-        }
     }
 }

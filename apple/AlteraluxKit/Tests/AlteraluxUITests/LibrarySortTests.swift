@@ -129,14 +129,40 @@ struct LibrarySortTests {
         #expect(try library.size(of: [first, photo("Raw.dng", in: library)]) == sizes[0] + sizes[1])
         #expect(library.size(of: library.visiblePhotos) > sizes[0] + sizes[1])
 
-        library.setTag("Keep", isOn: true, for: [second])
+        library.setTag(FinderTag(name: "Keep", color: .blue), isOn: true, for: [second])
         let deadline = ContinuousClock.now + .seconds(60)
-        while library.infos[second]?.tags.contains(FinderTag(name: "Keep")) != true {
+        while library.infos[second]?.tags.contains(FinderTag(name: "Keep", color: .blue)) != true {
             try #require(ContinuousClock.now < deadline, "Waited 60 seconds for the tag to show.")
             try await Task.sleep(for: .milliseconds(5))
         }
         #expect(library.tagsInFolder.map(\.name).contains("Keep"))
         // The shape of each photo is known for the grid: these pictures are twice as wide as tall.
         #expect(library.infos[first]?.aspectRatio == 2)
+    }
+
+    /// The tags offered for a selection are the Finder's labels, never its "none", and the
+    /// user's own with the color they were made with.
+    @Test func aTagOfOnesOwnIsMadeWithItsColor() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = AppModel(dataDirectory: WindowedTests.engineData, editsDirectory: fixture.folder.appendingPathComponent("support"))
+        await model.addFolder(fixture.folder)
+        let second = try photo("Picture 2.png", in: model.library)
+        model.library.click(second)
+
+        // The Finder's seven labels come first, each with its color, and "none" is not one.
+        #expect(model.tagChoices.prefix(7).map(\.color) == FinderTagColor.allCases.map(Optional.some))
+        model.addTag(named: "  ", color: .red)
+        model.addTag(named: " Event ", color: .purple)
+        #expect(PhotoInfoReader.tags(of: second) == [FinderTag(name: "Event", color: .purple)])
+        let deadline = ContinuousClock.now + .seconds(60)
+        while model.tagChoices.last != TagChoice(name: "Event", color: .purple, carriedBy: 1) {
+            try #require(ContinuousClock.now < deadline, "Waited 60 seconds for the tag to show with its color.")
+            try await Task.sleep(for: .milliseconds(5))
+        }
+        // Chosen again, it comes off.
+        model.toggleTag("Event", color: .purple)
+        #expect(PhotoInfoReader.tags(of: second).isEmpty)
+        #expect(model.alertMessage == nil)
     }
 }

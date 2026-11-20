@@ -69,7 +69,8 @@ struct LibraryScreen: View {
 }
 
 /// The toolbar's Filter and Sort menu: the system's menu, with what the photos are sorted by and
-/// which kinds and tags are shown. Its symbol is filled while it hides photos.
+/// which kinds and tags are shown. Its symbol, the system's for filtering, takes the accent
+/// color while it hides photos.
 private struct LibraryFilterMenu: View {
     @Bindable var library: LibraryModel
 
@@ -103,11 +104,11 @@ private struct LibraryFilterMenu: View {
             Button("Clear Filters") { library.clearFilters() }
                 .disabled(!library.hasFilters)
         } label: {
-            Label(
-                "Filter and Sort",
-                systemImage: library.hasFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle",
-            )
+            Label("Filter and Sort", systemImage: "line.3.horizontal.decrease")
+                // In the accent color while it hides photos.
+                .foregroundStyle(library.hasFilters ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
         }
+        .menuIndicator(.hidden)
         .help("Sort the photos of the folder, and choose which kinds and tags are shown")
         .disabled(library.selectedFolder == nil)
     }

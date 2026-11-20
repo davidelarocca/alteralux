@@ -221,6 +221,38 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct ChoiceListButtonSnapshots {
+        private let source = "\(components)/ChoiceListButton.swift"
+        private let sizes = ["360x60"]
+
+        /// The button as it sits in a bar: with its title, with its symbol alone, and disabled.
+        private func buttons() -> some View {
+            HStack(spacing: Spacing.m) {
+                ChoiceListButton(Text(verbatim: "Tag"), choices: [], empty: Text(verbatim: "No Tags"))
+                ChoiceListButton(Text(verbatim: "Move to…"), symbol: "folder", choices: [], empty: Text(verbatim: "No Folders"))
+                ChoiceListButton(Text(verbatim: "Recipe"), choices: [], empty: Text(verbatim: "No Recipes"))
+                    .disabled(true)
+            }
+            .buttonStyle(.bordered)
+            .buttonBorderShape(.capsule)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.DS.viewerSurround)
+        }
+
+        @Test func titleSymbolAndDisabled() {
+            #expect(Snapshot.verify("ChoiceListButton", sizes: sizes, state: "closed", locale: "en", source: source) {
+                buttons()
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("ChoiceListButton", sizes: sizes, state: "closed", locale: "ar", source: source) {
+                buttons()
+            } == [])
+        }
+    }
+
+    @MainActor
     struct FloatingBarSnapshots {
         private let source = "\(components)/FloatingBar.swift"
         private let sizes = ["560x90"]

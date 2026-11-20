@@ -591,6 +591,46 @@
         }
       }
     },
+    "Assign tags to %lld photos" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Assign tags to %lld photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Assign tags to %lld photos"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Assegna tag a %lld foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Assegna tag a %lld foto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Automatic metering" : {
       "localizations" : {
         "it" : {
@@ -697,6 +737,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Togli la selezione"
+          }
+        }
+      }
+    },
+    "Color" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colore"
           }
         }
       }
@@ -1292,16 +1342,6 @@
         }
       }
     },
-    "More Actions" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre azioni"
-          }
-        }
-      }
-    },
     "Motion Picture" : {
       "localizations" : {
         "it" : {
@@ -1362,16 +1402,6 @@
         }
       }
     },
-    "Move, copy or tag the selected photos" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sposta, copia o metti un tag alle foto selezionate"
-          }
-        }
-      }
-    },
     "Name" : {
       "localizations" : {
         "it" : {
@@ -1382,12 +1412,42 @@
         }
       }
     },
+    "New tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo tag"
+          }
+        }
+      }
+    },
     "Next Photo" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto successiva"
+          }
+        }
+      }
+    },
+    "No Color" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun colore"
+          }
+        }
+      }
+    },
+    "No other folder in the library." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun'altra cartella nella libreria."
           }
         }
       }
@@ -1428,6 +1488,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuna recipe"
+          }
+        }
+      }
+    },
+    "No recipes yet. Save one while developing a photo." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora nessuna recipe. Salvane una mentre sviluppi una foto."
+          }
+        }
+      }
+    },
+    "No Tags" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun tag"
           }
         }
       }

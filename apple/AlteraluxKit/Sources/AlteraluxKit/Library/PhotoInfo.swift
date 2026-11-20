@@ -54,6 +54,24 @@ public struct PhotoInfo: Sendable, Equatable {
 public enum PhotoInfoReader {
     private static let finderTagsAttribute = "com.apple.metadata:_kMDItemUserTags"
 
+    /// Writes the file's Finder tags, with their colors, as the Finder keeps them. Written this
+    /// way a tag keeps the color it was given: set by name through the system, every tag but
+    /// the Finder's own seven labels loses its color.
+    static func write(_ tags: [FinderTag], to file: URL) throws {
+        let status: Int32 = try file.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return EINVAL }
+            guard !tags.isEmpty else {
+                return removexattr(path, finderTagsAttribute, 0) == 0 || errno == ENOATTR ? 0 : errno
+            }
+            let values = tags.map { "\($0.name)\n\($0.color?.rawValue ?? 0)" }
+            let data = try PropertyListSerialization.data(fromPropertyList: values, format: .binary, options: 0)
+            return data.withUnsafeBytes { setxattr(path, finderTagsAttribute, $0.baseAddress, data.count, 0, 0) } == 0 ? 0 : errno
+        }
+        if status != 0 {
+            throw POSIXError(POSIXErrorCode(rawValue: status) ?? .EIO)
+        }
+    }
+
     /// Reads a photo's library details without decoding its pixels.
     public static func info(of photo: URL) -> PhotoInfo {
         let values = try? photo.resourceValues(forKeys: [.creationDateKey, .fileSizeKey])

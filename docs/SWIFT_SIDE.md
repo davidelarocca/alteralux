@@ -120,14 +120,13 @@ open photos, the settings of the selected one and its preview.
   marks a photo and hides it; the discarded photos have a filter of their
   own, where they are taken back or emptied into the Trash. Discarding and
   moving are steps of the window's undo.
-- **Recipes.** `AppModel` holds the recipes. They are one menu
-  (`RecipeMenu`) in two places. In the toolbar, choosing a recipe gives it to
-  the photo on screen, as one step of undo kept at once, and the look on
-  screen can be saved as a new one. In the bar of the library's selection,
-  choosing a recipe gives it to every selected photo, in the strip or not,
-  as one step of undo for all: `EditHistory.keep` writes them, and forgets
-  the adjustments of a photo that had none when the step is undone. In both
-  places the menu renames and deletes recipes. Copy Adjustments and Paste
+- **Recipes.** `AppModel` holds the recipes. In the toolbar, while
+  developing, they are a menu (`RecipeMenu`): choosing a recipe gives it to
+  the photo on screen, as one step of undo kept at once; the look on screen
+  can be saved as a new one, and recipes are renamed and deleted there. In the bar of the library's selection a list gives a recipe to
+  every selected photo, in the strip or not, as one step of undo for all:
+  `EditHistory.keep` writes them, and forgets the adjustments of a photo
+  that had none when the step is undone. Copy Adjustments and Paste
   Adjustments in the Edit menu do the same with the look of one photo. A
   look never carries the white balance.
 - **Export.** One sheet (`ExportSheet`, a `FormSheet`): for the photo on

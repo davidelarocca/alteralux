@@ -397,8 +397,8 @@ final class LibraryModel {
 
     /// Puts a Finder tag on photos, or takes it off.
     @discardableResult
-    func setTag(_ tag: String, isOn: Bool, for files: [URL]) -> [FileActionResult] {
-        let results = isOn ? PhotoFileActions.addTag(tag, to: files) : PhotoFileActions.removeTag(tag, from: files)
+    func setTag(_ tag: FinderTag, isOn: Bool, for files: [URL]) -> [FileActionResult] {
+        let results = isOn ? PhotoFileActions.addTag(tag, to: files) : PhotoFileActions.removeTag(tag.name, from: files)
         // The dots of the grid and the tags to filter by follow at once.
         Task {
             let read = await Task.detached(priority: .userInitiated) { PhotoInfoReader.infos(of: files) }.value

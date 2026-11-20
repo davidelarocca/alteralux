@@ -235,10 +235,10 @@ struct LibraryModelTests {
         try await model.add(fixture.shoot)
         let photos = model.photos
 
-        #expect(model.setTag("Portfolio", isOn: true, for: [photos[0], photos[1]]).allSatisfy { $0.succeeded })
+        #expect(model.setTag(FinderTag(name: "Portfolio"), isOn: true, for: [photos[0], photos[1]]).allSatisfy { $0.succeeded })
         model.selection = Set(photos)
         #expect(model.tagsOfSelection() == ["Portfolio": 2])
-        model.setTag("Portfolio", isOn: false, for: [photos[0]])
+        model.setTag(FinderTag(name: "Portfolio"), isOn: false, for: [photos[0]])
         #expect(model.tagsOfSelection() == ["Portfolio": 1])
     }
 

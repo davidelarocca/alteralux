@@ -22,7 +22,9 @@ public struct FloatingBar<Content: View>: View {
         .fixedSize(horizontal: false, vertical: true)
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.s)
-        .background(.regularMaterial, in: .capsule)
+        // The bar's own background, not a material: over a material the round buttons lose
+        // their fill and read as plain text.
+        .background(.bar, in: .capsule)
         .overlay {
             Capsule().strokeBorder(Color.DS.hairline, lineWidth: Self.lineWidth)
         }

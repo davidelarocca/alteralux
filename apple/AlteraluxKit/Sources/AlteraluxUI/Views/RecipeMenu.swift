@@ -1,10 +1,9 @@
 import AlteraluxKit
 import SwiftUI
 
-/// The recipes as a menu, the same wherever recipes are given: in the toolbar while developing
-/// and in the bar of the library's selection. Choosing a recipe gives it; under the recipes the
-/// menu saves the look on screen as a new one, where there is one, and renames or deletes a
-/// recipe, asking for the name or for a confirmation with the system's alerts.
+/// The recipes as a menu, in the toolbar while developing. Choosing a recipe gives it; under
+/// the recipes the menu saves the look on screen as a new one, where there is one, and renames
+/// or deletes a recipe, asking for the name or for a confirmation with the system's alerts.
 struct RecipeMenu: View {
     let model: AppModel
     /// Whether there is a look on screen to save as a new recipe.
