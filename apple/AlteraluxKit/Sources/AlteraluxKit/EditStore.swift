@@ -33,11 +33,11 @@ public actor EditStore {
 
     /// The adjustments kept for the photo at `url`, if any.
     public nonisolated func load(for url: URL) -> DevelopSettings? {
-        if let data = Self.attribute(of: url), let settings = Self.decode(data) {
+        if let data = Self.attribute(of: url), let settings = Self.decode(data)?.settings {
             return settings
         }
         guard let data = try? Data(contentsOf: fallbackFile(for: url)) else { return nil }
-        return Self.decode(data)
+        return Self.decode(data)?.settings
     }
 
     /// Keeps `settings` for the photo at `url`.
@@ -47,7 +47,10 @@ public actor EditStore {
         encoder.outputFormatting = [.sortedKeys]
         let data = try encoder.encode(StoredEdit(version: Self.formatVersion, settings: settings))
         let fallback = fallbackFile(for: url)
-        if Self.setAttribute(data, of: url) {
+        // What a later version of the app wrote into the photo is not this version's to replace:
+        // it cannot read it, so it cannot keep what it holds.
+        let carriesALaterFormat = Self.attribute(of: url).map { Self.decode($0) == nil && Self.isLaterFormat($0) } ?? false
+        if !carriesALaterFormat, Self.setAttribute(data, of: url) {
             // The photo carries its adjustments now: an older copy here would only go stale.
             try? FileManager.default.removeItem(at: fallback)
             return .photo
@@ -70,9 +73,19 @@ public actor EditStore {
         let settings: DevelopSettings
     }
 
-    private static func decode(_ data: Data) -> DevelopSettings? {
+    /// What `data` holds, if this version of the app can read it.
+    private static func decode(_ data: Data) -> StoredEdit? {
         guard let stored = try? JSONDecoder().decode(StoredEdit.self, from: data) else { return nil }
-        return stored.version <= formatVersion ? stored.settings : nil
+        return stored.version <= formatVersion ? stored : nil
+    }
+
+    /// Whether `data` says it was written in a format later than this version's.
+    private static func isLaterFormat(_ data: Data) -> Bool {
+        struct Version: Decodable {
+            let version: Int
+        }
+        guard let stored = try? JSONDecoder().decode(Version.self, from: data) else { return false }
+        return stored.version > formatVersion
     }
 
     private static func attribute(of url: URL) -> Data? {

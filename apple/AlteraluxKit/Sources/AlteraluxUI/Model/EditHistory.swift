@@ -70,12 +70,17 @@ final class EditHistory {
         guard item.settings != item.keptSettings else { return }
         let settings = item.settings
         let url = item.url
+        let kept = item.keptSettings
         item.keptSettings = settings
         saving = Task { [store, previous = saving, report] in
             await previous?.value
             do {
                 try await store.save(settings, for: url)
             } catch {
+                // Not kept after all: the next time the photo settles, it is tried again.
+                if item.keptSettings == settings {
+                    item.keptSettings = kept
+                }
                 report(error)
             }
         }

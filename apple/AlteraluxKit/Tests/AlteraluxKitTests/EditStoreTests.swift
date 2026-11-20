@@ -91,16 +91,37 @@ struct EditStoreTests {
         #expect(!FileManager.default.fileExists(atPath: store.fallbackFile(for: photo).path))
     }
 
-    @Test func aPhotoEditedByALaterVersionIsLeftAlone() throws {
+    /// This version cannot read it, so it must not replace it: its own adjustments go to the
+    /// app's folder, and the photo keeps what the later version wrote.
+    @Test func aPhotoEditedByALaterVersionIsLeftAlone() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
-        let (folder, photo, store) = (fixture.folder, fixture.photo, fixture.store)
+        let (photo, store) = (fixture.photo, fixture.store)
         let later = Data(#"{"version":99,"settings":{"filmID":"a_film_of_the_future"}}"#.utf8)
         let written = later.withUnsafeBytes {
             setxattr(photo.path, EditStore.attributeName, $0.baseAddress, later.count, 0, 0)
         }
         #expect(written == 0)
         #expect(store.load(for: photo) == nil)
+
+        #expect(try await store.save(edited(), for: photo) == .store)
+        #expect(store.load(for: photo) == edited())
+        var carried = Data(count: later.count)
+        let read = carried.withUnsafeMutableBytes {
+            getxattr(photo.path, EditStore.attributeName, $0.baseAddress, later.count, 0, 0)
+        }
+        #expect(read == later.count && carried == later)
+    }
+
+    /// What is in the attribute but is not adjustments at all is replaced.
+    @Test func anAttributeThatIsNotAdjustmentsIsReplaced() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (photo, store) = (fixture.photo, fixture.store)
+        let junk = Data("not json".utf8)
+        _ = junk.withUnsafeBytes { setxattr(photo.path, EditStore.attributeName, $0.baseAddress, junk.count, 0, 0) }
+        #expect(try await store.save(edited(), for: photo) == .photo)
+        #expect(store.load(for: photo) == edited())
     }
 
     /// Settings saved before a parameter existed are read with its default.

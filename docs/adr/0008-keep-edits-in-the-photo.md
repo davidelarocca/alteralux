@@ -37,7 +37,8 @@ and opened with `ditto`). It is lost on services and disks that do not carry ext
   another photo is selected and when a photo leaves the strip. A photo that was only looked at is not
   written.
 - `DevelopSettings` reads what any earlier version saved: a value that is missing takes its default.
-  Adjustments saved by a later format version are left alone.
+  Adjustments saved by a later format version are left alone: this version cannot read them, so it
+  does not replace them, and keeps its own for that photo in the app's folder.
 - Undo and redo are the window's `UndoManager`: one step per change (a whole drag, a film chosen, a
   reset), not per value. They are not kept between launches.
 
