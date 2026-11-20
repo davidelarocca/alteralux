@@ -134,7 +134,9 @@ private enum SliderMetrics {
     static let track = Color.primary.opacity(0.16)
     static let fill = Color.primary.opacity(0.8)
     static let tick = Color.primary.opacity(0.36)
-    static let thumb = Color.primary.opacity(0.95)
+    /// Opaque, unlike the label colors: the mark and the fill must not show through the thumb.
+    static let thumbOnDark = Color(white: 0.92)
+    static let thumbOnLight = Color(white: 0.16)
     static let disabledOpacity = 0.4
 }
 
@@ -147,6 +149,7 @@ private struct SliderTrack: View {
 
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         GeometryReader { proxy in
@@ -166,7 +169,7 @@ private struct SliderTrack: View {
                     .frame(width: SliderMetrics.tickWidth, height: SliderMetrics.tickHeight)
                     .offset(x: neutralX - SliderMetrics.tickWidth / 2)
                 Circle()
-                    .fill(SliderMetrics.thumb)
+                    .fill(colorScheme == .dark ? SliderMetrics.thumbOnDark : SliderMetrics.thumbOnLight)
                     .frame(width: SliderMetrics.thumbDiameter, height: SliderMetrics.thumbDiameter)
                     .offset(x: thumbX - SliderMetrics.thumbDiameter / 2)
             }
