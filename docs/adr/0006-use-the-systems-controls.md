@@ -15,20 +15,24 @@ the hand-drawn track was for.
 
 ## Decision
 
-- Controls are SwiftUI's: `Slider`, `Toggle`, `Picker`, `DisclosureGroup`, `List`, `Form`, `Button`,
-  `TextField`, the toolbar, popovers. The app does not draw a control the system has.
+- Controls are SwiftUI's: `Slider`, `Toggle`, `Picker`, collapsible `Section`s, `List`, `Form`, `Button`,
+  `TextField`, the toolbar with the window's own title and subtitle, popovers. The app does not draw a
+  control the system has, and does not replace what the system lays out (the window's title, a form's
+  margins).
 - A shared component wraps a system control to add what the app needs around it (the value beside a
   slider, the values of a collapsed section), never to redraw it.
 - What stays the app's own is content, not controls: the photo, the film emblems.
-- The controls are tinted gray (`Color.DS.controlTint`), so nothing saturated sits next to the photo.
-  The tint is the only thing the app changes about how they look.
+- The controls look as the system draws them, accent color included. A first attempt tinted them gray,
+  to keep saturated color away from the photo: seen in the app the same day, gray switches read as
+  switched off and the app did not look native. The tint was removed.
 
 ## Alternatives considered
 
 | Option | Why not |
 |---|---|
 | Hand-drawn controls, as in the mockups | They do not follow the system's design from one release to the next, and each one needs its own keyboard, accessibility and right-to-left work |
-| System controls with the app's accent color | A saturated color on every switch and slider, beside a photo whose colors are being judged |
+| System controls tinted gray | Tried and removed: a gray switch that is on reads as off, a tinted button as disabled, and the result does not look like a Mac app |
+| A view of the app's own in the toolbar, with the photo's name between the arrows | Tried and removed: the system already shows the window's title and subtitle, and lays them out with the toolbar's buttons |
 
 ## Consequences
 
@@ -38,5 +42,5 @@ the hand-drawn track was for.
   are pinned to the macOS version they were made on.
 - A system slider takes the keyboard focus only with "Keyboard navigation" on: `ParameterSlider` keeps
   taking it itself (see `docs/PITFALLS.md`).
-- The gray tint also colors the label of a button in a form, which then reads as disabled: such a button
-  takes the label color as its tint.
+- The accent color shows on the switches that are on and on the selected segment of the zoom: small
+  areas, which the vision allows beside the photo.

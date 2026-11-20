@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// A titled group of controls in a pane, which the user can collapse: the system's disclosure
-/// group, with one addition.
+/// A titled group of controls in a form, which the user can collapse: the system's collapsible
+/// section, with one addition.
 ///
 /// Collapsed, it shows `summary` beside its title: the values of the controls it hides, so what
-/// was set stays in view.
+/// was set stays in view. Place it in a `Form`, as a `Section`.
 public struct InspectorSection<Content: View>: View {
     private let title: LocalizedStringKey
     @Binding private var isExpanded: Bool
@@ -27,12 +27,11 @@ public struct InspectorSection<Content: View>: View {
     }
 
     public var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
+        Section(isExpanded: $isExpanded) {
             content
-        } label: {
+        } header: {
             HStack(alignment: .firstTextBaseline, spacing: Spacing.s) {
                 Text(title)
-                    .font(Typography.sectionHeader)
                     .lineLimit(1)
                     .layoutPriority(1)
                 Spacer(minLength: 0)

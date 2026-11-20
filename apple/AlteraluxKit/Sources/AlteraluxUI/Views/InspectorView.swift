@@ -21,46 +21,36 @@ struct InspectorView: View {
 
         Form {
             MaterialsHeading()
-            Section {
-                InspectorSection(
-                    "Camera", isExpanded: $showsCamera,
-                    summary: summary.camera(formatName: formatName),
-                ) {
-                    CameraControls(settings: $model.settings)
-                }
+            InspectorSection(
+                "Camera", isExpanded: $showsCamera,
+                summary: summary.camera(formatName: formatName),
+            ) {
+                CameraControls(settings: $model.settings)
             }
             if !model.settings.scanFilm {
-                Section {
-                    InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
-                        PrintControls(settings: $model.settings)
-                    }
+                InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
+                    PrintControls(settings: $model.settings)
                 }
             }
-            Section {
-                InspectorSection(
-                    "Film Character", isExpanded: $showsFilmCharacter, summary: summary.filmCharacter,
-                ) {
-                    FilmCharacterControls(settings: $model.settings)
-                }
+            InspectorSection(
+                "Film Character", isExpanded: $showsFilmCharacter, summary: summary.filmCharacter,
+            ) {
+                FilmCharacterControls(settings: $model.settings)
             }
-            Section {
-                InspectorSection("Scan", isExpanded: $showsScan, summary: summary.scan) {
-                    ParameterSlider(
-                        "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
-                        step: 0.05, defaultValue: 0.7,
-                    )
-                }
+            InspectorSection("Scan", isExpanded: $showsScan, summary: summary.scan) {
+                ParameterSlider(
+                    "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
+                    step: 0.05, defaultValue: 0.7,
+                )
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
-                    // The label color, not the window's gray tint: tinted gray, the button
-                    // would read as disabled.
-                    .tint(.primary)
             }
         }
         .formStyle(.grouped)
-        // Room for the scroll bar beside the controls, when the system always shows it.
-        .contentMargins(.trailing, Spacing.l, for: .scrollContent)
+        // The same margin on both sides, wide enough for the scroll bar when the system always
+        // shows it: the controls keep clear of it and the form stays centered without it.
+        .contentMargins(.horizontal, Spacing.s, for: .scrollContent)
         .disabled(model.films.isEmpty)
     }
 

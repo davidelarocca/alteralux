@@ -1,4 +1,3 @@
-import DesignSystem
 import SwiftUI
 
 /// The root view of the main window: the main screen plus the window's
@@ -13,8 +12,6 @@ public struct MainWindow: View {
 
     public var body: some View {
         MainScreen()
-            // The system's controls, in gray: nothing saturated sits next to the photo.
-            .tint(Color.DS.controlTint)
             .frame(minWidth: Self.minimumSize.width, minHeight: Self.minimumSize.height)
     }
 }
@@ -51,8 +48,6 @@ struct MainScreen: View {
         }
         .navigationTitle(model.selection?.name ?? "alteralux")
         .navigationSubtitle(model.materialsSummary)
-        // The toolbar shows the photo's name itself, between previous and next.
-        .toolbar(removing: .title)
         .toolbar {
             MainToolbar(model: model, showsInspector: $showsInspector)
         }
@@ -92,8 +87,9 @@ struct MainScreen: View {
     }
 }
 
-/// The toolbar of the main window: on the leading side open, then previous and next around the
-/// photo's name; on the trailing side compare, export and the inspector.
+/// The toolbar of the main window: on the leading side open, then previous and next, beside the
+/// window's title (the photo's name over its film and paper); on the trailing side compare,
+/// export and the inspector.
 private struct MainToolbar: ToolbarContent {
     @Bindable var model: AppModel
     @Binding var showsInspector: Bool
@@ -108,15 +104,23 @@ private struct MainToolbar: ToolbarContent {
             .help("Open photos")
         }
 
-        if model.hasPhoto {
-            ToolbarSpacer(.fixed, placement: .navigation)
-            ToolbarItem(placement: .navigation) {
-                PhotoTitle(model: model)
+        ToolbarItemGroup(placement: .navigation) {
+            Button {
+                model.selectAdjacent(offset: -1)
+            } label: {
+                Label("Previous Photo", systemImage: "chevron.backward")
             }
-        }
+            .help("Previous Photo")
+            .disabled(!model.canSelectAdjacent(offset: -1))
 
-        // The title's place is taken by the photo's name: the actions stay on the trailing side.
-        ToolbarSpacer(.flexible)
+            Button {
+                model.selectAdjacent(offset: 1)
+            } label: {
+                Label("Next Photo", systemImage: "chevron.forward")
+            }
+            .help("Next Photo")
+            .disabled(!model.canSelectAdjacent(offset: 1))
+        }
 
         ToolbarItemGroup(placement: .primaryAction) {
             Toggle(isOn: $model.showsOriginal) {
@@ -140,39 +144,5 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Show or hide the adjustments")
         }
-    }
-}
-
-/// The selected photo in the toolbar: its name over the film and paper it is developed with,
-/// between the buttons for the previous and the next photo of the strip.
-private struct PhotoTitle: View {
-    let model: AppModel
-
-    var body: some View {
-        HStack(spacing: Spacing.xs) {
-            step(-1, title: "Previous Photo", systemImage: "chevron.backward")
-            VStack(alignment: .leading, spacing: 0) {
-                Text(verbatim: model.selection?.name ?? "")
-                    .font(Typography.title)
-                Text(verbatim: model.materialsSummary)
-                    .font(Typography.caption)
-                    .foregroundStyle(.secondary)
-            }
-            .lineLimit(1)
-            .accessibilityElement(children: .combine)
-            step(1, title: "Next Photo", systemImage: "chevron.forward")
-        }
-    }
-
-    private func step(_ offset: Int, title: LocalizedStringKey, systemImage: String) -> some View {
-        Button {
-            model.selectAdjacent(offset: offset)
-        } label: {
-            Label(title, systemImage: systemImage)
-                .labelStyle(.iconOnly)
-        }
-        .buttonStyle(.borderless)
-        .help(title)
-        .disabled(!model.canSelectAdjacent(offset: offset))
     }
 }
