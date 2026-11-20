@@ -821,6 +821,16 @@
         }
       }
     },
+    "Copy to" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia in"
+          }
+        }
+      }
+    },
     "Copy to…" : {
       "localizations" : {
         "it" : {
@@ -1432,6 +1442,16 @@
         }
       }
     },
+    "Move to" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta in"
+          }
+        }
+      }
+    },
     "Move to Trash" : {
       "localizations" : {
         "it" : {
@@ -1958,6 +1978,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mostra"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra nel Finder"
           }
         }
       }

@@ -115,8 +115,14 @@ open photos, the settings of the selected one and its preview.
   Filter and Sort menu at the trailing side; the line under the grid says the
   size of the photos shown, or of the selected ones. Photos are selected as
   in the Finder: a click, Command and Shift with it, or a rectangle dragged
-  from between them (`SelectionMarquee`); a click between them clears the
-  selection. With photos selected a bar floating over the grid offers the actions:
+  from between them (`SelectionMarquee`), which scrolls the grid when held at
+  its edge; a click between them clears the selection. The keys are the
+  Finder's (`LibraryGridKeys`): arrows, with Shift to grow the selection,
+  Home, End, Page Up and Down, Space for Quick Look, Return to develop,
+  Delete to discard; Zoom In and Zoom Out of the View menu, and a pinch,
+  resize the thumbnails. A photo has a menu of its own on a secondary click,
+  in the grid and while developed (`PhotoMenus.swift`); Escape goes back from
+  a developed photo to the library. With photos selected a bar floating over the grid offers the actions:
   move and copy to another folder of the library (the sandbox lets the app
   write only into folders the user added), Finder tags (a field over their
   list narrows it and makes a new tag with one of the Finder's colors; tags

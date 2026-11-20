@@ -78,3 +78,11 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   back. Set by name through `URLResourceValues.tagNames`, a tag of the user's own loses its color.
 - **A symbol in a palette picker is drawn white.** In `.pickerStyle(.palette)` neither `.tint` nor
   `.foregroundStyle` colors an `Image`; it takes its color with `.symbolRenderingMode(.palette)`.
+- **A context menu after a view's tap gestures never opens.** On a tile with `onTapGesture` (single,
+  double, with modifiers), `.contextMenu` placed after them showed nothing on a secondary click; placed
+  before them it works.
+- **`ScrollPosition.scrollTo(y:)` counts from the top of the content, not from `contentOffset`.** Under a
+  toolbar the offset starts below zero (-52 pt); a position taken from the offset must add the top inset
+  back, or the scroll is clamped and nothing moves.
+- **Synthesized clicks sent to one process are ignored.** `CGEvent.postToPid` delivers keys, not mouse
+  clicks, to a SwiftUI app; checking a gesture in the built app needs real pointer events.

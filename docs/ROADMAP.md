@@ -227,6 +227,12 @@ branch of its own. What was said, in the order to take it:
   bottom edge, and the arrow keys bringing the photo they reach in sight. Still open: the date is
   the file's, not the one of the shot; one tag at a time; the order and the filters are not kept
   between launches.
+- Mouse and keyboard, asked on 2026-11-20 ("everything must feel intuitive"). Done, checked in the
+  built app: Shift with the arrows, Home, End, Page Up and Down in the grid; Space for Quick Look;
+  Zoom In and Out and a pinch for the thumbnails; a menu on a secondary click on a photo, in the
+  grid and while developing; Escape from a developed photo back to the library; the View menu's
+  items for the developed photo turned off in the library. Still open: the pinch was not tried on
+  a trackpad; holding a key to compare with the original; type-to-select by name.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)
