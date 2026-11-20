@@ -32,7 +32,7 @@ extension AppModel {
             try await library.add(url)
             showLibrary()
         } catch {
-            alertMessage = String(localized: "“\(url.lastPathComponent)” could not be added to the library.")
+            alertMessage = String(localized: "“\(url.lastPathComponent)” could not be added to the library. \(error.localizedDescription)")
         }
     }
 

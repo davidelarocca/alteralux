@@ -1622,6 +1622,16 @@
         }
       }
     },
+    "Only folders can be added to the library, and this is not one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alla libreria si aggiungono solo cartelle, e questa non lo è."
+          }
+        }
+      }
+    },
     "Open a Photo" : {
       "localizations" : {
         "it" : {
@@ -2482,12 +2492,12 @@
         }
       }
     },
-    "“%@” could not be added to the library." : {
+    "“%@” could not be added to the library. %@" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non è stato possibile aggiungere “%@” alla libreria."
+            "value" : "Non è stato possibile aggiungere “%@” alla libreria. %@"
           }
         }
       }

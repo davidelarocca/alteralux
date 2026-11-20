@@ -172,8 +172,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      first. Copying and tagging are not steps of undo.
    - The grid shows the camera's own preview, not the developed look: that needs a render per photo
      and a cache.
-   - In the grid the arrow keys move left and right only; the thumbnails kept on disk are never
-     pruned; a folder that cannot be added says so without the reason.
+   - The thumbnails kept on disk are never pruned. Fixed on 2026-11-20: the arrow keys move in
+     every direction, and a folder that cannot be added says why.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several

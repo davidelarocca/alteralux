@@ -236,6 +236,14 @@ public actor LibraryFolders {
     }
 }
 
-private enum LibraryFoldersError: Error {
+/// Why a folder could not be added to the library, in words the user reads.
+public enum LibraryFoldersError: Error, LocalizedError {
     case notAFolder(URL)
+
+    public var errorDescription: String? {
+        switch self {
+        case .notAFolder:
+            String(localized: "Only folders can be added to the library, and this is not one.")
+        }
+    }
 }
