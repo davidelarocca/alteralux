@@ -1852,12 +1852,12 @@
         }
       }
     },
-    "Their files are in the destination folder. Replace them with the new ones, keep both, or skip the photos that are already there?" : {
+    "Their files are in the destination folder, some perhaps with another film or format. Replacing moves the old files to the Trash." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I loro file sono nella cartella di destinazione. Vuoi sostituirli con i nuovi, tenerli entrambi o saltare le foto che ci sono già?"
+            "value" : "I loro file sono nella cartella di destinazione, alcuni forse con un'altra pellicola o un altro formato. Sostituendoli, i vecchi file vanno nel Cestino."
           }
         }
       }

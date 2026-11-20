@@ -47,9 +47,11 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     Core Image, converting to sRGB or Display P3 and embedding the profile,
     with the original's camera metadata. `BatchExporter` develops several
     photos one after the other, each decoded at the size it is exported at,
-    and writes them beside the originals or into one folder. A file that is
-    already there is replaced, kept beside the new one or skipped, as the
-    caller says, and never written over otherwise; it reports per photo and stops between photos when
+    and writes them beside the originals or into one folder. A photo exported
+    before is recognized by its name with any film, in any format the app
+    writes: its old files are replaced (one of another name goes to the
+    Trash), kept beside the new one or the photo is skipped, as the caller
+    says, and nothing is written over otherwise; it reports per photo and stops between photos when
     its task is cancelled.
 
 The tests of the package run the real engine: they check row order and channel

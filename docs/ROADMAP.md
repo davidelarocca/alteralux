@@ -184,7 +184,7 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    Copy Adjustments and Paste Adjustments in the Edit menu; the selected photos of the library are
    exported in one go, each with its own adjustments, at the original size or a smaller one, into a
    folder "Developed" beside the originals or into one folder, asking whether to replace, keep both
-   or skip when files of an earlier export are there, with one progress, a way to stop,
+   or skip when the photos were exported there before (with the same film or another), with one progress, a way to stop,
    and at the end only the photos that failed. Sheets share one shape (`FormSheet`), drawn after the
    system's alert. Still open:
    - Adaptive recipes: the exposure rests on the automatic meter that is already there; the

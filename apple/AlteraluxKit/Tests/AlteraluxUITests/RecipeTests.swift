@@ -326,6 +326,15 @@ struct ExportAgainTests {
         await model.export(photos, to: .subfolder(AppModel.developedFolderName), existing: .keepBoth)
         #expect(try files().count == 4)
 
+        // A photo developed with another film since is still one that was exported before.
+        var slide = DevelopSettings()
+        slide.filmID = "fujifilm_velvia_100"
+        slide.scanFilm = true
+        model.giveLook(slide, to: [photos[0]])
+        await model.export([photos[0]], to: .subfolder(AppModel.developedFolderName))
+        #expect(model.exportWaiting?.existing == 1)
+        model.exportWaiting = nil
+
         // Leaving the question drops the export.
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
         model.exportWaiting = nil

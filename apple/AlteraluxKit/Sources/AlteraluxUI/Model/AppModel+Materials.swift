@@ -68,9 +68,14 @@ extension AppModel {
     nonisolated static func exportFileName(
         source: URL, film: String, format: ExportOptions.Format,
     ) -> String {
+        "\(exportName(source: source, film: film)).\(format.fileExtension)"
+    }
+
+    /// The name of an exported file without its extension: the photo's name and the film.
+    nonisolated static func exportName(source: URL, film: String) -> String {
         let baseName = source.deletingPathExtension().lastPathComponent
         // A film's name must not read as a path in the save panel.
         let filmName = film.replacing("/", with: "-").replacing(":", with: "-")
-        return "\(baseName) \(filmName).\(format.fileExtension)"
+        return "\(baseName) \(filmName)"
     }
 }

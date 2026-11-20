@@ -18,7 +18,7 @@ struct BatchExportProgress: Equatable {
 struct WaitingExport: Equatable {
     let photos: [URL]
     let destination: ExportDestination
-    /// How many of the photos have their file there already.
+    /// How many of the photos were exported there before, with this film or another.
     let existing: Int
 }
 
@@ -120,7 +120,11 @@ extension AppModel {
         let options = exportOptions
         let jobs = photos.map { photo in
             let settings = adjustments(of: photo).settings
-            return ExportJob(photo: photo, settings: settings, fileName: exportFileName(for: photo, settings: settings))
+            return ExportJob(
+                photo: photo, settings: settings, fileName: exportFileName(for: photo, settings: settings),
+                // An earlier export may carry the name of any film.
+                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName) },
+            )
         }
         if existing == nil {
             let there = BatchExporter.alreadyExported(jobs, at: destination).count

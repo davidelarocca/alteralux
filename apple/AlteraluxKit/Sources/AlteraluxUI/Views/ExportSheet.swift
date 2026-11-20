@@ -41,7 +41,7 @@ struct ExportSheet: View {
             Button("Skip Them") { Task { await model.resumeExport(.skip) } }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Their files are in the destination folder. Replace them with the new ones, keep both, or skip the photos that are already there?")
+            Text("Their files are in the destination folder, some perhaps with another film or format. Replacing moves the old files to the Trash.")
         }
     }
 

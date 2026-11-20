@@ -183,6 +183,72 @@ struct BatchExporterTests {
         #expect(try readImageSize(output.appendingPathComponent("Developed 2.jpg")) == (96, 64))
     }
 
+    /// A photo exported before is recognized under the name another film or format gave its
+    /// file, and under the number of a second copy; other files of the folder are not its own.
+    @Test func earlierExportsAreRecognizedUnderAnotherFilmFormatOrNumber() throws {
+        let workspace = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: workspace) }
+        let output = workspace.appendingPathComponent("exports", isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let names = ["Paris Portra.jpg", "Paris Ektar.tif", "paris ektar 2.HEIC", "Paris 2 Portra.jpg", "Paris Portra.txt", "Rome Portra 12.png"]
+        for name in names {
+            try Data("old".utf8).write(to: output.appendingPathComponent(name))
+        }
+        let job = { (photo: String) in
+            ExportJob(
+                photo: workspace.appendingPathComponent("\(photo).png"), settings: DevelopSettings(),
+                fileName: "\(photo) Ektar.jpg", earlierNames: ["\(photo) Portra", "\(photo) Ektar"],
+            )
+        }
+        let jobs = [job("Paris"), job("Rome"), job("Oslo")]
+
+        let earlier = BatchExporter.earlierExports(of: jobs, at: .folder(output))
+        #expect(Set(earlier[jobs[0].photo, default: []].map(\.lastPathComponent)) == ["Paris Portra.jpg", "Paris Ektar.tif", "paris ektar 2.HEIC"])
+        #expect(earlier[jobs[1].photo, default: []].map(\.lastPathComponent) == ["Rome Portra 12.png"])
+        #expect(earlier[jobs[2].photo] == nil)
+        #expect(BatchExporter.alreadyExported(jobs, at: .folder(output)).map(\.photo) == [jobs[0].photo, jobs[1].photo])
+        // A folder that is not there yet holds no earlier export.
+        #expect(BatchExporter.alreadyExported(jobs, at: .subfolder("Developed")).isEmpty)
+    }
+
+    @Test func replacingTakesTheOldFilesOfAPhotoAwayAndSkippingLeavesItAlone() async throws {
+        let workspace = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: workspace) }
+        let photo = try writePhoto(named: "source.png", in: workspace)
+        let other = try writePhoto(named: "other.png", in: workspace)
+        let output = workspace.appendingPathComponent("exports", isDirectory: true)
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        for name in ["source Portra.jpg", "source Ektar.jpg", "source Ektar 2.jpg", "unrelated.jpg"] {
+            try Data("old".utf8).write(to: output.appendingPathComponent(name))
+        }
+        let jobs = [photo, other].map { photo in
+            let name = photo.deletingPathExtension().lastPathComponent
+            return ExportJob(
+                photo: photo, settings: DevelopSettings(), fileName: "\(name) Ektar.jpg",
+                earlierNames: ["\(name) Portra", "\(name) Ektar"],
+            )
+        }
+        let files = { try FileManager.default.contentsOfDirectory(atPath: output.path).sorted() }
+        // Old files are removed here, not sent to the Trash of whoever runs the tests.
+        let batchExporter = try BatchExporter(
+            renderer: FilmRenderer(dataDirectory: batchTestDataDirectory, backend: .cpu),
+            discard: { try FileManager.default.removeItem(at: $0) },
+        )
+
+        // Skipping develops only the photo that was never exported.
+        let skipped = await batchExporter.export(jobs, to: .folder(output), options: ExportOptions(), existing: .skip)
+        #expect(skipped.filter { !$0.succeeded }.isEmpty)
+        #expect(try files() == ["other Ektar.jpg", "source Ektar 2.jpg", "source Ektar.jpg", "source Portra.jpg", "unrelated.jpg"])
+        #expect(try Data(contentsOf: output.appendingPathComponent("source Ektar.jpg")) == Data("old".utf8))
+
+        // Replacing leaves one file per photo, the new one, and touches nothing else.
+        let replaced = await batchExporter.export(jobs, to: .folder(output), options: ExportOptions(), existing: .replace)
+        #expect(replaced.map(\.destination?.lastPathComponent) == ["source Ektar.jpg", "other Ektar.jpg"])
+        #expect(try files() == ["other Ektar.jpg", "source Ektar.jpg", "unrelated.jpg"])
+        #expect(try readImageSize(output.appendingPathComponent("source Ektar.jpg")) == (96, 64))
+        #expect(try Data(contentsOf: output.appendingPathComponent("unrelated.jpg")) == Data("old".utf8))
+    }
+
     @Test func longSideLimitsOutputAndNeverEnlarges() async throws {
         let workspace = try makeWorkspace()
         defer { try? FileManager.default.removeItem(at: workspace) }

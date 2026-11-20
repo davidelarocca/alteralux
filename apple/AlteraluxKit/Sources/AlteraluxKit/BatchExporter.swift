@@ -7,11 +7,16 @@ public struct ExportJob: Sendable, Equatable {
     public let settings: DevelopSettings
     /// The name of the file to write, with its extension ("IMG_0042 Kodak Portra 400.jpg").
     public let fileName: String
+    /// The names, without extension, an earlier export of this photo may have: one for each
+    /// film it could have been developed with ("IMG_0042 Kodak Ektar 100"). The name of
+    /// `fileName` is always one of them.
+    public let earlierNames: [String]
 
-    public init(photo: URL, settings: DevelopSettings, fileName: String) {
+    public init(photo: URL, settings: DevelopSettings, fileName: String, earlierNames: [String] = []) {
         self.photo = photo
         self.settings = settings
         self.fileName = fileName
+        self.earlierNames = earlierNames
     }
 }
 
@@ -23,30 +28,71 @@ public enum ExportDestination: Sendable, Equatable {
     case folder(URL)
 }
 
-/// What to do with a photo whose exported file is already there.
+/// What to do with a photo that was exported before: its file is in the destination, under
+/// the same name or under the name another film or format gave it.
 public enum ExistingFilePolicy: Sendable, Equatable {
-    /// Write the new file beside the old one, under the first free name ("name 2.jpg").
+    /// Write the new file beside the old ones, under the first free name ("name 2.jpg").
     case keepBoth
-    /// Put the new file in place of the old one.
+    /// Write the new file and take the old ones away: a file of the same name is replaced,
+    /// the others are discarded.
     case replace
-    /// Leave the old file and do not develop the photo again.
+    /// Leave the old files and do not develop the photo again.
     case skip
 }
 
 /// Develops several photos and writes them, one after the other.
 public struct BatchExporter: Sendable {
     private let renderer: FilmRenderer
+    private let discard: @Sendable (URL) throws -> Void
 
-    public init(renderer: FilmRenderer) {
+    /// - Parameter discard: takes away an earlier export that a new one replaces. The app
+    ///   passes nothing, and the file goes to the Trash.
+    public init(
+        renderer: FilmRenderer,
+        discard: @escaping @Sendable (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) },
+    ) {
         self.renderer = renderer
+        self.discard = discard
     }
 
-    /// The photos among `jobs` whose file is already at `destination`: the ones a new export
-    /// has to decide about.
+    /// The photos among `jobs` that were exported to `destination` before: the ones a new
+    /// export has to decide about.
     public static func alreadyExported(_ jobs: [ExportJob], at destination: ExportDestination) -> [ExportJob] {
-        jobs.filter { job in
-            PhotoFileActions.exists(file(for: job, at: destination), FileManager.default)
+        let earlier = earlierExports(of: jobs, at: destination)
+        return jobs.filter { earlier[$0.photo] != nil }
+    }
+
+    /// The files at `destination` that are earlier exports of each photo: a file in one of the
+    /// formats the app writes, named as the photo's job would name it or as another film would
+    /// have, with or without the number a second copy takes ("name 2.jpg").
+    static func earlierExports(of jobs: [ExportJob], at destination: ExportDestination) -> [URL: [URL]] {
+        let extensions = Set(ExportOptions.Format.allCases.map(\.fileExtension))
+        var found: [URL: [URL]] = [:]
+        for (folder, jobs) in Dictionary(grouping: jobs, by: { outputFolder(for: $0.photo, destination: destination) }) {
+            var photos: [String: URL] = [:]
+            for job in jobs {
+                for name in job.earlierNames + [(job.fileName as NSString).deletingPathExtension] {
+                    photos[name.lowercased()] = job.photo
+                }
+            }
+            let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
+            for file in files where extensions.contains(file.pathExtension.lowercased()) {
+                let name = file.deletingPathExtension().lastPathComponent.lowercased()
+                // "name 2" is a second copy of "name".
+                let withoutNumber = Self.withoutCopyNumber(name)
+                if let photo = photos[name] ?? photos[withoutNumber] {
+                    found[photo, default: []].append(file)
+                }
+            }
         }
+        return found
+    }
+
+    /// "name 2" without its number: "name". Any other name comes back as it is.
+    private static func withoutCopyNumber(_ name: String) -> String {
+        let digits = name.reversed().prefix(while: \.isNumber).count
+        guard digits > 0, name.dropLast(digits).last == " " else { return name }
+        return String(name.dropLast(digits + 1))
     }
 
     /// Where the file of `job` goes when its name is free.
@@ -70,6 +116,8 @@ public struct BatchExporter: Sendable {
     ) async -> [FileActionResult] {
         var results: [FileActionResult] = []
         let manager = FileManager.default
+        // What was there before this export started: what it writes itself does not count.
+        let earlier = Self.earlierExports(of: jobs, at: destination)
 
         for (index, job) in jobs.enumerated() {
             guard !Task.isCancelled else { break }
@@ -77,8 +125,9 @@ public struct BatchExporter: Sendable {
 
             let named = Self.file(for: job, at: destination)
             let isThere = PhotoFileActions.exists(named, manager)
-            if existing == .skip, isThere {
-                results.append(FileActionResult(source: job.photo, destination: named))
+            let old = earlier[job.photo] ?? []
+            if existing == .skip, let kept = old.first {
+                results.append(FileActionResult(source: job.photo, destination: isThere ? named : kept))
                 continue
             }
 
@@ -112,8 +161,15 @@ public struct BatchExporter: Sendable {
                     developed, to: written, options: options, originalURL: job.photo,
                 )
                 var output = written
-                if existing == .replace, isThere {
-                    output = try manager.replaceItemAt(named, withItemAt: written) ?? named
+                if existing == .replace {
+                    if isThere {
+                        output = try manager.replaceItemAt(named, withItemAt: written) ?? named
+                    }
+                    // The other files of the photo, of another film, format or number, go once
+                    // the new one is written. One that cannot be taken away stays.
+                    for file in old where file.standardizedFileURL != output.standardizedFileURL {
+                        try? discard(file)
+                    }
                 }
                 results.append(FileActionResult(source: job.photo, destination: output))
             } catch {
