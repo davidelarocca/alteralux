@@ -30,6 +30,7 @@ struct LibraryModelTests {
         func model() -> LibraryModel {
             LibraryModel(
                 storeURL: root.appendingPathComponent("support/folders.plist"), cacheDirectory: nil,
+                discards: DiscardStore(fallbackDirectory: root.appendingPathComponent("support/discarded")),
                 hasAdjustments: { [store] in store.hasAdjustments(for: $0) },
             )
         }
@@ -157,6 +158,88 @@ struct LibraryModelTests {
         #expect(model.selection.count == 3)
         model.clearSelection()
         #expect(model.selection.isEmpty && model.focusedPhoto == nil)
+    }
+
+    /// Discarding marks a photo and hides it; the file stays until the discarded are emptied.
+    @Test func discardedPhotosAreHiddenAndStillOnDisk() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+
+        model.selection = [photos[0], photos[1]]
+        #expect(model.setDiscarded(true, for: [photos[0]]) == [photos[0]])
+        #expect(names(model.visiblePhotos) == ["IMG_2.jpg", "IMG_10.jpg"])
+        // What is hidden is no longer selected.
+        #expect(model.selection == [photos[1]])
+        #expect(FileManager.default.fileExists(atPath: photos[0].path))
+        model.filter = .discarded
+        #expect(names(model.visiblePhotos) == ["IMG_1.jpg"])
+
+        // The mark is in the photo: another launch finds it.
+        let next = fixture.model()
+        await next.load()
+        #expect(names(Array(next.discarded)) == ["IMG_1.jpg"])
+        #expect(next.visiblePhotos.count == 2)
+
+        // Restored, it is back among the others.
+        model.setDiscarded(false, for: [photos[0]])
+        #expect(model.discarded.isEmpty && model.visiblePhotos.isEmpty)
+        model.filter = .all
+        #expect(model.visiblePhotos.count == 3)
+    }
+
+    @Test func emptyingTheDiscardedPhotosSendsThemToTheTrash() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+        model.setDiscarded(true, for: [photos[0]])
+
+        let results = await model.emptyDiscarded()
+        #expect(results.count == 1 && results.allSatisfy { $0.succeeded })
+        #expect(!FileManager.default.fileExists(atPath: photos[0].path))
+        #expect(names(model.photos) == ["IMG_2.jpg", "IMG_10.jpg"] && model.discarded.isEmpty)
+        // The test's own file does not stay in the Trash.
+        for trashed in results.compactMap(\.destination) {
+            try? FileManager.default.removeItem(at: trashed)
+        }
+    }
+
+    @Test func photosAreMovedAndCopiedBetweenTheLibrarysFolders() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        #expect(model.destinations.map(\.name) == ["Shoot", "Selects"])
+        let selects = try #require(model.destinations.last?.url)
+        let photos = model.photos
+
+        let moved = await model.move([photos[0]], to: selects)
+        #expect(moved.allSatisfy { $0.succeeded })
+        #expect(names(model.photos) == ["IMG_2.jpg", "IMG_10.jpg"])
+        #expect(model.roots.first?.tree?.children.first?.photoCount == 2)
+
+        let copied = await model.copy([photos[1]], to: selects)
+        #expect(copied.allSatisfy { $0.succeeded })
+        #expect(model.photos.count == 2)
+        #expect(model.roots.first?.tree?.children.first?.photoCount == 3)
+    }
+
+    @Test func tagsAreTheFindersAndASelectionShowsHowManyCarryEach() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photos = model.photos
+
+        #expect(model.setTag("Portfolio", isOn: true, for: [photos[0], photos[1]]).allSatisfy { $0.succeeded })
+        model.selection = Set(photos)
+        #expect(model.tagsOfSelection() == ["Portfolio": 2])
+        model.setTag("Portfolio", isOn: false, for: [photos[0]])
+        #expect(model.tagsOfSelection() == ["Portfolio": 1])
     }
 
     @Test func whatChangesOnDiskShowsInTheLibrary() async throws {
@@ -299,6 +382,65 @@ struct LibraryInTheAppTests {
         model.develop(photos[1])
         #expect(model.photos.map(\.url) == [photos[1]])
         #expect(model.settings.exposureEV == 0.5)
+    }
+
+    @Test func discardingTheSelectionCanBeUndone() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        let undoManager = UndoManager()
+        undoManager.groupsByEvent = false
+        model.history.undoManager = undoManager
+        await model.addFolder(fixture.shoot)
+        let photos = model.library.photos
+
+        model.library.click(photos[0])
+        model.library.click(photos[1], toggling: true)
+        #expect(model.selectedPhotos == [photos[0], photos[1]])
+        model.discardSelection()
+        #expect(model.library.visiblePhotos == [photos[2], photos[3]])
+        #expect(model.library.selection.isEmpty)
+
+        model.undo()
+        #expect(model.library.discarded.isEmpty && model.library.visiblePhotos.count == 4)
+        model.redo()
+        #expect(model.library.discarded == [photos[0], photos[1]])
+
+        // Under their own filter, the same command takes the photos back.
+        model.library.filter = .discarded
+        model.library.click(photos[0])
+        model.discardSelection()
+        #expect(model.library.discarded == [photos[1]])
+    }
+
+    @Test func movingTheSelectionCanBeUndoneAndTagsAreToggled() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let other = fixture.root.appendingPathComponent("Other")
+        try FileManager.default.createDirectory(at: other, withIntermediateDirectories: true)
+        let model = fixture.model()
+        let undoManager = UndoManager()
+        undoManager.groupsByEvent = false
+        model.history.undoManager = undoManager
+        await model.addFolder(other)
+        await model.addFolder(fixture.shoot)
+        let photos = model.library.photos
+        let destination = try #require(model.library.destinations.first { $0.name == "Other" }?.url)
+
+        model.library.click(photos[0])
+        model.toggleTag("Portfolio")
+        #expect(model.tagChoices.first { $0.name == "Portfolio" }?.carriedBy == 1)
+        model.toggleTag("Portfolio")
+        #expect(model.library.tagsOfSelection().isEmpty)
+
+        await model.moveSelection(to: destination)
+        #expect(model.alertMessage == nil)
+        #expect(model.library.photos.count == 3)
+        #expect(FileManager.default.fileExists(atPath: destination.appendingPathComponent(photos[0].lastPathComponent).path))
+
+        model.undo()
+        try await wait("the photo to come back") { model.library.photos.count == 4 }
+        #expect(model.library.photos.map(\.lastPathComponent) == photos.map(\.lastPathComponent))
     }
 
     @Test func foldersGoToTheLibraryAndPhotosAreOpened() async throws {

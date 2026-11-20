@@ -131,10 +131,10 @@ hand-drawn controls of the mockups were dropped for the system's
 
 ## Open questions
 
-- **Where marks are kept.** Each photo's adjustments are kept in the photo itself, as an extended
-  attribute ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)), and a sidecar beside the photo can be
-  added inside the library's folders. Whether the "discarded" mark goes the same way is to decide
-  with the library.
+- **A sidecar beside the photo.** Each photo's adjustments and its "discarded" mark are kept in the
+  photo itself, as extended attributes ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)). Services
+  that drop extended attributes lose them: a sidecar file, possible inside the library's folders,
+  is still to decide.
 - **Finder tags in the sandbox.** Verified on 2026-11-20 with a probe app signed like this one: in a
   folder the user has added, tags are read and written with the access the sandbox gives, and so are
   moving, copying, the Trash and a file beside a photo. The tag menu is still to design.

@@ -76,9 +76,13 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   library and shown (eight photos, an upright one whole, a folder inside it in the list); a photo is
   developed from the grid with the folder's photos in the strip; back in the library it has its
   mark; after quitting, the app opens on the library with the folder remembered.
-- **Not verified yet**: RAW files of other cameras, their highlights and metadata; how a white
-  balance drag feels under the hand (it is timed through the app model, not by hand); drag and drop,
-  trackpad gestures, and the Open panel.
+- Verified by driving the built app on 2026-11-20: a selected photo brings up the bar of actions;
+  discarded, it leaves the grid (seven of eight), carries the mark as an extended attribute and is
+  still on disk; the counts read right in Italian ("1 selezionata").
+- **Not verified yet**: the menus of the bar (Move to, Copy to, Tag) and the emptying into the Trash by
+  hand in the built app (they are covered by tests of the app model); RAW files of other cameras, their
+  highlights and metadata; how a white balance drag feels under the hand (it is timed through the app
+  model, not by hand); drag and drop, trackpad gestures, and the Open panel.
 
 ## Next, in this order
 
@@ -145,16 +149,19 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    the list of folders with the ones inside them and their counts; the grid with names, a mark on the
    photos that have adjustments and a filter for them; the size of the thumbnails; a double-click or
    Return to develop, with the folder's photos in the strip, and the way back in the toolbar; changes
-   on disk noticed. Written without UI and tested, not yet in the interface: moving, copying, the
-   Trash and Finder tags (`PhotoFileActions`). Still open:
-   - The actions on a selection in the interface: Move to, Copy to, Tag, and Discard with its filter
-     and the emptying of the discarded photos into the Trash. Where the "discarded" mark is kept is
-     still to decide.
+   on disk noticed. The second part: with photos selected, a bar to move and copy them to another
+   folder of the library, to put Finder tags on them (on, off or mixed for a selection) and to discard
+   them; discarding marks a photo in the photo itself and hides it, a filter shows the discarded ones,
+   where they are taken back or emptied into the Trash after a confirmation; discarding and moving
+   can be undone. Still open:
+   - Moving and copying go only to folders of the library: a destination outside it has to be added
+     first. Copying and tagging are not steps of undo.
    - The grid shows the camera's own preview, not the developed look: that needs a render per photo
      and a cache.
    - In the grid the arrow keys move left and right only; the thumbnails kept on disk are never
      pruned; a folder that cannot be added says so without the reason.
    - A sidebar entry for photos opened one by one, outside any folder.
+   - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
    photos, adaptive to exposure and temperature.
 8. **Crop and straighten.**

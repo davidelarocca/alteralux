@@ -129,6 +129,7 @@ public final class AppModel {
                 ? URL.applicationSupportDirectory.appending(path: "Library/folders.plist")
                 : beside.appending(path: "folders.plist"),
             cacheDirectory: isApp ? URL.cachesDirectory.appending(path: "Thumbnails") : beside.appending(path: "thumbnails"),
+            discards: DiscardStore(fallbackDirectory: edits.appending(path: "Discarded")),
             hasAdjustments: { store.hasAdjustments(for: $0) },
         )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
