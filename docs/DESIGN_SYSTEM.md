@@ -30,7 +30,7 @@ Motion gets no animation, or a fade for a transition.
 
 | Pattern | Use for | Component |
 |---|---|---|
-| Adjusting a numeric parameter | every slider of the adjustments inspector | `ParameterSlider` |
+| Adjusting a numeric parameter | every slider of the adjustments inspector: the track fills from the neutral value, in grays only | `ParameterSlider` |
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |
