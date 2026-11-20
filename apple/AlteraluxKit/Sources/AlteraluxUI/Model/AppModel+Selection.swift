@@ -1,5 +1,6 @@
 import CoreGraphics
 import Foundation
+import os
 
 // The selected photo, what can be done with it, and moving through the strip.
 
@@ -27,6 +28,10 @@ extension AppModel {
             previewCrop?.framedSize(of: sources.decoder.size) ?? sources.decoder.size
         }
     }
+
+    /// Where each preview render is logged, for diagnostics: the screen does not show it.
+    /// `log stream --level debug --predicate 'category == "render"'` follows it.
+    static let renderLog = Logger(subsystem: "io.github.davidelarocca.alteralux", category: "render")
 
     /// Backend and timing of the last preview render, for diagnostics.
     var renderSummary: String {

@@ -1,8 +1,9 @@
 import DesignSystem
 import SwiftUI
 
-/// The zoom, under the photo on the trailing side: fit, 100%, and a slider between a small
-/// step out and a small step in, with the scale beside it.
+/// The zoom: fit, 100%, and a slider between a small step out and a small step in, with the
+/// scale beside it. It sits at the trailing end of the strip under the photo, or alone under
+/// the photo when the strip is hidden (`ZoomBar`).
 ///
 /// The slider's neutral point is the fitted photo: it fills from there, and a double-click or
 /// Delete goes back to it.
@@ -16,7 +17,6 @@ struct ZoomControls: View {
 
     var body: some View {
         HStack(spacing: Spacing.s) {
-            Spacer(minLength: 0)
             Picker("Zoom", selection: preset) {
                 Text("Fit").tag(ZoomPreset?.some(.fit))
                 Text("100%").tag(ZoomPreset?.some(.actualSize))
@@ -39,9 +39,6 @@ struct ZoomControls: View {
                 .accessibilityLabel("Zoom")
         }
         .controlSize(.small)
-        .padding(.horizontal, Spacing.l)
-        .padding(.vertical, Spacing.xs)
-        .background(Color.DS.viewerSurround)
         .disabled(!model.canZoom)
     }
 
@@ -75,5 +72,18 @@ struct ZoomControls: View {
             get: { model.zoomLevel },
             set: { model.setZoomLevel($0) },
         )
+    }
+}
+
+/// The zoom alone under the photo, on the trailing side, while the strip is hidden.
+struct ZoomBar: View {
+    var body: some View {
+        HStack {
+            Spacer(minLength: 0)
+            ZoomControls()
+        }
+        .padding(.horizontal, Spacing.l)
+        .padding(.vertical, Spacing.xs)
+        .background(Color.DS.viewerSurround)
     }
 }

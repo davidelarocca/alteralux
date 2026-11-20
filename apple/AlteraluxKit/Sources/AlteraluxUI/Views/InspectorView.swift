@@ -89,10 +89,19 @@ private struct MaterialsHeading: View {
                 FilmPicker()
             }
             if !model.settings.scanFilm {
-                Picker("Paper", selection: Binding(get: { model.settings.paperID }, set: { model.choosePaper($0) })) {
-                    ForEach(model.papers, id: \.id) { paper in
-                        Text(paper.displayName).tag(paper.id)
+                // The paper's name is long: it gets the row's whole width, under its caption,
+                // as the film's name does above it.
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text("Paper")
+                        .font(Typography.caption)
+                        .foregroundStyle(.secondary)
+                    Picker("Paper", selection: Binding(get: { model.settings.paperID }, set: { model.choosePaper($0) })) {
+                        ForEach(model.papers, id: \.id) { paper in
+                            Text(paper.displayName).tag(paper.id)
+                        }
                     }
+                    .labelsHidden()
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Toggle("Scan the film directly", isOn: $model.settings.scanFilm)
@@ -123,22 +132,25 @@ private struct WhiteBalanceControls: View {
         @Bindable var model = model
         let neutral = model.neutralWhiteBalance
 
-        Group {
-            ParameterSlider(
-                "Temperature", value: $model.temperature, in: model.temperatureRange,
-                step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
-            )
-            .help("The color of the light, in kelvin. Lower values make the photo cooler.")
-            ParameterSlider(
-                "Tint", value: $model.tint, in: AppModel.tintRange,
-                step: AppModel.tintStep, defaultValue: neutral.tint, fractionDigits: 0,
-            )
-        }
-        .disabled(!model.canAdjustWhiteBalance)
+        // A photo that is not a RAW has its white balance in its pixels: a line says so, in
+        // place of two sliders that could not move.
         if model.whiteBalanceIsFixed {
             Text("White balance can be chosen for RAW photos only.")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
+        } else {
+            Group {
+                ParameterSlider(
+                    "Temperature", value: $model.temperature, in: model.temperatureRange,
+                    step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
+                )
+                .help("The color of the light, in kelvin. Lower values make the photo cooler.")
+                ParameterSlider(
+                    "Tint", value: $model.tint, in: AppModel.tintRange,
+                    step: AppModel.tintStep, defaultValue: neutral.tint, fractionDigits: 0,
+                )
+            }
+            .disabled(!model.canAdjustWhiteBalance)
         }
     }
 }

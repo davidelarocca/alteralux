@@ -499,6 +499,7 @@ public final class AppModel {
                     preview = developed
                     previewCrop = settings.crop
                     previewIsDraft = isDraft
+                    Self.renderLog.debug("\(self.renderSummary, privacy: .public)")
                     if isSettled, holdsSlowPreview {
                         releaseSlowPreviewLater()
                     }

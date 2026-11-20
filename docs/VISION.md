@@ -112,10 +112,10 @@ hand-drawn controls of the mockups were dropped for the system's
   The emblems are original, they copy no brand's packaging. No rendered previews: they would cost a
   render per film.
 - **Toolbar.** On the left the way back to the folder, then previous and next, beside the window's title
-  (the file name over its film and paper). On the right undo and redo, crop, the original, Recipe and export. Icons alone wherever the icon is
+  (the file name over its film and paper). On the right, in groups, undo and redo; crop and the original; Recipe and export; the adjustments. Icons alone wherever the icon is
   clear, always with an accessible label.
-- **Zoom** controls sit under the photo on the right, above the strip: fit, 100% and a slider, whose
-  neutral point is the fitted photo.
+- **Zoom** controls sit under the photo on the right, on the row of the strip: fit, 100% and a
+  slider, whose neutral point is the fitted photo.
 - **The strip of thumbnails** is visible by default; a setting collapses or hides it.
 - **Export in progress** is drawn as a print coming up in the developer, with one count. It stays still
   with Reduce Motion.
