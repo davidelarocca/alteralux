@@ -157,10 +157,15 @@ public enum ImageLoader {
         )
     }
 
-    /// `image` straightened and cut as `crop` says. `image` is the whole photo, upright, at any
-    /// size: the frame is relative to it.
+    /// `image` turned, mirrored, straightened and cut as `crop` says. `image` is the whole photo,
+    /// upright, at any size: the frame is relative to it.
     static func framed(_ image: CIImage, by crop: PhotoCrop) -> CIImage {
-        let image = image.transformed(
+        // A quarter turn clockwise is what Core Image calls the orientation "right".
+        var image = image.oriented([.up, .right, .down, .left][crop.turns])
+        if crop.isFlipped {
+            image = image.oriented(.upMirrored)
+        }
+        image = image.transformed(
             by: CGAffineTransform(translationX: -image.extent.minX, y: -image.extent.minY),
         )
         let size = image.extent.size

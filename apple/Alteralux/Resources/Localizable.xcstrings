@@ -671,12 +671,12 @@
         }
       }
     },
-    "Back to the whole photo, straight" : {
+    "Back to the whole photo as it was shot" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Torna alla foto intera, dritta"
+            "value" : "Torna alla foto intera, com'è stata scattata"
           }
         }
       }
@@ -811,12 +811,12 @@
         }
       }
     },
-    "Compare with the original" : {
+    "Compare with the original, or hold M" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Confronta con l'originale"
+            "value" : "Confronta con l'originale, o tieni premuto M"
           }
         }
       }
@@ -1292,6 +1292,16 @@
         }
       }
     },
+    "Flip Horizontally" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rifletti orizzontalmente"
+          }
+        }
+      }
+    },
     "Folders" : {
       "localizations" : {
         "it" : {
@@ -1509,6 +1519,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Medio formato"
+          }
+        }
+      }
+    },
+    "Mirror the photo left to right" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rifletti la foto da sinistra a destra"
           }
         }
       }
@@ -2053,6 +2073,16 @@
         }
       }
     },
+    "Rotate Left" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruota a sinistra"
+          }
+        }
+      }
+    },
     "Save" : {
       "localizations" : {
         "it" : {
@@ -2520,6 +2550,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tinta"
+          }
+        }
+      }
+    },
+    "Turn the photo a quarter to the left" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruota la foto di un quarto a sinistra"
           }
         }
       }

@@ -207,8 +207,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    down); a slider straightens the photo up to 45 degrees either way, and the frame shrinks to stay
    inside the turned photo and comes back when it is turned back; Reset, Cancel (Escape) and Done
    (Return), which is one step of undo. The previews, the 100% view, the strip and the exports are
-   all of the framed picture. Seen in the built app on 2026-11-20 with real pointer drags. Still
-   open: Return and Escape were not pressed in the built app; quarter turns and flips; the
+   all of the framed picture. Seen in the built app on 2026-11-20 with real pointer drags. Also
+   done: a quarter turn to the left and a mirror, in the crop bar, before the straightening (seen
+   in the built app). Still open: Return and Escape were not pressed in the built app; the
    library's thumbnails show the whole photo, as they show no other adjustment.
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
@@ -244,8 +245,10 @@ branch of its own. What was said, in the order to take it:
   built app: Shift with the arrows, Home, End, Page Up and Down in the grid; Space for Quick Look;
   Zoom In and Out and a pinch for the thumbnails; a menu on a secondary click on a photo, in the
   grid and while developing; Escape from a developed photo back to the library; the View menu's
-  items for the developed photo turned off in the library. Still open: the pinch was not tried on
-  a trackpad; holding a key to compare with the original; type-to-select by name.
+  items for the developed photo turned off in the library; holding M shows the original while
+  developing, as in Photos; typing the beginning of a name in the grid goes to that photo, as in
+  the Finder. Still open: the pinch was not tried on a trackpad; holding M and typing a name were
+  not tried in the built app, which is the user's own and takes no keystrokes from tests.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix. Checked on 2026-11-20 at the
   smallest window (900 × 600), in Italian: the develop screen with the adjustments open, the export

@@ -3,7 +3,8 @@ import SwiftUI
 /// The keys of the library's grid, as in the Finder: the arrows move through the photos and,
 /// with Shift, grow the selection; Home and End go to the first and the last photo, Page Up and
 /// Page Down a screen at a time; Space opens Quick Look; Return develops; Delete discards;
-/// Escape clears the selection; Command-A selects every photo shown.
+/// Escape clears the selection; Command-A selects every photo shown; typing a name goes to the
+/// photo it begins.
 struct LibraryGridKeys: ViewModifier {
     @Environment(AppModel.self) private var model
     /// The grid's rows, for the photo above or below.
@@ -14,6 +15,9 @@ struct LibraryGridKeys: ViewModifier {
     let reveal: (URL?) -> Void
     /// The photo Quick Look shows, while it is open.
     @Binding var quickLook: URL?
+    /// The name typed so far, and when its last letter came.
+    @State private var typed = ""
+    @State private var lastTyped = Date.distantPast
 
     func body(content: Content) -> some View {
         let library = model.library
@@ -49,6 +53,23 @@ struct LibraryGridKeys: ViewModifier {
                 library.selectAll()
                 return .handled
             }
+            .onKeyPress(characters: .alphanumerics.union(.punctuationCharacters), phases: [.down, .repeat]) { press in
+                type(press)
+            }
+    }
+
+    /// Adds a letter to the name being typed, or starts a new one after a pause, and goes to the
+    /// first photo whose name begins with it.
+    private func type(_ press: KeyPress) -> KeyPress.Result {
+        guard press.modifiers.isDisjoint(with: [.command, .control, .option]) else { return .ignored }
+        let now = Date()
+        typed = now.timeIntervalSince(lastTyped) > LibraryModel.typingPause ? press.characters : typed + press.characters
+        lastTyped = now
+        if let photo = model.library.photo(namedLike: typed) {
+            model.library.click(photo)
+            reveal(photo)
+        }
+        return .handled
     }
 
     /// Goes to the photo `offset` places before or after the one the keys are on.

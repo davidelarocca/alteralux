@@ -42,11 +42,11 @@ struct PhotoCropTests {
     }
 
     @Test func theLargestFrameOfAShapeIsInTheMiddle() {
-        let square = PhotoCrop.largest(aspect: 1, angle: 0, in: photo)
+        let square = PhotoCrop.whole.largest(aspect: 1, in: photo)
         #expect(abs(pixelAspect(square) - 1) < 1e-6)
         #expect(abs(square.height - 1) < 1e-9)
         #expect(abs(square.left + square.width / 2 - 0.5) < 1e-9)
-        let upright = PhotoCrop.largest(aspect: 4.0 / 5, angle: 3, in: photo)
+        let upright = PhotoCrop(left: 0, top: 0, width: 1, height: 1, angle: 3).largest(aspect: 4.0 / 5, in: photo)
         #expect(abs(pixelAspect(upright) - 0.8) < 1e-6)
         #expect(upright.fits(in: photo))
     }
@@ -77,6 +77,30 @@ struct PhotoCropTests {
         #expect(abs(pixelAspect(taller) - 1) < 1e-6)
         #expect(abs(taller.left + taller.width / 2 - (square.left + square.width / 2)) < 1e-9)
         #expect(abs(taller.top + taller.height - 0.6) < 1e-9)
+    }
+
+    /// A quarter turn and a mirror take the frame with the picture, and four turns or two
+    /// mirrors give it back.
+    @Test func turningAndMirroringTakeTheFrameAlong() throws {
+        let frame = PhotoCrop(left: 0.1, top: 0.2, width: 0.3, height: 0.5, angle: 4)
+        let turned = frame.turnedLeft()
+        // The left side of the photo goes to the bottom: the frame's left edge with it.
+        #expect(abs(turned.top + turned.height - 0.9) < 1e-9 && abs(turned.left - 0.2) < 1e-9)
+        #expect(turned.quarterTurns == 3 && turned.angle == 4)
+        #expect(turned.framedSize(of: photo).width == frame.framedSize(of: photo).height)
+        #expect(turned.orientedSize(of: photo) == CGSize(width: 4000, height: 6000))
+        #expect(frame.turnedLeft().turnedLeft().turnedLeft().turnedLeft().isClose(to: frame))
+        #expect(frame.flipped().flipped().isClose(to: frame))
+        // Under the mirror, a turn to the left is a turn to the right of the photo itself.
+        let mirrored = frame.flipped()
+        #expect(abs(mirrored.left - 0.6) < 1e-9 && mirrored.angle == -4 && mirrored.isFlipped)
+        #expect(mirrored.turnedLeft().quarterTurns == 1)
+        #expect(!PhotoCrop.whole.turnedLeft().isWhole && !PhotoCrop.whole.flipped().isWhole)
+        #expect(PhotoCrop.whole.turnedLeft().fits(in: photo))
+
+        // A frame saved before photos could be turned is neither turned nor mirrored.
+        let older = Data(#"{"left": 0.1, "top": 0.2, "width": 0.3, "height": 0.5, "angle": 4}"#.utf8)
+        #expect(try JSONDecoder().decode(PhotoCrop.self, from: older) == frame)
     }
 
     /// The frame is the photo's own: no recipe holds it, pasting does not carry it, and the
@@ -124,11 +148,34 @@ struct PhotoCropTests {
         #expect(abs(green(pixels.width - 2) - green(1)) < 0.005)
         #expect(abs(green(pixels.width / 2) - 0.18) < 0.02)
 
+        // Turned a quarter to the left, the gray card on the left goes to the bottom; mirrored,
+        // to the right.
+        let turnedLeft = try await decoder.pixels(maxDimension: nil, whiteBalance: nil, crop: PhotoCrop.whole.turnedLeft())
+        #expect(turnedLeft.width == 400 && turnedLeft.height == 600)
+        let greenAt = { (decoded: DecodedPixels, column: Int, row: Int) in
+            decoded.pixels.withUnsafeBytes { buffer in
+                buffer.loadUnaligned(fromByteOffset: (row * decoded.width + column) * 16 + 4, as: Float.self)
+            }
+        }
+        #expect(abs(greenAt(turnedLeft, 200, 590) - 0.18) < 0.02)
+        #expect(abs(greenAt(turnedLeft, 200, 10) - 0.18) > 0.02)
+        let mirrored = try await decoder.pixels(maxDimension: nil, whiteBalance: nil, crop: PhotoCrop.whole.flipped())
+        #expect(abs(greenAt(mirrored, 590, 200) - 0.18) < 0.02)
+        #expect(abs(greenAt(mirrored, 10, 200) - 0.18) > 0.02)
+
         // Turned, the picture is smaller than the frame's rectangle would be without turning.
         var turned = PhotoCrop.whole
         turned.angle = 8
         let straightened = try await decoder.decode(crop: turned.fitted(in: decoder.size))
         #expect(straightened.width < 600 && straightened.height < 400)
         #expect(abs(Double(straightened.width) / Double(straightened.height) - 1.5) < 0.02)
+    }
+}
+
+extension PhotoCrop {
+    /// The same frame, but for the rounding of its edges.
+    func isClose(to other: PhotoCrop) -> Bool {
+        let edges = [left - other.left, top - other.top, width - other.width, height - other.height, angle - other.angle]
+        return edges.allSatisfy { abs($0) < 1e-9 } && quarterTurns == other.quarterTurns && isFlipped == other.isFlipped
     }
 }

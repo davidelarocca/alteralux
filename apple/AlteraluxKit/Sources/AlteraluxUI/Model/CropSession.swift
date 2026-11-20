@@ -53,7 +53,7 @@ enum CropAspect: String, CaseIterable, Identifiable {
 /// A frame being chosen for the selected photo: what the crop controls change, until the frame
 /// is kept or let go.
 struct CropSession: Equatable {
-    /// The size of the whole photo, in pixels.
+    /// The size of the whole photo, in pixels, upright as it was shot.
     let photo: CGSize
     /// The frame on screen.
     private(set) var crop: PhotoCrop
@@ -120,7 +120,22 @@ struct CropSession: Equatable {
         applyAspect()
     }
 
-    /// Back to the whole photo, straight and free.
+    /// Turns the photo a quarter counterclockwise, the frame with it.
+    mutating func turnLeft() {
+        crop = crop.turnedLeft()
+        intent = intent.turnedLeft()
+        dragStart = nil
+        isUpright.toggle()
+    }
+
+    /// Mirrors the photo left to right, the frame with it.
+    mutating func flip() {
+        crop = crop.flipped()
+        intent = intent.flipped()
+        dragStart = nil
+    }
+
+    /// Back to the whole photo as it was shot: straight, not turned nor mirrored, and free.
     mutating func reset() {
         aspect = .freeform
         crop = .whole
@@ -135,9 +150,10 @@ struct CropSession: Equatable {
 
     private mutating func applyAspect() {
         guard let ratio else { return }
-        let angle = crop.angle
-        intent = PhotoCrop.largest(aspect: ratio, angle: 0, in: photo)
-        intent.angle = angle
+        var straight = crop
+        straight.angle = 0
+        intent = straight.largest(aspect: ratio, in: photo)
+        intent.angle = crop.angle
         crop = intent.fitted(in: photo)
     }
 }
