@@ -14,6 +14,14 @@ struct BatchExportProgress: Equatable {
     var name: String
 }
 
+/// An export of several photos that found files already written, and what it was about to do.
+struct WaitingExport: Equatable {
+    let photos: [URL]
+    let destination: ExportDestination
+    /// How many of the photos have their file there already.
+    let existing: Int
+}
+
 extension AppModel {
     /// Whether there is something to export: in the library the selected photos, otherwise the
     /// photo on screen.
@@ -72,11 +80,13 @@ extension AppModel {
     }
 
     /// Exports the photos the sheet was opened for: beside each original, or to a folder asked
-    /// for now.
+    /// for now. When files of an earlier export are there, it stops and waits to be told what
+    /// to do with them (`exportWaiting`).
     func exportPhotos() async {
         guard !photosToExport.isEmpty, !isExporting else { return }
+        let destination: ExportDestination
         if exportsBesideOriginals {
-            await export(photosToExport, to: .subfolder(Self.developedFolderName))
+            destination = .subfolder(Self.developedFolderName)
         } else {
             let panel = NSOpenPanel()
             panel.canChooseFiles = false
@@ -84,13 +94,25 @@ extension AppModel {
             panel.canCreateDirectories = true
             panel.prompt = String(localized: "Export")
             guard await panel.begin() == .OK, let folder = panel.url else { return }
-            await export(photosToExport, to: .folder(folder))
+            destination = .folder(folder)
         }
+        await export(photosToExport, to: destination)
+    }
+
+    /// Goes on with the export that was waiting, doing with the files already there what the
+    /// user chose.
+    func resumeExport(_ policy: ExistingFilePolicy) async {
+        guard let waiting = exportWaiting else { return }
+        exportWaiting = nil
+        await export(waiting.photos, to: waiting.destination, existing: policy)
     }
 
     /// Develops each photo with its own adjustments and writes it, one after the other. At the
     /// end only the photos that failed are named.
-    func export(_ photos: [URL], to destination: ExportDestination) async {
+    ///
+    /// - Parameter existing: what to do with the files of an earlier export. `nil` asks: when
+    ///   there are any, nothing is exported and `exportWaiting` says how many.
+    func export(_ photos: [URL], to destination: ExportDestination, existing: ExistingFilePolicy? = nil) async {
         guard let renderer, !isExporting, !photos.isEmpty else { return }
         // What is being changed on the photo on screen is part of what is exported.
         settingsDidChange()
@@ -100,10 +122,18 @@ extension AppModel {
             let settings = adjustments(of: photo).settings
             return ExportJob(photo: photo, settings: settings, fileName: exportFileName(for: photo, settings: settings))
         }
+        if existing == nil {
+            let there = BatchExporter.alreadyExported(jobs, at: destination).count
+            if there > 0 {
+                exportWaiting = WaitingExport(photos: photos, destination: destination, existing: there)
+                return
+            }
+        }
+        let policy = existing ?? .keepBoth
         isExporting = true
         batchExport = BatchExportProgress(position: 1, total: jobs.count, name: jobs[0].photo.lastPathComponent)
         let task = Task {
-            await BatchExporter(renderer: renderer).export(jobs, to: destination, options: options) { [weak self] index, job in
+            await BatchExporter(renderer: renderer).export(jobs, to: destination, options: options, existing: policy) { [weak self] index, job in
                 await self?.noteExport(of: job, at: index)
             }
         }

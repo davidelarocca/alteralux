@@ -47,8 +47,9 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     Core Image, converting to sRGB or Display P3 and embedding the profile,
     with the original's camera metadata. `BatchExporter` develops several
     photos one after the other, each decoded at the size it is exported at,
-    and writes them beside the originals or into one folder, never over a
-    file that is there; it reports per photo and stops between photos when
+    and writes them beside the originals or into one folder. A file that is
+    already there is replaced, kept beside the new one or skipped, as the
+    caller says, and never written over otherwise; it reports per photo and stops between photos when
     its task is cancelled.
 
 The tests of the package run the real engine: they check row order and channel
@@ -121,7 +122,8 @@ open photos, the settings of the selected one and its preview.
 - **Export.** One sheet (`ExportSheet`, a `FormSheet`): for the photo on
   screen it is followed by the save panel; for the selected photos of the
   library it also asks where they go (a folder beside each original, or one
-  folder), stays while they are developed with one progress and a way to
+  folder) and, when files of an earlier export are there, whether to
+  replace them, keep both or skip those photos; it stays while they are developed with one progress and a way to
   stop, and at the end names only the photos that failed.
 - **Edits.** `EditHistory` follows the adjustments of the selected photo. A
   change is what happens between two moments of stillness (a whole drag, a

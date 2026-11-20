@@ -277,3 +277,59 @@ struct BatchExportTests {
         #expect(AppModel.exportFailureMessage(for: ["a.jpg"]).split(separator: "\n").count == 2)
     }
 }
+
+/// Exporting again photos that were exported before.
+@MainActor
+struct ExportAgainTests {
+    @Test func anExportThatFindsFilesAlreadyThereAsksWhatToDo() async throws {
+        let pictures = try WindowedTests.writeTestPictures(count: 2)
+        let folder = pictures[0].deletingLastPathComponent()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let model = AppModel(dataDirectory: WindowedTests.engineData, editsDirectory: folder.appendingPathComponent("support"))
+        await model.start()
+        await model.addFolder(folder)
+        let photos = model.library.photos
+        model.exportOptions.longSide = 64
+        let developed = folder.appendingPathComponent(AppModel.developedFolderName)
+        let files = { try FileManager.default.contentsOfDirectory(atPath: developed.path).filter { !$0.hasPrefix(".") }.sorted() }
+
+        // The first export has nothing to ask.
+        await model.export([photos[0]], to: .subfolder(AppModel.developedFolderName))
+        #expect(model.exportWaiting == nil)
+        let first = try files()
+        #expect(first.count == 1)
+        let firstFile = developed.appendingPathComponent(first[0])
+        let firstDate = try #require(try firstFile.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+
+        // The second finds one file there: it writes nothing and waits.
+        await model.export(photos, to: .subfolder(AppModel.developedFolderName))
+        #expect(model.exportWaiting == WaitingExport(photos: photos, destination: .subfolder(AppModel.developedFolderName), existing: 1))
+        #expect(try files() == first && !model.isExporting)
+
+        // Skipping develops only the photo that was not there, and leaves the old file alone.
+        await model.resumeExport(.skip)
+        #expect(model.exportWaiting == nil && model.alertMessage == nil)
+        #expect(try files().count == 2)
+        let untouched = try URL(fileURLWithPath: firstFile.path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
+        #expect(untouched == firstDate)
+
+        // Replacing leaves as many files, with new ones in their place.
+        try await Task.sleep(for: .milliseconds(1100))
+        await model.export(photos, to: .subfolder(AppModel.developedFolderName))
+        #expect(model.exportWaiting?.existing == 2)
+        await model.resumeExport(.replace)
+        #expect(try files().count == 2)
+        let replaced = try #require(try URL(fileURLWithPath: firstFile.path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
+        #expect(replaced > firstDate)
+
+        // Keeping both writes the new files beside the old ones.
+        await model.export(photos, to: .subfolder(AppModel.developedFolderName), existing: .keepBoth)
+        #expect(try files().count == 4)
+
+        // Leaving the question drops the export.
+        await model.export(photos, to: .subfolder(AppModel.developedFolderName))
+        model.exportWaiting = nil
+        await model.resumeExport(.replace)
+        #expect(try files().count == 4)
+    }
+}

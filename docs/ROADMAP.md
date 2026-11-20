@@ -183,7 +183,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    undo takes it back from all), saves the look on screen as a new recipe, renames and deletes;
    Copy Adjustments and Paste Adjustments in the Edit menu; the selected photos of the library are
    exported in one go, each with its own adjustments, at the original size or a smaller one, into a
-   folder "Developed" beside the originals or into one folder, with one progress, a way to stop,
+   folder "Developed" beside the originals or into one folder, asking whether to replace, keep both
+   or skip when files of an earlier export are there, with one progress, a way to stop,
    and at the end only the photos that failed. Sheets share one shape (`FormSheet`), drawn after the
    system's alert. Still open:
    - Adaptive recipes: the exposure rests on the automatic meter that is already there; the

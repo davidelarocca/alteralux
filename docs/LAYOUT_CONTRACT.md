@@ -46,6 +46,7 @@ they must open inside the window, or on screen for a separate window.
 | `RecipeMenu` | Main window, the toolbar's Recipe button; Library, Recipe of the selection's bar | system menu | system | system |
 | Name of a recipe | `RecipeMenu`, Save as New Recipe… and Rename | system alert with a text field | system | centered in the window |
 | Deleting a recipe | `RecipeMenu`, Delete | system confirmation dialog | system | centered in the window |
+| Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
 | `FilmPicker` | Main window, the film heading of the inspector | popover | 300x420 | opens under the heading, inside the window |
 | Open panel | Main window, Open | system file importer | system | system |

@@ -72,6 +72,8 @@ public final class AppModel {
     var photosToExport: [URL] = []
     /// Whether several photos go to a folder beside each original, or to one folder to choose.
     var exportsBesideOriginals = true
+    /// An export that found files of an earlier one, and waits to be told what to do with them.
+    var exportWaiting: WaitingExport?
     var alertMessage: String?
 
     /// File types offered by the Open panel and accepted by drag and drop.

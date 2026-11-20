@@ -32,6 +32,28 @@ struct ExportSheet: View {
         }
         // An export in progress is not left behind by Escape.
         .interactiveDismissDisabled(model.batchExport != nil)
+        .alert(
+            "\(model.exportWaiting?.existing ?? 0) of these photos were already exported",
+            isPresented: isWaiting,
+        ) {
+            Button("Replace") { Task { await model.resumeExport(.replace) } }
+            Button("Keep Both") { Task { await model.resumeExport(.keepBoth) } }
+            Button("Skip Them") { Task { await model.resumeExport(.skip) } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Their files are in the destination folder. Replace them with the new ones, keep both, or skip the photos that are already there?")
+        }
+    }
+
+    private var isWaiting: Binding<Bool> {
+        Binding(
+            get: { model.exportWaiting != nil },
+            set: {
+                if !$0 {
+                    model.exportWaiting = nil
+                }
+            },
+        )
     }
 
     /// Whether the sheet is for several photos of the library, and not for the one on screen.
@@ -102,9 +124,11 @@ struct ExportSheet: View {
         } footer: {
             Group {
                 if model.exportsBesideOriginals {
-                    Text("The files go into a folder “\(AppModel.developedFolderName)” beside the originals. A file that is already there is kept.")
+                    Text(
+                        "The files go into “\(AppModel.developedFolderName)”, beside the originals. If some are already there, you are asked what to do.",
+                    )
                 } else {
-                    Text("You choose the folder when the export starts. A file that is already there is kept.")
+                    Text("You choose the folder when the export starts. If some files are already there, you are asked what to do.")
                 }
             }
             .font(Typography.caption)
