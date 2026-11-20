@@ -269,6 +269,20 @@ struct BatchExportTests {
         #expect(message.contains(photos[2].lastPathComponent) && !message.contains(photos[0].lastPathComponent))
     }
 
+    /// A camera that saves RAW and JPEG leaves two photos of one name: their exports say
+    /// which is which, and a photo alone keeps the plain name.
+    @Test func aPhotoWithATwinOfAnotherKindNamesItsKind() {
+        let folder = URL(fileURLWithPath: "/photos/shoot")
+        let raw = folder.appendingPathComponent("IMG_0042.CR3")
+        let jpeg = folder.appendingPathComponent("IMG_0042.JPG")
+        let alone = folder.appendingPathComponent("IMG_0043.CR3")
+        let elsewhere = URL(fileURLWithPath: "/photos/other/IMG_0043.JPG")
+        #expect(AppModel.twins(among: [raw, jpeg, alone, elsewhere, raw]) == [raw, jpeg])
+        #expect(AppModel.exportName(source: raw, film: "Kodak Portra 400", namesKind: true) == "IMG_0042 CR3 Kodak Portra 400")
+        #expect(AppModel.exportName(source: jpeg, film: "Kodak Portra 400", namesKind: true) == "IMG_0042 JPG Kodak Portra 400")
+        #expect(AppModel.exportName(source: alone, film: "Kodak Portra 400") == "IMG_0043 Kodak Portra 400")
+    }
+
     @Test func aLongListOfFailedPhotosIsCountedPastTheFirstFew() {
         let names = (1 ... 11).map { "IMG_\($0).CR3" }
         let lines = AppModel.exportFailureMessage(for: names).split(separator: "\n")

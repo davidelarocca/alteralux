@@ -118,12 +118,16 @@ extension AppModel {
         settingsDidChange()
         settleChange()
         let options = exportOptions
+        let twins = Self.twins(among: library.photos + photos)
         let jobs = photos.map { photo in
             let settings = adjustments(of: photo).settings
+            let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
+            let namesKind = twins.contains(photo)
             return ExportJob(
-                photo: photo, settings: settings, fileName: exportFileName(for: photo, settings: settings),
+                photo: photo, settings: settings,
+                fileName: "\(Self.exportName(source: photo, film: film, namesKind: namesKind)).\(options.format.fileExtension)",
                 // An earlier export may carry the name of any film.
-                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName) },
+                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName, namesKind: namesKind) },
             )
         }
         if existing == nil {
@@ -167,6 +171,16 @@ extension AppModel {
     private func exportFileName(for photo: URL, settings: DevelopSettings) -> String {
         let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
         return Self.exportFileName(source: photo, film: film, format: exportOptions.format)
+    }
+
+    /// The photos that have a twin beside them: the same name in the same folder, another kind
+    /// of file (a RAW and the JPEG the camera saved with it). Their exports name the kind, or
+    /// the two would write the same file.
+    nonisolated static func twins(among photos: [URL]) -> Set<URL> {
+        let byName = Dictionary(grouping: Set(photos)) { photo in
+            photo.deletingPathExtension().standardizedFileURL.path.lowercased()
+        }
+        return Set(byName.values.filter { $0.count > 1 }.joined())
     }
 
     /// How many names of failed photos the message lists before it counts the rest.

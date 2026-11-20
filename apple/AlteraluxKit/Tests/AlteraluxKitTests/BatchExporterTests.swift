@@ -249,6 +249,30 @@ struct BatchExporterTests {
         #expect(try Data(contentsOf: output.appendingPathComponent("unrelated.jpg")) == Data("old".utf8))
     }
 
+    /// Two photos told to write the same name, as a RAW and its JPEG would be without care:
+    /// replacing never lets the second take the place of what the first just wrote.
+    @Test func twoPhotosOfOneNameNeverReplaceEachOther() async throws {
+        let workspace = try makeWorkspace()
+        defer { try? FileManager.default.removeItem(at: workspace) }
+        let first = try writePhoto(named: "twin.png", in: workspace)
+        let second = try writePhoto(named: "twin.tiff", in: workspace)
+        let output = workspace.appendingPathComponent("exports", isDirectory: true)
+        let jobs = [first, second].map {
+            ExportJob(photo: $0, settings: DevelopSettings(), fileName: "twin Ektar.jpg", earlierNames: ["twin Ektar"])
+        }
+        let files = { try FileManager.default.contentsOfDirectory(atPath: output.path).sorted() }
+        let batchExporter = try BatchExporter(
+            renderer: FilmRenderer(dataDirectory: batchTestDataDirectory, backend: .cpu),
+            discard: { try FileManager.default.removeItem(at: $0) },
+        )
+
+        for _ in 1 ... 2 {
+            let results = await batchExporter.export(jobs, to: .folder(output), options: ExportOptions(), existing: .replace)
+            #expect(results.map(\.destination?.lastPathComponent) == ["twin Ektar.jpg", "twin Ektar 2.jpg"])
+            #expect(try files() == ["twin Ektar 2.jpg", "twin Ektar.jpg"])
+        }
+    }
+
     @Test func longSideLimitsOutputAndNeverEnlarges() async throws {
         let workspace = try makeWorkspace()
         defer { try? FileManager.default.removeItem(at: workspace) }

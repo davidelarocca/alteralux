@@ -71,7 +71,8 @@ public struct BatchExporter: Sendable {
         for (folder, jobs) in Dictionary(grouping: jobs, by: { outputFolder(for: $0.photo, destination: destination) }) {
             var photos: [String: URL] = [:]
             for job in jobs {
-                for name in job.earlierNames + [(job.fileName as NSString).deletingPathExtension] {
+                // Two photos that would write the same name: the files are the first one's.
+                for name in job.earlierNames + [(job.fileName as NSString).deletingPathExtension] where photos[name.lowercased()] == nil {
                     photos[name.lowercased()] = job.photo
                 }
             }
@@ -118,13 +119,15 @@ public struct BatchExporter: Sendable {
         let manager = FileManager.default
         // What was there before this export started: what it writes itself does not count.
         let earlier = Self.earlierExports(of: jobs, at: destination)
+        // What this export wrote is never replaced by a later photo of the same name.
+        var finished: Set<URL> = []
 
         for (index, job) in jobs.enumerated() {
             guard !Task.isCancelled else { break }
             await progress(index, job)
 
             let named = Self.file(for: job, at: destination)
-            let isThere = PhotoFileActions.exists(named, manager)
+            let isThere = PhotoFileActions.exists(named, manager) && !finished.contains(named.standardizedFileURL)
             let old = earlier[job.photo] ?? []
             if existing == .skip, let kept = old.first {
                 results.append(FileActionResult(source: job.photo, destination: isThere ? named : kept))
@@ -167,10 +170,12 @@ public struct BatchExporter: Sendable {
                     }
                     // The other files of the photo, of another film, format or number, go once
                     // the new one is written. One that cannot be taken away stays.
-                    for file in old where file.standardizedFileURL != output.standardizedFileURL {
+                    let kept = finished.union([output.standardizedFileURL])
+                    for file in old where !kept.contains(file.standardizedFileURL) {
                         try? discard(file)
                     }
                 }
+                finished.insert(output.standardizedFileURL)
                 results.append(FileActionResult(source: job.photo, destination: output))
             } catch {
                 if let reservedURL {

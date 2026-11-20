@@ -127,6 +127,9 @@ open photos, the settings of the selected one and its preview.
   folder) and, when files of an earlier export are there, whether to
   replace them, keep both or skip those photos; it stays while they are developed with one progress and a way to
   stop, and at the end names only the photos that failed.
+  An exported file takes the name of its photo and of its film; a photo
+  with a twin of another kind beside it, as a camera that saves RAW and JPEG
+  leaves, names its kind too, so the two never write the same file.
 - **Edits.** `EditHistory` follows the adjustments of the selected photo. A
   change is what happens between two moments of stillness (a whole drag, a
   film chosen, a reset): its first value registers one step in the window's
