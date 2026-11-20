@@ -222,10 +222,11 @@ branch of its own. What was said, in the order to take it:
   ones; a rectangle dragged over the grid selects photos; a list of tags in the Finder's manner, with
   a field that narrows it and makes a tag with a color; a photo opens with the adjustments closed.
   Seen in the built app on 2026-11-20: the tag list, a new tag made with a color and written to the
-  file, a photo opening without the adjustments. Still open: the rectangle drawn by hand (a mouse
-  drag, not driven by the checks), and it does not scroll the grid when it reaches an edge; the date is
+  file, a photo opening without the adjustments; with real pointer events on a folder of 40 test
+  pictures, a click on a photo and between them, a rectangle that scrolls the grid when held at its
+  bottom edge, and the arrow keys bringing the photo they reach in sight. Still open: the date is
   the file's, not the one of the shot; one tag at a time; the order and the filters are not kept
-  between launches; an arrow key does not scroll the grid to the photo it reaches.
+  between launches.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)

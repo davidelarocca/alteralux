@@ -1,5 +1,5 @@
-import AppKit
 import AlteraluxKit
+import AppKit
 import DesignSystem
 import SwiftUI
 
@@ -15,8 +15,19 @@ struct LibraryGrid: View {
     @State private var tileFrames: [URL: CGRect] = [:]
     /// The rectangle being dragged over the grid, while it is.
     @State private var marquee: CGRect?
+    /// Where the drag started, in the grid's space, and where the pointer is in the part of the
+    /// grid in sight: the grid can scroll under a pointer that does not move.
+    @State private var marqueeStart: CGPoint?
+    @State private var pointerInSight: CGPoint = .zero
     @State private var selectionBeforeMarquee: Set<URL> = []
     @State private var marqueeToggles = false
+    /// Scrolls the grid while the rectangle is held near its top or bottom edge.
+    @State private var autoscroll: Task<Void, Never>?
+    @State private var scrollPosition = ScrollPosition()
+    /// Whether the grid has the keys. A click on it gives them, as does its appearing.
+    @FocusState private var hasKeys: Bool
+    /// The grid's scrolling, kept where reading it redraws nothing: it changes at every step.
+    @State private var scroll = ScrollState()
 
     /// The widths a thumbnail can have, in points.
     static let thumbnailSizes = 120.0 ... 320.0
@@ -27,6 +38,12 @@ struct LibraryGrid: View {
     private static let space = "library.grid"
     /// How far the pointer moves before a press between the photos becomes a drag, in points.
     private static let dragThreshold: CGFloat = 3
+    /// How near the top or bottom edge the rectangle starts the grid scrolling, in points; the
+    /// further past it, the faster, up to the most it scrolls at a step.
+    private static let autoscrollEdge: CGFloat = 24
+    private static let autoscrollMaximumStep: CGFloat = 40
+    /// How often the grid scrolls a step while the rectangle is held at an edge: once a frame.
+    private static let autoscrollInterval = Duration.milliseconds(16)
     /// Width of the slider for the size of the thumbnails, in points.
     private static let sliderWidth: CGFloat = 130
 
@@ -125,15 +142,19 @@ struct LibraryGrid: View {
                         }
                     }
                 }
+                // Each row is a place the grid can be scrolled to, for the arrow keys.
+                .scrollTargetLayout()
                 .padding(Spacing.m)
-                // The room under the photos takes clicks and drags too.
+                // The room around and under the photos takes clicks and drags too; a click on a
+                // photo is the photo's.
                 .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .topLeading)
-                .background {
-                    Color.clear
-                        .contentShape(.rect)
-                        .onTapGesture { library.clearSelection() }
-                        .gesture(marqueeDrag)
-                }
+                .contentShape(.rect)
+                .gesture(SpatialTapGesture(coordinateSpace: .named(Self.space)).onEnded { tap in
+                    if !tileFrames.contains(where: { library.visiblePhotos.contains($0.key) && $0.value.contains(tap.location) }) {
+                        library.clearSelection()
+                    }
+                })
+                .gesture(marqueeDrag)
                 .overlay(alignment: .topLeading) {
                     if let marquee {
                         SelectionMarquee()
@@ -143,15 +164,23 @@ struct LibraryGrid: View {
                 }
                 .coordinateSpace(.named(Self.space))
             }
+            .scrollPosition($scrollPosition)
+            .onScrollGeometryChange(for: ScrollGeometry.self, of: { $0 }, action: { scroll.geometry = $1 })
+            .onGeometryChange(for: CGFloat.self, of: \.size.height) { scroll.height = $0 }
             // The grid takes the keys: arrows move through the photos, Return develops.
             .focusable()
+            .focused($hasKeys)
             .focusEffectDisabled()
+            .simultaneousGesture(TapGesture().onEnded { hasKeys = true })
+            .onAppear { hasKeys = true }
             .onKeyPress(.leftArrow) {
                 library.moveSelection(by: -1)
+                reveal(library.focusedPhoto, in: rows)
                 return .handled
             }
             .onKeyPress(.rightArrow) {
                 library.moveSelection(by: 1)
+                reveal(library.focusedPhoto, in: rows)
                 return .handled
             }
             .onKeyPress(.upArrow) { move(in: rows, rowsDown: -1) }
@@ -180,28 +209,75 @@ struct LibraryGrid: View {
 
     /// A drag that starts between the photos draws a rectangle and selects the photos it
     /// touches, as the Finder does: with Shift it adds to the selection, with Command it turns
-    /// each photo it touches on or off.
+    /// each photo it touches on or off. Held near the top or bottom edge, it scrolls the grid.
     private var marqueeDrag: some Gesture {
         DragGesture(minimumDistance: Self.dragThreshold, coordinateSpace: .named(Self.space))
             .onChanged { drag in
-                let library = model.library
-                if marquee == nil {
+                if marqueeStart == nil {
                     let modifiers = NSEvent.modifierFlags
                     marqueeToggles = modifiers.contains(.command)
-                    selectionBeforeMarquee = modifiers.contains(.command) || modifiers.contains(.shift) ? library.selection : []
+                    selectionBeforeMarquee = modifiers.contains(.command) || modifiers.contains(.shift) ? model.library.selection : []
+                    marqueeStart = drag.startLocation
+                    startAutoscroll()
                 }
-                let rectangle = CGRect(
-                    x: min(drag.startLocation.x, drag.location.x), y: min(drag.startLocation.y, drag.location.y),
-                    width: abs(drag.location.x - drag.startLocation.x), height: abs(drag.location.y - drag.startLocation.y),
-                )
-                marquee = rectangle
-                let covered = tileFrames.filter { library.visiblePhotos.contains($0.key) && $0.value.intersects(rectangle) }.keys
-                library.select(covered: Set(covered), before: selectionBeforeMarquee, toggling: marqueeToggles)
+                let inSight = scroll.geometry?.visibleRect.origin ?? .zero
+                pointerInSight = CGPoint(x: drag.location.x - inSight.x, y: drag.location.y - inSight.y)
+                updateMarquee()
             }
             .onEnded { _ in
+                autoscroll?.cancel()
+                autoscroll = nil
                 marquee = nil
+                marqueeStart = nil
                 selectionBeforeMarquee = []
             }
+    }
+
+    /// Draws the rectangle from where the drag started to the pointer, and selects what it touches.
+    private func updateMarquee() {
+        guard let start = marqueeStart else { return }
+        let inSight = scroll.geometry?.visibleRect.origin ?? .zero
+        let pointer = CGPoint(x: pointerInSight.x + inSight.x, y: pointerInSight.y + inSight.y)
+        let rectangle = CGRect(
+            x: min(start.x, pointer.x), y: min(start.y, pointer.y),
+            width: abs(pointer.x - start.x), height: abs(pointer.y - start.y),
+        )
+        marquee = rectangle
+        let library = model.library
+        let covered = tileFrames.filter { library.visiblePhotos.contains($0.key) && $0.value.intersects(rectangle) }.keys
+        library.select(covered: Set(covered), before: selectionBeforeMarquee, toggling: marqueeToggles)
+    }
+
+    /// While the rectangle is drawn, scrolls the grid a step each frame the pointer is held near
+    /// or past its top or bottom edge, and stretches the rectangle with it.
+    private func startAutoscroll() {
+        autoscroll?.cancel()
+        autoscroll = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.autoscrollInterval)
+                guard marqueeStart != nil else { continue }
+                // Until the grid has scrolled once the system has not said where it is: it is
+                // at its top, as tall as measured, and the photos end where the last one does.
+                let geometry = scroll.geometry
+                let height = geometry?.visibleRect.height ?? scroll.height
+                let past = pointerInSight.y > height - Self.autoscrollEdge
+                    ? pointerInSight.y - (height - Self.autoscrollEdge)
+                    : min(pointerInSight.y - Self.autoscrollEdge, 0)
+                guard past != 0 else { continue }
+                let step = max(-Self.autoscrollMaximumStep, min(past / 2, Self.autoscrollMaximumStep))
+                let offset = geometry?.contentOffset.y ?? 0
+                let top = -(geometry?.contentInsets.top ?? 0)
+                let contentHeight = geometry?.contentSize.height ?? (tileFrames.values.map(\.maxY).max() ?? 0) + Spacing.m
+                let containerHeight = geometry?.containerSize.height ?? scroll.height
+                let bottom = max(top, contentHeight - containerHeight + (geometry?.contentInsets.bottom ?? 0))
+                let target = min(max(offset + step, top), bottom)
+                guard target != offset else { continue }
+                // The offset counts from above the toolbar's inset; a position to scroll to
+                // counts from the top of the photos.
+                scrollPosition.scrollTo(y: target - top)
+                updateMarquee()
+            }
+        }
     }
 
     /// Goes to the photo above or below the one the keys are on, or to the first photo when
@@ -215,7 +291,14 @@ struct LibraryGrid: View {
         } else {
             library.moveSelection(by: rowsDown)
         }
+        reveal(library.focusedPhoto, in: rows)
         return .handled
+    }
+
+    /// Scrolls the grid as little as needed to bring the row of a photo the keys reached in sight.
+    private func reveal(_ photo: URL?, in rows: LibraryRows) {
+        guard let photo, let row = rows.rows.first(where: { $0.items.contains { $0.photo == photo } }) else { return }
+        scrollPosition.scrollTo(id: row.id)
     }
 
     /// The size on disk of some photos, as the Finder writes it.
@@ -257,6 +340,15 @@ struct LibraryGrid: View {
         .padding(.vertical, Spacing.xs)
         .background(.bar)
     }
+}
+
+/// Where the grid is scrolled to. A class, not observed: the rectangle that selects reads it,
+/// and the grid need not be drawn again each time it scrolls.
+@MainActor
+private final class ScrollState {
+    var geometry: ScrollGeometry?
+    /// The height of the grid on screen, known before it first scrolls.
+    var height: CGFloat = 0
 }
 
 /// One photo of the grid, drawn with its own shape: its thumbnail, a mark when it has
