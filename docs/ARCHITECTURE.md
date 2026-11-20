@@ -32,6 +32,9 @@ and for export. White balance is chosen in the RAW decoder, before the engine se
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
 
+A recipe is a look saved under a name: every adjustment but the white balance. Recipes are kept by the
+app, one file each; a photo that receives one keeps only the adjustments.
+
 The library shows the folders the user adds as they are on disk: it reads them, remembers them with
 security-scoped bookmarks and reads them again when they change. It keeps no catalogue.
 
@@ -72,3 +75,4 @@ defaults, and unknown keys are errors.
 | [0006](adr/0006-use-the-systems-controls.md) | Build the interface from the system's controls | Accepted |
 | [0007](adr/0007-decode-each-preview-at-its-size.md) | Decode each preview at its size, with Core Image | Accepted |
 | [0008](adr/0008-keep-edits-in-the-photo.md) | Keep a photo's adjustments in the photo itself | Accepted |
+| [0009](adr/0009-recipes-are-looks-kept-by-the-app.md) | A recipe is a look without white balance, kept by the app | Accepted |

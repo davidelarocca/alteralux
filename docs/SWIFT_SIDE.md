@@ -28,6 +28,10 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
   - `EditStore` keeps a photo's adjustments between launches: in an extended
     attribute of the photo, or in a folder of the app's when the photo cannot
     be written ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)).
+  - `Recipe` is a look under a name: every value of `DevelopSettings` but
+    the white balance. `RecipeStore` keeps the recipes in a folder of the
+    app's, one JSON file each
+    ([ADR 0009](adr/0009-recipes-are-looks-kept-by-the-app.md)).
   - The library, in `Library/`: `LibraryFolders` remembers the folders the user
     added (security-scoped bookmarks in a property list) and holds their
     access; `FolderContents` reads a folder's tree and its photos, in the
@@ -41,7 +45,11 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     thread pool, and wraps the result in a `CGImage` tagged linear sRGB.
   - `ImageExporter` writes JPEG, 10-bit HEIC, 16-bit TIFF and PNG through
     Core Image, converting to sRGB or Display P3 and embedding the profile,
-    with the original's camera metadata.
+    with the original's camera metadata. `BatchExporter` develops several
+    photos one after the other, each decoded at the size it is exported at,
+    and writes them beside the originals or into one folder, never over a
+    file that is there; it reports per photo and stops between photos when
+    its task is cancelled.
 
 The tests of the package run the real engine: they check row order and channel
 order end to end, the bit depth and profile of exported files, and the
@@ -100,6 +108,21 @@ open photos, the settings of the selected one and its preview.
   marks a photo and hides it; the discarded photos have a filter of their
   own, where they are taken back or emptied into the Trash. Discarding and
   moving are steps of the window's undo.
+- **Recipes.** `AppModel` holds the recipes. They are one menu
+  (`RecipeMenu`) in two places. In the toolbar, choosing a recipe gives it to
+  the photo on screen, as one step of undo kept at once, and the look on
+  screen can be saved as a new one. In the bar of the library's selection,
+  choosing a recipe gives it to every selected photo, in the strip or not,
+  as one step of undo for all: `EditHistory.keep` writes them, and forgets
+  the adjustments of a photo that had none when the step is undone. In both
+  places the menu renames and deletes recipes. Copy Adjustments and Paste
+  Adjustments in the Edit menu do the same with the look of one photo. A
+  look never carries the white balance.
+- **Export.** One sheet (`ExportSheet`, a `FormSheet`): for the photo on
+  screen it is followed by the save panel; for the selected photos of the
+  library it also asks where they go (a folder beside each original, or one
+  folder), stays while they are developed with one progress and a way to
+  stop, and at the end names only the photos that failed.
 - **Edits.** `EditHistory` follows the adjustments of the selected photo. A
   change is what happens between two moments of stillness (a whole drag, a
   film chosen, a reset): its first value registers one step in the window's

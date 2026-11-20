@@ -79,7 +79,20 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
 - Verified by driving the built app on 2026-11-20: a selected photo brings up the bar of actions;
   discarded, it leaves the grid (seven of eight), carries the mark as an extended attribute and is
   still on disk; the counts read right in Italian ("1 selezionata").
-- **Not verified yet**: the menus of the bar (Move to, Copy to, Tag) and the emptying into the Trash by
+- Verified by driving the built app on 2026-11-20, on a folder of test pictures: a recipe saved from
+  the toolbar (the name asked, the Save button waiting for it) is a file in the app's folder without
+  a white balance; given to another photo it changes its film, is written into the photo, and is
+  undone and redone from the toolbar; from the library's bar it reaches the selected photo and Undo
+  in the Edit menu takes it back; Copy Adjustments and Paste Adjustments give a photo the look of
+  another, with its mark in the grid, and Undo leaves it without adjustments and without mark; the
+  export of a selection writes into "Sviluppate" beside the originals under the name of the photo
+  and its film, a 24-megapixel picture at its full size, with the progress on screen; the bar of
+  the selection in Italian at the smallest window. This was before the recipes became a menu and
+  the export sheet took its new shape: those two are covered by tests and snapshots, not yet seen
+  in the built app.
+- **Not verified yet**: several photos selected at once in the built app (a recipe and an export for
+  many are covered by tests of the app model); the export into a folder chosen in the panel; stopping
+  an export halfway; the menus of the bar (Move to, Copy to, Tag) and the emptying into the Trash by
   hand in the built app (they are covered by tests of the app model); RAW files of other cameras, their
   highlights and metadata; how a white balance drag feels under the hand (it is timed through the app
   model, not by hand); drag and drop, trackpad gestures, and the Open panel.
@@ -163,7 +176,25 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
-   photos, adaptive to exposure and temperature.
+   photos, adaptive to exposure and temperature. Done, the first part
+   ([ADR 0009](adr/0009-recipes-are-looks-kept-by-the-app.md)): a recipe is a look under a name,
+   everything but the white balance, kept by the app; one Recipe menu, in the toolbar and in the bar
+   of the library's selection, gives a recipe to the photo on screen or to the selected photos (one
+   undo takes it back from all), saves the look on screen as a new recipe, renames and deletes;
+   Copy Adjustments and Paste Adjustments in the Edit menu; the selected photos of the library are
+   exported in one go, each with its own adjustments, at the original size or a smaller one, into a
+   folder "Developed" beside the originals or into one folder, with one progress, a way to stop,
+   and at the end only the photos that failed. Sheets share one shape (`FormSheet`), drawn after the
+   system's alert. Still open:
+   - Adaptive recipes: the exposure rests on the automatic meter that is already there; the
+     temperature needs an automatic white balance, to settle on real photos (see the vision's open
+     questions).
+   - Recipes are in the order of their names, and deleting one asks first but is not a step of undo.
+     Recipe files cannot be imported or handed to someone else yet.
+   - The export's progress is the system's bar, not the print coming up in the developer of the
+     vision. Photos opened one by one, outside the library, are exported one at a time.
+   - A photo of the strip that receives a recipe from the library keeps its old thumbnail in the
+     strip until it is shown.
 8. **Crop and straighten.**
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
@@ -174,6 +205,23 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;
    `/swift-harness:product-map` and `/swift-harness:audit`.
 12. **Version 1.0**: the icon, the notarized release.
+
+### Before step 8: the design, as the user sees it in the running app
+
+Said on 2026-11-20 by trying step 7 in the running app, and proposed as the next piece of work, on a
+branch of its own. What was said, in the order to take it:
+
+- The library's page: the filter (All, With adjustments, Discarded) at the top in the center;
+  the actions on the selection as buttons in a bar floating at the bottom in the center; at the
+  top on the trailing side one button to filter the photos (by kind of file, by tag and other
+  criteria) and to sort them (by name, date and other criteria).
+- Upright photos in the grid sit in a wide tile with empty bands at their sides: the grid should
+  adapt to the shape of each photo.
+- Things that reach past the window's edge when the window is made small: to find one by one in
+  the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
+- One look for what asks and what answers: the system's alert (bold title, wide round buttons)
+  is the reference the user likes; `FormSheet` follows it. The rest of the app is to be gone
+  through the same way, screen by screen, shown to the user before it is built.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.
