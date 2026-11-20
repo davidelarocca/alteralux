@@ -36,7 +36,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Entity | Where (`File.swift:line`) | Opens destination | Related entities reachable | Action set |
 |---|---|---|---|---|
 | Recipe | The toolbar's Recipe menu while developing (`RecipeMenu.swift`, from `MainScreen.swift`) | n/a | n/a (its film and paper are shown as text) | ✓ |
-| Recipe | The Recipe menu of the library's selection bar (`RecipeMenu.swift`, from `LibrarySelectionBar.swift`) | n/a | n/a | ✓ but Save as New: there is no look on screen to save |
+| Recipe | The Recipe list of the library's selection bar (`LibrarySelectionBar.swift`) | n/a | n/a | Give only: see Exceptions |
 
 ## Action sets
 
@@ -57,6 +57,7 @@ Deliberate departures from the rules, so they are not reported again.
 
 | Where | Rule not applied | Why |
 |---|---|---|
+| Recipe, in the library's selection bar | Save as New, Rename, Delete | The bar gives a recipe to the selected photos; recipes are made and managed from the toolbar's Recipe menu while developing, where there is a look on screen |
 | Recipes | Reorder | They are listed by name, like the films: an order of one's own waits for people to have many |
 | Recipes | Undo of create, rename and delete | The window's undo is the history of the photos' adjustments; deleting asks first, and a recipe deleted by mistake is saved again from any photo that has its look |
 

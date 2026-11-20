@@ -212,12 +212,21 @@ pull request per step, or per part of a long one; a merged branch is deleted.
 Said on 2026-11-20 by trying step 7 in the running app, and proposed as the next piece of work, on a
 branch of its own. What was said, in the order to take it:
 
-- The library's page: the filter (All, With adjustments, Discarded) at the top in the center;
-  the actions on the selection as buttons in a bar floating at the bottom in the center; at the
-  top on the trailing side one button to filter the photos (by kind of file, by tag and other
-  criteria) and to sort them (by name, date and other criteria).
-- Upright photos in the grid sit in a wide tile with empty bands at their sides: the grid should
-  adapt to the shape of each photo.
+- The library's page, drawn first as mockups the user approved. Done: the filter (All, With
+  Adjustments, Discarded) in the middle of the toolbar; a Filter and Sort menu at its trailing side
+  (by name, date or kind, ascending or not; RAW or the other kinds; one Finder tag); the photos in
+  rows of one height, each as wide as its own shape, so an upright photo is no longer in a wide
+  tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
+  photo, which stays hidden outside its own filter; the actions on the selection in a bar floating
+  over the grid; up and down arrows; under the grid, the size of the photos shown or of the selected
+  ones; a rectangle dragged over the grid selects photos; a list of tags in the Finder's manner, with
+  a field that narrows it and makes a tag with a color; a photo opens with the adjustments closed.
+  Seen in the built app on 2026-11-20: the tag list, a new tag made with a color and written to the
+  file, a photo opening without the adjustments; with real pointer events on a folder of 40 test
+  pictures, a click on a photo and between them, a rectangle that scrolls the grid when held at its
+  bottom edge, and the arrow keys bringing the photo they reach in sight. Still open: the date is
+  the file's, not the one of the shot; one tag at a time; the order and the filters are not kept
+  between launches.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)

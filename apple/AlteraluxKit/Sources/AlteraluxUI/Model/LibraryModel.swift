@@ -11,11 +11,32 @@ enum LibraryFilter: Hashable, CaseIterable {
     case discarded
 }
 
-/// What was read of a folder: its photos, and which carry adjustments and the discarded mark.
+/// What the photos of a folder are sorted by.
+enum LibrarySort: Hashable, CaseIterable {
+    /// By name, as the Finder orders them.
+    case name
+    /// By the date the file was created.
+    case date
+    /// By kind of file, and by name within a kind.
+    case kind
+}
+
+/// Which kinds of file the grid shows.
+enum LibraryKinds: Hashable, CaseIterable {
+    case all
+    /// Camera RAW files only.
+    case raw
+    /// Everything but camera RAW files: JPEG, HEIC, TIFF and the like.
+    case other
+}
+
+/// What was read of a folder: its photos, which carry adjustments and the discarded mark, and
+/// what each says about itself.
 private struct FolderListing: Sendable {
     var photos: [URL] = []
     var adjusted: Set<URL> = []
     var discarded: Set<URL> = []
+    var infos: [URL: PhotoInfo] = [:]
 }
 
 /// A folder the user added, with what is in it.
@@ -45,7 +66,22 @@ final class LibraryModel {
     private(set) var adjusted: Set<URL> = []
     /// Those of `photos` the user discarded: marked, hidden, and still on disk.
     private(set) var discarded: Set<URL> = []
+    /// The shape, date, kind, size and tags of each of `photos`, read with the folder.
+    private(set) var infos: [URL: PhotoInfo] = [:]
     var filter = LibraryFilter.all {
+        didSet { selection.formIntersection(visiblePhotos) }
+    }
+
+    /// What the photos are sorted by, and whether from the first to the last.
+    var sort = LibrarySort.name
+    var sortsAscending = true
+    /// The kinds of file shown.
+    var kinds = LibraryKinds.all {
+        didSet { selection.formIntersection(visiblePhotos) }
+    }
+
+    /// The Finder tag a photo must carry to be shown; `nil` shows the photos whatever their tags.
+    var tagFilter: String? {
         didSet { selection.formIntersection(visiblePhotos) }
     }
 
@@ -85,13 +121,89 @@ final class LibraryModel {
         roots.isEmpty
     }
 
-    /// The photos the grid shows: those of the folder that pass the filter.
+    /// The photos the grid shows: those of the folder that pass the filters, in the order asked.
     var visiblePhotos: [URL] {
+        let shown = filteredPhotos.filter(passesKindAndTag)
+        guard sort != .name || !sortsAscending else { return shown }
+        // The folder's own order settles what the sort leaves equal.
+        let place = Dictionary(uniqueKeysWithValues: shown.enumerated().map { ($1, $0) })
+        let sorted = shown.sorted { lhs, rhs in
+            switch sort {
+            case .name:
+                break
+            case .date:
+                let (first, second) = (infos[lhs]?.date ?? .distantFuture, infos[rhs]?.date ?? .distantFuture)
+                if first != second {
+                    return first < second
+                }
+            case .kind:
+                let (first, second) = (lhs.pathExtension.lowercased(), rhs.pathExtension.lowercased())
+                if first != second {
+                    return first < second
+                }
+            }
+            return (place[lhs] ?? 0) < (place[rhs] ?? 0)
+        }
+        return sortsAscending ? sorted : sorted.reversed()
+    }
+
+    /// The photos of the folder that pass the filter of the toolbar, before kind and tag.
+    private var filteredPhotos: [URL] {
         switch filter {
         case .all: photos.filter { !discarded.contains($0) }
         case .adjusted: photos.filter { adjusted.contains($0) && !discarded.contains($0) }
         case .discarded: photos.filter(discarded.contains)
         }
+    }
+
+    private func passesKindAndTag(_ photo: URL) -> Bool {
+        let info = infos[photo]
+        switch kinds {
+        case .all: break
+        case .raw: if info?.isRaw != true {
+                return false
+            }
+        case .other: if info?.isRaw == true {
+                return false
+            }
+        }
+        if let tagFilter {
+            return info?.tags.contains { $0.name == tagFilter } ?? false
+        }
+        return true
+    }
+
+    /// Whether a kind or a tag is hiding photos of the folder.
+    var hasFilters: Bool {
+        kinds != .all || tagFilter != nil
+    }
+
+    /// Shows the photos of every kind again, whatever their tags.
+    func clearFilters() {
+        kinds = .all
+        tagFilter = nil
+    }
+
+    /// How many photos the toolbar's filter lets through, before kind and tag: what "38 of 412"
+    /// counts against.
+    var filteredCount: Int {
+        filteredPhotos.count
+    }
+
+    /// The Finder tags the photos of the folder carry, by name, each once.
+    var tagsInFolder: [FinderTag] {
+        var seen: [String: FinderTag] = [:]
+        for photo in photos {
+            for tag in infos[photo]?.tags ?? [] where seen[tag.name] == nil || seen[tag.name]?.color == nil {
+                seen[tag.name] = tag
+            }
+        }
+        return seen.values.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+    }
+
+    /// The size on disk of `chosen`, in bytes.
+    func size(of chosen: some Sequence<URL>) -> Int64 {
+        chosen.reduce(0) { $0 + (infos[$1]?.fileSize ?? 0) }
     }
 
     /// The folder on screen as the tree has it, with its name and count.
@@ -213,6 +325,17 @@ final class LibraryModel {
         anchor = target
     }
 
+    /// The photos a rectangle dragged over the grid covers become the selection, as in the
+    /// Finder: with Shift they join the photos selected before, with Command they join or
+    /// leave it.
+    func select(covered: Set<URL>, before: Set<URL> = [], toggling: Bool = false) {
+        let covered = covered.intersection(visiblePhotos)
+        selection = toggling ? before.symmetricDifference(covered) : before.union(covered)
+        if let first = visiblePhotos.first(where: covered.contains) {
+            anchor = first
+        }
+    }
+
     func selectAll() {
         selection = Set(visiblePhotos)
     }
@@ -285,8 +408,17 @@ final class LibraryModel {
 
     /// Puts a Finder tag on photos, or takes it off.
     @discardableResult
-    func setTag(_ tag: String, isOn: Bool, for files: [URL]) -> [FileActionResult] {
-        isOn ? PhotoFileActions.addTag(tag, to: files) : PhotoFileActions.removeTag(tag, from: files)
+    func setTag(_ tag: FinderTag, isOn: Bool, for files: [URL]) -> [FileActionResult] {
+        let results = isOn ? PhotoFileActions.addTag(tag, to: files) : PhotoFileActions.removeTag(tag.name, from: files)
+        // The dots of the grid and the tags to filter by follow at once.
+        Task {
+            let read = await Task.detached(priority: .userInitiated) { PhotoInfoReader.infos(of: files) }.value
+            for (photo, info) in read where infos[photo] != nil {
+                infos[photo] = info
+            }
+            selection.formIntersection(visiblePhotos)
+        }
+        return results
     }
 
     // MARK: - Reading
@@ -296,6 +428,11 @@ final class LibraryModel {
         photos = listing.photos
         adjusted = listing.adjusted
         discarded = listing.discarded
+        infos = listing.infos
+        // A tag no photo of this folder carries would hide them all.
+        if let tagFilter, !tagsInFolder.contains(where: { $0.name == tagFilter }) {
+            self.tagFilter = nil
+        }
         selection.formIntersection(visiblePhotos)
     }
 
@@ -307,6 +444,7 @@ final class LibraryModel {
             return FolderListing(
                 photos: found, adjusted: Set(found.filter(hasAdjustments)),
                 discarded: Set(found.filter(discards.isDiscarded)),
+                infos: PhotoInfoReader.infos(of: found),
             )
         }.value
     }

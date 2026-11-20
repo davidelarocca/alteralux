@@ -72,3 +72,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   buttons beside them.
 - **`.onKeyPress(.delete)` does not match the Delete key.** `KeyEquivalent.delete` is U+0008 and the key
   arrives as U+007F: match both.
+- **A URL remembers the tags it read.** `resourceValues(forKeys: [.tagNamesKey])` caches on the `URL`,
+  and does not see tags written since as the raw attribute `com.apple.metadata:_kMDItemUserTags`. Read
+  tags through `PhotoInfoReader.tags(of:)`, which reads the attribute and clears the cache before falling
+  back. Set by name through `URLResourceValues.tagNames`, a tag of the user's own loses its color.
+- **A symbol in a palette picker is drawn white.** In `.pickerStyle(.palette)` neither `.tint` nor
+  `.foregroundStyle` colors an `Image`; it takes its color with `.symbolRenderingMode(.palette)`.

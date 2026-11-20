@@ -1,3 +1,5 @@
+import AlteraluxKit
+import AppKit
 import DesignSystem
 import SwiftUI
 
@@ -8,12 +10,40 @@ struct LibraryGrid: View {
     @Binding var isAddingFolder: Bool
     @AppStorage("library.thumbnailSize") private var thumbnailSize = LibraryGrid.thumbnailSizes.lowerBound + 40
     @State private var isEmptyingDiscarded = false
+    /// Where each photo of the grid is drawn, in the grid's own space, for the rectangle that
+    /// selects by dragging.
+    @State private var tileFrames: [URL: CGRect] = [:]
+    /// The rectangle being dragged over the grid, while it is.
+    @State private var marquee: CGRect?
+    /// Where the drag started, in the grid's space, and where the pointer is in the part of the
+    /// grid in sight: the grid can scroll under a pointer that does not move.
+    @State private var marqueeStart: CGPoint?
+    @State private var pointerInSight: CGPoint = .zero
+    @State private var selectionBeforeMarquee: Set<URL> = []
+    @State private var marqueeToggles = false
+    /// Scrolls the grid while the rectangle is held near its top or bottom edge.
+    @State private var autoscroll: Task<Void, Never>?
+    @State private var scrollPosition = ScrollPosition()
+    /// Whether the grid has the keys. A click on it gives them, as does its appearing.
+    @FocusState private var hasKeys: Bool
+    /// The grid's scrolling, kept where reading it redraws nothing: it changes at every step.
+    @State private var scroll = ScrollState()
 
     /// The widths a thumbnail can have, in points.
     static let thumbnailSizes = 120.0 ... 320.0
     private static let thumbnailSizeStep = 20.0
     /// A thumbnail is this much less tall than wide: room for an upright photo and a wide one.
     private static let tileProportion = 0.75
+    /// The name of the grid's scrolling space, where photos and the rectangle are placed.
+    private static let space = "library.grid"
+    /// How far the pointer moves before a press between the photos becomes a drag, in points.
+    private static let dragThreshold: CGFloat = 3
+    /// How near the top or bottom edge the rectangle starts the grid scrolling, in points; the
+    /// further past it, the faster, up to the most it scrolls at a step.
+    private static let autoscrollEdge: CGFloat = 24
+    private static let autoscrollMaximumStep: CGFloat = 40
+    /// How often the grid scrolls a step while the rectangle is held at an edge: once a frame.
+    private static let autoscrollInterval = Duration.milliseconds(16)
     /// Width of the slider for the size of the thumbnails, in points.
     private static let sliderWidth: CGFloat = 130
 
@@ -22,10 +52,16 @@ struct LibraryGrid: View {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.DS.viewerSurround)
-            if !model.library.selection.isEmpty {
-                Divider()
-                LibrarySelectionBar()
-            }
+                // The actions on the selection float over the photos, which scroll clear of them.
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    if !model.library.selection.isEmpty {
+                        LibrarySelectionBar()
+                            .padding(.horizontal, Spacing.l)
+                            .padding(.bottom, Spacing.l)
+                            .transition(.opacity)
+                    }
+                }
+                .animation(Motion.quick, value: model.library.selection.isEmpty)
             Divider()
             statusBar
         }
@@ -49,6 +85,15 @@ struct LibraryGrid: View {
                 Button("Add Folder…") { isAddingFolder = true }
                     .buttonStyle(.borderedProminent)
             }
+        } else if library.visiblePhotos.isEmpty, library.hasFilters {
+            // The photos are there, hidden by the kind or the tag chosen.
+            ContentUnavailableView {
+                Label("No Photos Match", systemImage: "line.3.horizontal.decrease")
+            } description: {
+                Text("No photo of this folder is of the kind or carries the tag chosen.")
+            } actions: {
+                Button("Clear Filters") { library.clearFilters() }
+            }
         } else if library.visiblePhotos.isEmpty {
             ContentUnavailableView {
                 Label("No Photos", systemImage: "photo.on.rectangle")
@@ -68,61 +113,210 @@ struct LibraryGrid: View {
         }
     }
 
+    /// The photos in rows of one height, each as wide as its own shape asks.
     private var grid: some View {
-        let library = model.library
-        let size = CGSize(width: thumbnailSize, height: thumbnailSize * Self.tileProportion)
-        return ScrollView {
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: thumbnailSize), spacing: Spacing.m)], spacing: Spacing.m) {
-                ForEach(library.visiblePhotos, id: \.self) { photo in
-                    LibraryTile(
-                        photo: photo, size: size,
-                        isSelected: library.selection.contains(photo),
-                        hasAdjustments: library.adjusted.contains(photo),
-                    )
+        GeometryReader { proxy in
+            let library = model.library
+            let height = thumbnailSize * Self.tileProportion
+            let rows = LibraryRows(
+                photos: library.visiblePhotos,
+                aspectRatio: { library.infos[$0]?.aspectRatio ?? PhotoInfo.unknownAspectRatio },
+                width: proxy.size.width - Spacing.m * 2, height: height, spacing: Spacing.m,
+            )
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: Spacing.m) {
+                    ForEach(rows.rows) { row in
+                        HStack(alignment: .top, spacing: Spacing.m) {
+                            ForEach(row.items) { item in
+                                LibraryTile(
+                                    photo: item.photo, size: CGSize(width: item.width, height: height),
+                                    isSelected: library.selection.contains(item.photo),
+                                    hasAdjustments: library.adjusted.contains(item.photo),
+                                    isDiscarded: library.discarded.contains(item.photo),
+                                    tags: library.infos[item.photo]?.tags ?? [],
+                                )
+                                .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.space)) } action: {
+                                    tileFrames[item.photo] = $0
+                                }
+                            }
+                        }
+                    }
                 }
+                // Each row is a place the grid can be scrolled to, for the arrow keys.
+                .scrollTargetLayout()
+                .padding(Spacing.m)
+                // The room around and under the photos takes clicks and drags too; a click on a
+                // photo is the photo's.
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .topLeading)
+                .contentShape(.rect)
+                .gesture(SpatialTapGesture(coordinateSpace: .named(Self.space)).onEnded { tap in
+                    if !tileFrames.contains(where: { library.visiblePhotos.contains($0.key) && $0.value.contains(tap.location) }) {
+                        library.clearSelection()
+                    }
+                })
+                .gesture(marqueeDrag)
+                .overlay(alignment: .topLeading) {
+                    if let marquee {
+                        SelectionMarquee()
+                            .frame(width: marquee.width, height: marquee.height)
+                            .offset(x: marquee.minX, y: marquee.minY)
+                    }
+                }
+                .coordinateSpace(.named(Self.space))
             }
-            .padding(Spacing.m)
+            .scrollPosition($scrollPosition)
+            .onScrollGeometryChange(for: ScrollGeometry.self, of: { $0 }, action: { scroll.geometry = $1 })
+            .onGeometryChange(for: CGFloat.self, of: \.size.height) { scroll.height = $0 }
+            // The grid takes the keys: arrows move through the photos, Return develops.
+            .focusable()
+            .focused($hasKeys)
+            .focusEffectDisabled()
+            .simultaneousGesture(TapGesture().onEnded { hasKeys = true })
+            .onAppear { hasKeys = true }
+            .onKeyPress(.leftArrow) {
+                library.moveSelection(by: -1)
+                reveal(library.focusedPhoto, in: rows)
+                return .handled
+            }
+            .onKeyPress(.rightArrow) {
+                library.moveSelection(by: 1)
+                reveal(library.focusedPhoto, in: rows)
+                return .handled
+            }
+            .onKeyPress(.upArrow) { move(in: rows, rowsDown: -1) }
+            .onKeyPress(.downArrow) { move(in: rows, rowsDown: 1) }
+            .onKeyPress(.return) {
+                guard let photo = library.focusedPhoto else { return .ignored }
+                model.develop(photo)
+                return .handled
+            }
+            .onKeyPress(.escape) {
+                library.clearSelection()
+                return .handled
+            }
+            .onKeyPress(keys: [.delete, .deleteForward, KeyEquivalent("\u{7F}")]) { _ in
+                guard !library.selection.isEmpty else { return .ignored }
+                model.discardSelection()
+                return .handled
+            }
+            .onKeyPress(keys: ["a"]) { press in
+                guard press.modifiers.contains(.command) else { return .ignored }
+                library.selectAll()
+                return .handled
+            }
         }
-        // The grid takes the keys: arrows move through the photos, Return develops.
-        .focusable()
-        .focusEffectDisabled()
-        .onKeyPress(.leftArrow) {
-            library.moveSelection(by: -1)
-            return .handled
+    }
+
+    /// A drag that starts between the photos draws a rectangle and selects the photos it
+    /// touches, as the Finder does: with Shift it adds to the selection, with Command it turns
+    /// each photo it touches on or off. Held near the top or bottom edge, it scrolls the grid.
+    private var marqueeDrag: some Gesture {
+        DragGesture(minimumDistance: Self.dragThreshold, coordinateSpace: .named(Self.space))
+            .onChanged { drag in
+                if marqueeStart == nil {
+                    let modifiers = NSEvent.modifierFlags
+                    marqueeToggles = modifiers.contains(.command)
+                    selectionBeforeMarquee = modifiers.contains(.command) || modifiers.contains(.shift) ? model.library.selection : []
+                    marqueeStart = drag.startLocation
+                    startAutoscroll()
+                }
+                let inSight = scroll.geometry?.visibleRect.origin ?? .zero
+                pointerInSight = CGPoint(x: drag.location.x - inSight.x, y: drag.location.y - inSight.y)
+                updateMarquee()
+            }
+            .onEnded { _ in
+                autoscroll?.cancel()
+                autoscroll = nil
+                marquee = nil
+                marqueeStart = nil
+                selectionBeforeMarquee = []
+            }
+    }
+
+    /// Draws the rectangle from where the drag started to the pointer, and selects what it touches.
+    private func updateMarquee() {
+        guard let start = marqueeStart else { return }
+        let inSight = scroll.geometry?.visibleRect.origin ?? .zero
+        let pointer = CGPoint(x: pointerInSight.x + inSight.x, y: pointerInSight.y + inSight.y)
+        let rectangle = CGRect(
+            x: min(start.x, pointer.x), y: min(start.y, pointer.y),
+            width: abs(pointer.x - start.x), height: abs(pointer.y - start.y),
+        )
+        marquee = rectangle
+        let library = model.library
+        let covered = tileFrames.filter { library.visiblePhotos.contains($0.key) && $0.value.intersects(rectangle) }.keys
+        library.select(covered: Set(covered), before: selectionBeforeMarquee, toggling: marqueeToggles)
+    }
+
+    /// While the rectangle is drawn, scrolls the grid a step each frame the pointer is held near
+    /// or past its top or bottom edge, and stretches the rectangle with it.
+    private func startAutoscroll() {
+        autoscroll?.cancel()
+        autoscroll = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.autoscrollInterval)
+                guard marqueeStart != nil else { continue }
+                // Until the grid has scrolled once the system has not said where it is: it is
+                // at its top, as tall as measured, and the photos end where the last one does.
+                let geometry = scroll.geometry
+                let height = geometry?.visibleRect.height ?? scroll.height
+                let past = pointerInSight.y > height - Self.autoscrollEdge
+                    ? pointerInSight.y - (height - Self.autoscrollEdge)
+                    : min(pointerInSight.y - Self.autoscrollEdge, 0)
+                guard past != 0 else { continue }
+                let step = max(-Self.autoscrollMaximumStep, min(past / 2, Self.autoscrollMaximumStep))
+                let offset = geometry?.contentOffset.y ?? 0
+                let top = -(geometry?.contentInsets.top ?? 0)
+                let contentHeight = geometry?.contentSize.height ?? (tileFrames.values.map(\.maxY).max() ?? 0) + Spacing.m
+                let containerHeight = geometry?.containerSize.height ?? scroll.height
+                let bottom = max(top, contentHeight - containerHeight + (geometry?.contentInsets.bottom ?? 0))
+                let target = min(max(offset + step, top), bottom)
+                guard target != offset else { continue }
+                // The offset counts from above the toolbar's inset; a position to scroll to
+                // counts from the top of the photos.
+                scrollPosition.scrollTo(y: target - top)
+                updateMarquee()
+            }
         }
-        .onKeyPress(.rightArrow) {
-            library.moveSelection(by: 1)
-            return .handled
+    }
+
+    /// Goes to the photo above or below the one the keys are on, or to the first photo when
+    /// none is selected yet.
+    private func move(in rows: LibraryRows, rowsDown: Int) -> KeyPress.Result {
+        let library = model.library
+        if let photo = library.focusedPhoto {
+            if let target = rows.photo(from: photo, rowsDown: rowsDown) {
+                library.click(target)
+            }
+        } else {
+            library.moveSelection(by: rowsDown)
         }
-        .onKeyPress(.return) {
-            guard let photo = library.focusedPhoto else { return .ignored }
-            model.develop(photo)
-            return .handled
-        }
-        .onKeyPress(.escape) {
-            library.clearSelection()
-            return .handled
-        }
-        .onKeyPress(keys: [.delete, .deleteForward, KeyEquivalent("\u{7F}")]) { _ in
-            guard !library.selection.isEmpty else { return .ignored }
-            model.discardSelection()
-            return .handled
-        }
-        .onKeyPress(keys: ["a"]) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            library.selectAll()
-            return .handled
-        }
+        reveal(library.focusedPhoto, in: rows)
+        return .handled
+    }
+
+    /// Scrolls the grid as little as needed to bring the row of a photo the keys reached in sight.
+    private func reveal(_ photo: URL?, in rows: LibraryRows) {
+        guard let photo, let row = rows.rows.first(where: { $0.items.contains { $0.photo == photo } }) else { return }
+        scrollPosition.scrollTo(id: row.id)
+    }
+
+    /// The size on disk of some photos, as the Finder writes it.
+    private func size(of photos: some Sequence<URL>) -> Text {
+        Text(model.library.size(of: photos), format: .byteCount(style: .file))
     }
 
     private var statusBar: some View {
         let library = model.library
         return HStack(spacing: Spacing.s) {
+            // The size is of the photos selected, or of all those shown when none is.
             Group {
-                if library.selection.isEmpty {
-                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("double-click to develop"))")
+                if library.visiblePhotos.isEmpty {
+                    Text("\(library.visiblePhotos.count) photos")
+                } else if library.selection.isEmpty {
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos)) · \(Text("double-click to develop"))")
                 } else {
-                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected"))")
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected")) · \(size(of: library.selection))")
                 }
             }
             .font(Typography.technical)
@@ -148,40 +342,65 @@ struct LibraryGrid: View {
     }
 }
 
-/// One photo of the grid: its thumbnail, its name, and a mark when it has adjustments.
+/// Where the grid is scrolled to. A class, not observed: the rectangle that selects reads it,
+/// and the grid need not be drawn again each time it scrolls.
+@MainActor
+private final class ScrollState {
+    var geometry: ScrollGeometry?
+    /// The height of the grid on screen, known before it first scrolls.
+    var height: CGFloat = 0
+}
+
+/// One photo of the grid, drawn with its own shape: its thumbnail, a mark when it has
+/// adjustments or was discarded, and under it its name, after a dot for each colored Finder tag.
 private struct LibraryTile: View {
     @Environment(AppModel.self) private var model
     let photo: URL
     let size: CGSize
     let isSelected: Bool
     let hasAdjustments: Bool
+    let isDiscarded: Bool
+    let tags: [FinderTag]
     @State private var image: CGImage?
+
+    /// The diameter of a tag's dot, in points.
+    private static let dotSize: CGFloat = 8
 
     /// Thumbnails are asked for in two sizes, in pixels, so the ones kept can be used again
     /// whatever the slider says: enough for the smaller tiles, and for the larger ones.
     private var pixels: Int {
-        size.width <= 160 ? 320 : 640
+        max(size.width, size.height) <= 160 ? 320 : 640
     }
 
     var body: some View {
         VStack(spacing: Spacing.xs) {
-            ThumbnailCell(image: image, isSelected: isSelected, size: size, showsWholePhoto: true)
+            ThumbnailCell(image: image, isSelected: isSelected, size: size)
                 .overlay(alignment: .bottomTrailing) {
                     if hasAdjustments {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(Typography.badge)
-                            .padding(Spacing.xs)
-                            .background(.regularMaterial, in: .rect(cornerRadius: Radius.control))
-                            .padding(Spacing.xs)
-                            .accessibilityHidden(true)
+                        mark("slider.horizontal.3")
                     }
                 }
-            Text(photo.lastPathComponent)
-                .font(Typography.caption)
-                .foregroundStyle(isSelected ? .primary : .secondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .frame(width: size.width)
+                .overlay(alignment: .bottomLeading) {
+                    if isDiscarded {
+                        mark("xmark")
+                    }
+                }
+            HStack(spacing: Spacing.xs) {
+                HStack(spacing: Spacing.xxs) {
+                    ForEach(tags.compactMap(\.color), id: \.self) { color in
+                        Circle()
+                            .fill(color.swatch)
+                            .frame(width: Self.dotSize, height: Self.dotSize)
+                    }
+                }
+                .accessibilityHidden(true)
+                Text(photo.lastPathComponent)
+                    .font(Typography.caption)
+                    .foregroundStyle(isSelected ? .primary : .secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+            }
+            .frame(width: size.width)
         }
         .contentShape(.rect)
         .onTapGesture(count: 2) { model.develop(photo) }
@@ -191,6 +410,7 @@ private struct LibraryTile: View {
         .help(photo.lastPathComponent)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(label)
+        .accessibilityValue(Text(verbatim: tags.map(\.name).joined(separator: ", ")))
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { model.library.click(photo) }
         .accessibilityAction(named: "Develop") { model.develop(photo) }
@@ -199,7 +419,20 @@ private struct LibraryTile: View {
         }
     }
 
+    /// A small mark in a corner of the thumbnail.
+    private func mark(_ symbol: String) -> some View {
+        Image(systemName: symbol)
+            .font(Typography.badge)
+            .padding(Spacing.xs)
+            .background(.regularMaterial, in: .rect(cornerRadius: Radius.control))
+            .padding(Spacing.xs)
+            .accessibilityHidden(true)
+    }
+
     private var label: Text {
-        hasAdjustments ? Text("\(photo.lastPathComponent), with adjustments") : Text(verbatim: photo.lastPathComponent)
+        if isDiscarded {
+            return Text("\(photo.lastPathComponent), discarded")
+        }
+        return hasAdjustments ? Text("\(photo.lastPathComponent), with adjustments") : Text(verbatim: photo.lastPathComponent)
     }
 }

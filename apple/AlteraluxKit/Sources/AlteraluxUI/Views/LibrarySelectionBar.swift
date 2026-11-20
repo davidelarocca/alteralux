@@ -1,124 +1,110 @@
 import DesignSystem
 import SwiftUI
 
-/// What can be done with the selected photos: move, copy, tag, give a recipe, export, discard.
+/// What can be done with the selected photos: give a recipe, export, move, copy, tag, discard.
+/// It floats over the grid, near its bottom edge, while photos are selected.
 ///
-/// The bar never cuts a title short. Where its column is too narrow for everything side by
-/// side, clearing the selection becomes an icon, and then moving, copying and tagging go into
-/// one menu.
+/// Its lists open above it, inside the window: a menu would open downward, past the window's
+/// edge. The bar never cuts a title short: where the grid is too narrow for every action side
+/// by side, moving, copying and tagging show their symbols alone.
 struct LibrarySelectionBar: View {
     @Environment(AppModel.self) private var model
+    /// What was typed over the list of tags.
+    @State private var typedTag = ""
 
     var body: some View {
         ViewThatFits(in: .horizontal) {
-            row(isCompact: false, clearsWithIcon: false)
-            row(isCompact: false, clearsWithIcon: true)
-            row(isCompact: true, clearsWithIcon: true)
+            bar(isCompact: false)
+            bar(isCompact: true)
         }
-        .menuStyle(.button)
-        .controlSize(.small)
-        .padding(.horizontal, Spacing.l)
-        .padding(.vertical, Spacing.xs)
-        .background(.bar)
     }
 
-    private func row(isCompact: Bool, clearsWithIcon: Bool) -> some View {
-        HStack(spacing: Spacing.m) {
-            // Each control keeps the width of its title: the row says how wide it needs to be.
-            Group {
-                Text("\(model.library.selection.count) photos")
-                    .font(Typography.value)
-                if model.library.filter == .discarded {
-                    Button("Take Back") { model.discardSelection() }
-                        .help("Take the selected photos back among the others")
-                } else {
-                    actions(isCompact: isCompact)
-                }
+    private func bar(isCompact: Bool) -> some View {
+        FloatingBar {
+            Text("\(model.library.selection.count) photos")
+                .font(Typography.value)
+            Divider()
+            if model.library.filter == .discarded {
+                Button("Take Back") { model.discardSelection() }
+                    .help("Take the selected photos back among the others")
+            } else {
+                actions(isCompact: isCompact)
             }
-            .fixedSize()
-            Spacer(minLength: Spacing.s)
+            Divider()
             Button {
                 model.library.clearSelection()
             } label: {
-                if clearsWithIcon {
-                    Label("Clear Selection", systemImage: "xmark.circle").labelStyle(.iconOnly)
-                } else {
-                    Text("Clear Selection")
-                }
+                Label("Clear Selection", systemImage: "xmark").labelStyle(.iconOnly)
             }
             .buttonStyle(.borderless)
             .help("Clear Selection")
-            .fixedSize()
         }
         .lineLimit(1)
+        .fixedSize()
     }
 
     @ViewBuilder
     private func actions(isCompact: Bool) -> some View {
-        if !isCompact {
-            organizing
-        }
-        recipes
+        ChoiceListButton(Text("Recipe"), choices: recipes, empty: Text("No recipes yet. Save one while developing a photo."))
+            .help("Give a recipe to the selected photos. Recipes are saved while developing a photo.")
         Button("Export…") { model.presentExport() }
             .help("Develop the selected photos and write them as files")
             .disabled(!model.canPresentExport)
-        Button("Discard") { model.discardSelection() }
-            .help("Hide the selected photos. They stay on disk until the discarded photos are emptied.")
-        if isCompact {
-            Menu {
-                organizing
-            } label: {
-                Label("More Actions", systemImage: "ellipsis").labelStyle(.iconOnly)
-            }
-            .help("Move, copy or tag the selected photos")
-        }
-    }
-
-    /// Moving, copying and tagging: three menus side by side, or the entries of one.
-    @ViewBuilder private var organizing: some View {
-        Menu("Move to…") {
-            destinations { folder in Task { await model.moveSelection(to: folder) } }
-        }
+        ChoiceListButton(
+            Text("Move to…"), symbol: isCompact ? "folder" : nil,
+            choices: destinations { folder in Task { await model.moveSelection(to: folder) } },
+            empty: Text("No other folder in the library."),
+        )
         .help("Move the selected photos to another folder of the library")
-        Menu("Copy to…") {
-            destinations { folder in Task { await model.copySelection(to: folder) } }
-        }
+        ChoiceListButton(
+            Text("Copy to…"), symbol: isCompact ? "plus.square.on.square" : nil,
+            choices: destinations { folder in Task { await model.copySelection(to: folder) } },
+            empty: Text("No other folder in the library."),
+        )
         .help("Copy the selected photos to another folder of the library")
-        Menu("Tag") {
-            ForEach(model.tagChoices, id: \.name) { choice in
-                Button {
-                    model.toggleTag(choice.name)
-                } label: {
-                    // A check when every selected photo has the tag, a dash when some do.
-                    if choice.carriedBy > 0 {
-                        Label {
-                            Text(verbatim: choice.name)
-                        } icon: {
-                            Image(systemName: choice.carriedBy == model.library.selection.count ? "checkmark" : "minus")
-                        }
-                    } else {
-                        Text(verbatim: choice.name)
-                    }
-                }
-            }
+        ChoiceListButton(Text("Tag"), symbol: isCompact ? "tag" : nil, choices: tags, empty: noTag, staysOpen: true) {
+            TagField(typed: $typedTag)
+                .environment(model)
         }
         .help("Put a Finder tag on the selected photos, or take it off")
+        Button("Discard") { model.discardSelection() }
+            .help("Hide the selected photos. They stay on disk until the discarded photos are emptied.")
     }
 
-    private var recipes: some View {
-        RecipeMenu(model: model, savesNew: false) { model.applyToSelection($0) }
-            .labelStyle(.titleOnly)
-            .help("Give a recipe to the selected photos. Recipes are saved while developing a photo.")
-    }
-
-    /// The folders of the library as menu items, the folder on screen left out.
-    private func destinations(_ choose: @escaping (URL) -> Void) -> some View {
-        ForEach(model.library.destinations.filter { $0.url != model.library.selectedFolder }) { folder in
-            Button {
-                choose(folder.url)
-            } label: {
-                Label(folder.name, systemImage: "folder")
+    /// The recipes, each with its film and paper.
+    private var recipes: [Choice] {
+        model.recipes.map { recipe in
+            Choice(id: recipe.id.uuidString, title: recipe.name, subtitle: model.materials(of: recipe.look)) {
+                model.applyToSelection(recipe)
             }
+        }
+    }
+
+    /// The Finder's tags with their colors: a check when every selected photo has the tag, a
+    /// dash when some do.
+    private var tags: [Choice] {
+        let selected = model.library.selection.count
+        return model.tagChoices.matching(typedTag).map { tag in
+            // A tag without a color has the Finder's empty circle.
+            Choice(
+                id: tag.name, title: tag.name, color: tag.color?.swatch, symbol: "circle",
+                mark: tag.carriedBy == 0 ? .off : tag.carriedBy == selected ? .all : .part,
+            ) {
+                model.toggleTag(tag.name, color: tag.color)
+            }
+        }
+    }
+
+    /// What the list of tags says when no tag's name holds what was typed.
+    private var noTag: Text {
+        let typed = typedTag.trimmingCharacters(in: .whitespacesAndNewlines)
+        return typed.isEmpty ? Text("No Tags") : Text("Press Return to make the tag “\(typed)”.")
+    }
+
+    /// The folders of the library, the folder on screen left out.
+    private func destinations(_ choose: @escaping (URL) -> Void) -> [Choice] {
+        model.library.destinations.filter { $0.url != model.library.selectedFolder }.map { folder in
+            Choice(id: folder.url.path, title: folder.name, symbol: "folder") { choose(folder.url) }
         }
     }
 }

@@ -221,6 +221,124 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct ChoiceListButtonSnapshots {
+        private let source = "\(components)/ChoiceListButton.swift"
+        private let sizes = ["360x80"]
+
+        /// The button where the app puts it, in the floating bar over the photos: with its title,
+        /// with its symbol alone, and disabled. Drawn straight on the photos' dark surround, the
+        /// light appearance's dark text could not be read.
+        private func buttons() -> some View {
+            FloatingBar {
+                ChoiceListButton(Text(verbatim: "Tag"), choices: [], empty: Text(verbatim: "No Tags"))
+                ChoiceListButton(Text(verbatim: "Move to…"), symbol: "folder", choices: [], empty: Text(verbatim: "No Folders"))
+                ChoiceListButton(Text(verbatim: "Recipe"), choices: [], empty: Text(verbatim: "No Recipes"))
+                    .disabled(true)
+            }
+            .fixedSize()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.DS.viewerSurround)
+        }
+
+        @Test func titleSymbolAndDisabled() {
+            #expect(Snapshot.verify("ChoiceListButton", sizes: sizes, state: "closed", locale: "en", source: source) {
+                buttons()
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("ChoiceListButton", sizes: sizes, state: "closed", locale: "ar", source: source) {
+                buttons()
+            } == [])
+        }
+    }
+
+    @MainActor
+    struct FloatingBarSnapshots {
+        private let source = "\(components)/FloatingBar.swift"
+        private let sizes = ["560x90"]
+        private let english = "en"
+
+        /// A bar where the app draws it: over the surround of the photos.
+        private func overThePhotos(_ bar: some View) -> some View {
+            bar
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color.DS.viewerSurround)
+        }
+
+        private func actions() -> some View {
+            FloatingBar {
+                Text(verbatim: "3 photos")
+                Divider()
+                Menu {} label: { Text(verbatim: "Recipe") }
+                Button {} label: { Text(verbatim: "Export…") }
+                Button {} label: { Text(verbatim: "Discard") }
+                    .disabled(true)
+            }
+            .fixedSize()
+        }
+
+        @Test func actionsAndADisabledOne() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "actions", locale: english, source: source) {
+                overThePhotos(actions())
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "long-text", locale: english, source: source) {
+                overThePhotos(
+                    FloatingBar {
+                        Text(verbatim: "A selection described at length")
+                        Button {} label: { Text(verbatim: "One Action With a Long Title") }
+                    }
+                    .fixedSize(),
+                )
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("FloatingBar", sizes: sizes, state: "actions", locale: "ar", source: source) {
+                overThePhotos(actions())
+            } == [])
+        }
+    }
+
+    @MainActor
+    struct SelectionMarqueeSnapshots {
+        private let source = "\(components)/SelectionMarquee.swift"
+        private let sizes = ["320x140"]
+
+        /// The rectangle over three thumbnails, as it is dragged across the library's grid.
+        private func overThumbnails() -> some View {
+            ZStack(alignment: .topLeading) {
+                HStack(spacing: Spacing.m) {
+                    ForEach(0 ..< 3) { _ in
+                        ThumbnailCell(image: nil, isSelected: false, size: CGSize(width: 80, height: 60))
+                    }
+                }
+                .padding(Spacing.l)
+                SelectionMarquee()
+                    .frame(width: 150, height: 80)
+                    .offset(x: 50, y: 30)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Color.DS.viewerSurround)
+        }
+
+        @Test func overThePhotos() {
+            #expect(Snapshot.verify("SelectionMarquee", sizes: sizes, state: "over-thumbnails", locale: "en", source: source) {
+                overThumbnails()
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("SelectionMarquee", sizes: sizes, state: "over-thumbnails", locale: "ar", source: source) {
+                overThumbnails()
+            } == [])
+        }
+    }
+
+    @MainActor
     struct FormSheetSnapshots {
         private let source = "\(components)/FormSheet.swift"
         private let sizes = ["420x300"]
