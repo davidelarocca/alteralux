@@ -46,29 +46,34 @@ draft pull request per step.
    - There is no undo: Reset Adjustments cannot be taken back (solved with step 5).
    - With a black and white print the yellow and magenta filters stay visible, and the development
      times the black and white profiles carry are not offered.
-2. **The inspector redrawn** in the visual direction of the vision: a slider of our own (neutral colors,
-   fill from the neutral point, keyboard and accessibility by step), the film as the heading, spacing and
-   type. Snapshots and `KeyboardCheck` tests with it.
+2. **The interface redrawn** in the visual direction of the vision, as the mockups of 2026-11-20
+   settled it: a slider of our own (neutral colors, fill from the neutral point, keyboard and
+   accessibility by step), the film as the heading and its list with an emblem per film, collapsible
+   sections, the toolbar, the zoom controls under the photo. Snapshots and `KeyboardCheck` tests with it.
 3. **Immediate editing.** Measure where the 0.1 s of a preview update goes, then remove it: a lighter
    preview while a control moves, rendering only what the viewer shows, and no round trip of the pixels
    through main memory (see "GPU texture sharing" and "100% view" below). A performance budget test keeps
    the result.
 4. **White balance** (temperature and tint) from the RAW decoder.
 5. **Edits that persist**, with undo and redo.
-6. **Looks**: save and apply, copy between photos, export several photos, adaptive application.
-7. **Crop and straighten.**
-8. **Camera and lens corrections**, after the open question on their source.
-9. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a look and
-   return the files, so the shortcut saves them (for example in a subfolder beside the originals) and can
-   run as a Finder Quick Action. Needs steps 6 and 8.
-10. **The rest of the harness**, spread over the steps above where it helps: a UI test target
+6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
+   the actions on a selection (move, copy, tag with the Finder's tags, discard). Needs step 5, and the
+   open questions of the vision on where marks are kept and on tags in the sandbox.
+7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
+   photos, adaptive to exposure and temperature.
+8. **Crop and straighten.**
+9. **Camera and lens corrections**, after the open question on their source.
+10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
+   and return the files, so the shortcut saves them (for example in a subfolder beside the originals)
+   and can run as a Finder Quick Action. Needs steps 7 and 9.
+11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;
    `/swift-harness:product-map` and `/swift-harness:audit`.
-11. **Version 1.0**: the icon, the name, the notarized release.
+12. **Version 1.0**: the icon, the name, the notarized release.
 
-After 1.0, in an order still to decide: collections, the Photos integration, more of the engine's
-parameters behind an "advanced" section.
+After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
+an "advanced" section.
 
 Defects found on real RAW files go to step 1.
 
