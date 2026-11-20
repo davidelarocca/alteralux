@@ -1512,12 +1512,32 @@
         }
       }
     },
+    "No photo of this folder is of the kind or carries the tag chosen." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto di questa cartella è del tipo o ha il tag scelto."
+          }
+        }
+      }
+    },
     "No Photos" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuna foto"
+          }
+        }
+      }
+    },
+    "No Photos Match" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna foto corrisponde"
           }
         }
       }

@@ -68,6 +68,15 @@ struct LibraryGrid: View {
                 Button("Add Folder…") { isAddingFolder = true }
                     .buttonStyle(.borderedProminent)
             }
+        } else if library.visiblePhotos.isEmpty, library.hasFilters {
+            // The photos are there, hidden by the kind or the tag chosen.
+            ContentUnavailableView {
+                Label("No Photos Match", systemImage: "line.3.horizontal.decrease")
+            } description: {
+                Text("No photo of this folder is of the kind or carries the tag chosen.")
+            } actions: {
+                Button("Clear Filters") { library.clearFilters() }
+            }
         } else if library.visiblePhotos.isEmpty {
             ContentUnavailableView {
                 Label("No Photos", systemImage: "photo.on.rectangle")
@@ -219,7 +228,9 @@ struct LibraryGrid: View {
         return HStack(spacing: Spacing.s) {
             // The size is of the photos selected, or of all those shown when none is.
             Group {
-                if library.selection.isEmpty {
+                if library.visiblePhotos.isEmpty {
+                    Text("\(library.visiblePhotos.count) photos")
+                } else if library.selection.isEmpty {
                     Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos)) · \(Text("double-click to develop"))")
                 } else {
                     Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected")) · \(size(of: library.selection))")
