@@ -1,6 +1,6 @@
 [package]
 name = "uniffi-bindgen"
-description = "Generates the Swift bindings for spektrafilm-ffi (build tool, not shipped)."
+description = "Generates the Swift bindings for alteralux-ffi (build tool, not shipped)."
 version.workspace = true
 edition.workspace = true
 license.workspace = true

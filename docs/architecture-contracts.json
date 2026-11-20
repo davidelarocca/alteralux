@@ -4,11 +4,11 @@
     "apple/DesignSystem": {
       "DesignSystem": []
     },
-    "apple/SpektrafilmKit": {
-      "SpektrafilmEngine": ["spektrafilm_ffiFFI"],
-      "SpektrafilmKit": ["SpektrafilmEngine"],
-      "SpektrafilmUI": ["SpektrafilmKit", "SpektrafilmEngine", "DesignSystem/DesignSystem"],
-      "spektrafilm_ffiFFI": []
+    "apple/AlteraluxKit": {
+      "AlteraluxEngine": ["alteralux_ffiFFI"],
+      "AlteraluxKit": ["AlteraluxEngine"],
+      "AlteraluxUI": ["AlteraluxKit", "AlteraluxEngine", "DesignSystem/DesignSystem"],
+      "alteralux_ffiFFI": []
     }
   }
 }

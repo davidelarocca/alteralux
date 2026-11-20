@@ -15,6 +15,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
+name = "alteralux-ffi"
+version = "0.1.0"
+dependencies = [
+ "half",
+ "image",
+ "rayon",
+ "serde_json",
+ "spektrafilm-core",
+ "spektrafilm-gpu",
+ "spektrafilm-math",
+ "thiserror 2.0.21",
+ "tracing",
+ "uniffi",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1589,22 +1605,6 @@ dependencies = [
  "spektrafilm-model",
  "thiserror 2.0.21",
  "tracing",
-]
-
-[[package]]
-name = "spektrafilm-ffi"
-version = "0.1.0"
-dependencies = [
- "half",
- "image",
- "rayon",
- "serde_json",
- "spektrafilm-core",
- "spektrafilm-gpu",
- "spektrafilm-math",
- "thiserror 2.0.21",
- "tracing",
- "uniffi",
 ]
 
 [[package]]

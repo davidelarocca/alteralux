@@ -22,7 +22,7 @@ Sizes are in points, `<width>x<height>`, or `<width>` alone when the height does
 
 | Screen | View | File | Window | Min | Default | Max | Compact below | Compact behavior |
 |---|---|---|---|---|---|---|---|---|
-| Main window | `MainWindow` | apple/SpektrafilmKit/Sources/SpektrafilmUI/Views/MainScreen.swift | `MainWindow` | 900x600 | 1280x820 | - | - | - |
+| Main window | `MainWindow` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/MainScreen.swift | `MainWindow` | 900x600 | 1280x820 | - | - | - |
 
 - **View**: the SwiftUI type of the screen's content. **File**: where it is declared, from the repository root.
   A split view (`NavigationSplitView`, `HSplitView`) takes any width, so its content cannot be measured: name
