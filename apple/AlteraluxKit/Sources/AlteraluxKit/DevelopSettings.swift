@@ -46,6 +46,16 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     /// Pre-flash exposure of the paper, to hold highlight detail (0 = off).
     public var preflashExposure: Double
 
+    // MARK: Development
+
+    /// How long the film is developed, in minutes, for the black and white films that were
+    /// measured at several times. `nil` takes the middle one; the engine takes the time
+    /// measured nearest to the one asked.
+    public var filmDevelopmentTime: Double?
+    /// How long the paper is developed, in minutes, for the black and white papers measured
+    /// at several times. `nil` takes the middle one.
+    public var printDevelopmentTime: Double?
+
     // MARK: Film character
 
     public var grainEnabled: Bool
@@ -85,6 +95,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         yellowFilterShift: Double = 0,
         magentaFilterShift: Double = 0,
         preflashExposure: Double = 0,
+        filmDevelopmentTime: Double? = nil,
+        printDevelopmentTime: Double? = nil,
         grainEnabled: Bool = true,
         grainParticleArea: Double = 0.2,
         halationEnabled: Bool = true,
@@ -108,6 +120,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.yellowFilterShift = yellowFilterShift
         self.magentaFilterShift = magentaFilterShift
         self.preflashExposure = preflashExposure
+        self.filmDevelopmentTime = filmDevelopmentTime
+        self.printDevelopmentTime = printDevelopmentTime
         self.grainEnabled = grainEnabled
         self.grainParticleArea = grainParticleArea
         self.halationEnabled = halationEnabled
@@ -141,6 +155,8 @@ public extension DevelopSettings {
         yellowFilterShift = try values.decodeIfPresent(Double.self, forKey: .yellowFilterShift) ?? defaults.yellowFilterShift
         magentaFilterShift = try values.decodeIfPresent(Double.self, forKey: .magentaFilterShift) ?? defaults.magentaFilterShift
         preflashExposure = try values.decodeIfPresent(Double.self, forKey: .preflashExposure) ?? defaults.preflashExposure
+        filmDevelopmentTime = try values.decodeIfPresent(Double.self, forKey: .filmDevelopmentTime)
+        printDevelopmentTime = try values.decodeIfPresent(Double.self, forKey: .printDevelopmentTime)
         grainEnabled = try values.decodeIfPresent(Bool.self, forKey: .grainEnabled) ?? defaults.grainEnabled
         grainParticleArea = try values.decodeIfPresent(Double.self, forKey: .grainParticleArea) ?? defaults.grainParticleArea
         halationEnabled = try values.decodeIfPresent(Bool.self, forKey: .halationEnabled) ?? defaults.halationEnabled
@@ -206,6 +222,13 @@ extension DevelopSettings {
                 "scan_film": scanFilm,
             ],
         ]
+        if let filmDevelopmentTime, var film = patch["film_render"] as? [String: Any] {
+            film["development_time"] = filmDevelopmentTime
+            patch["film_render"] = film
+        }
+        if let printDevelopmentTime {
+            patch["print_render"] = ["development_time": printDevelopmentTime]
+        }
         if let advancedJSON, !advancedJSON.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             guard
                 let advanced = try JSONSerialization.jsonObject(with: Data(advancedJSON.utf8)) as? [String: Any]

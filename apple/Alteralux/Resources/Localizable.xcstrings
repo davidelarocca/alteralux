@@ -922,6 +922,16 @@
         }
       }
     },
+    "Developed longer, the film gains contrast; shorter, it loses it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppata più a lungo, la pellicola guadagna contrasto; più in breve, lo perde."
+          }
+        }
+      }
+    },
     "Developed photo" : {
       "localizations" : {
         "it" : {
@@ -938,6 +948,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppo in corso"
+          }
+        }
+      }
+    },
+    "Development" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo"
           }
         }
       }
@@ -1602,6 +1622,16 @@
         }
       }
     },
+    "Only folders can be added to the library, and this is not one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alla libreria si aggiungono solo cartelle, e questa non lo è."
+          }
+        }
+      }
+    },
     "Open a Photo" : {
       "localizations" : {
         "it" : {
@@ -1668,6 +1698,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Foto originale"
+          }
+        }
+      }
+    },
+    "Paper development" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo della carta"
           }
         }
       }
@@ -1807,7 +1847,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristina"
+            "value" : "Ripeti"
           }
         }
       }
@@ -1817,7 +1857,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ripristina la modifica"
+            "value" : "Ripeti la modifica"
           }
         }
       }
@@ -2452,12 +2492,12 @@
         }
       }
     },
-    "“%@” could not be added to the library." : {
+    "“%@” could not be added to the library. %@" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non è stato possibile aggiungere “%@” alla libreria."
+            "value" : "Non è stato possibile aggiungere “%@” alla libreria. %@"
           }
         }
       }

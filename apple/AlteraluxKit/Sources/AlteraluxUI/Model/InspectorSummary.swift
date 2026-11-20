@@ -28,6 +28,8 @@ struct InspectorSummary {
     let settings: DevelopSettings
     /// The language of the view, for the decimal separator.
     let locale: Locale
+    /// Whether the paper is a black and white one, which has no color filters.
+    var blackAndWhitePrint = false
 
     /// Between two values.
     private static let separator = " · "
@@ -50,7 +52,10 @@ struct InspectorSummary {
     }
 
     var print: String {
-        [
+        guard !blackAndWhitePrint else {
+            return number(settings.printExposure, fractionDigits: 2)
+        }
+        return [
             number(settings.printExposure, fractionDigits: 2),
             number(settings.yellowFilterShift, fractionDigits: 0, showsSign: true),
             number(settings.magentaFilterShift, fractionDigits: 0, showsSign: true),

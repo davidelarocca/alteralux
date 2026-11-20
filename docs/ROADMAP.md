@@ -105,9 +105,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
 1. **Defects found by driving the app.** Fixed on 2026-11-19, each with tests and checked again on the
    built app: several files opened at once, the keyboard and accessibility steps of `ParameterSlider`,
    black and white films printed on a color paper, the export file name, and commands enabled with
-   nothing to act on. Still open:
-   - With a black and white print the yellow and magenta filters stay visible, and the development
-     times the black and white profiles carry are not offered.
+   nothing to act on. Fixed on 2026-11-20: a black and white paper no longer shows the yellow and
+   magenta filters, and the film and the paper measured at several development times (Kodak
+   Double-X, Kodak 2302) offer them, the middle one first; checked in the built app, where 12 minutes
+   gives a brighter, harder print than 4.
 2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
    2026-11-20 settled, built from the system's controls
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
@@ -154,8 +155,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - A sidecar beside the photo, for services that drop extended attributes: possible only inside
      folders the user adds, so with the library.
    - Undo steps are not kept between launches.
-   - In Italian the Edit menu shows "Ripristina" (Redo) just above "Ripristina regolazioni" (Reset
-     Adjustments): the second needs another word.
+   - Fixed on 2026-11-20: in Italian Redo read "Ripristina", just above "Ripristina regolazioni"; it is
+     "Ripeti", as macOS says it.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
    the actions on a selection (move, copy, tag with the Finder's tags, discard). Done, the first part:
    folders added from a panel, the File menu, a drop or the Finder, and remembered between launches;
@@ -171,8 +172,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      first. Copying and tagging are not steps of undo.
    - The grid shows the camera's own preview, not the developed look: that needs a render per photo
      and a cache.
-   - In the grid the arrow keys move left and right only; the thumbnails kept on disk are never
-     pruned; a folder that cannot be added says so without the reason.
+   - The thumbnails kept on disk are never pruned. Fixed on 2026-11-20: the arrow keys move in
+     every direction, and a folder that cannot be added says why.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
@@ -194,8 +195,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      Recipe files cannot be imported or handed to someone else yet.
    - The export's progress is the system's bar, not the print coming up in the developer of the
      vision. Photos opened one by one, outside the library, are exported one at a time.
-   - A photo of the strip that receives a recipe from the library keeps its old thumbnail in the
-     strip until it is shown.
+   - Fixed on 2026-11-20: a photo of the strip that receives a recipe from the library showed its
+     old look in the strip until it was opened; it is developed small at once.
 8. **Crop and straighten.**
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
@@ -234,7 +235,10 @@ branch of its own. What was said, in the order to take it:
   items for the developed photo turned off in the library. Still open: the pinch was not tried on
   a trackpad; holding a key to compare with the original; type-to-select by name.
 - Things that reach past the window's edge when the window is made small: to find one by one in
-  the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix.
+  the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix. Checked on 2026-11-20 at the
+  smallest window (900 × 600), in Italian: the develop screen with the adjustments open, the export
+  sheet, the list of films, the library with its sidebar, the bar of the selection and its list of
+  tags all stay inside. The user's own examples are still to be asked for.
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)
   is the reference the user likes; `FormSheet` follows it. The rest of the app is to be gone
   through the same way, screen by screen, shown to the user before it is built.

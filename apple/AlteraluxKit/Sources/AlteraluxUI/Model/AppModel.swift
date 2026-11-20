@@ -84,7 +84,7 @@ public final class AppModel {
 
     /// Long side of the lighter preview shown while the settings are changing.
     private nonisolated static let draftPreviewDimension = 1024
-    private nonisolated static let thumbnailDimension = 240
+    nonisolated static let thumbnailDimension = 240
     /// How long the settings must stay still before the preview is rendered at its full size.
     var settleDelay = Duration.milliseconds(150)
     /// How long the standard preview stays, once the settings are still, before a preview that
@@ -331,17 +331,6 @@ public final class AppModel {
         }
     }
 
-    private func loadThumbnail(for item: PhotoItem) {
-        let url = item.url
-        Task { [thumbnails = library.thumbnails] in
-            // The same thumbnails as the library's grid: quick, and kept.
-            let image = await thumbnails.thumbnail(for: url, maxDimension: Self.thumbnailDimension)
-            if item.thumbnail == nil {
-                item.thumbnail = image
-            }
-        }
-    }
-
     // MARK: - Settings
 
     /// Called when the settings change: keeps the photo's copy in sync and
@@ -405,7 +394,11 @@ public final class AppModel {
     func put(_ new: DevelopSettings, on item: PhotoItem) {
         item.settings = new
         item.keptSettings = new
-        guard item.id == selectedID else { return }
+        guard item.id == selectedID else {
+            // A photo of the strip that is not on screen shows its new look at once.
+            redrawThumbnail(of: item)
+            return
+        }
         settle?.cancel()
         settle = nil
         isAdjusting = false
@@ -519,43 +512,5 @@ public final class AppModel {
             return PreviewSize.standard
         }
         return dimension
-    }
-
-    /// Updates the strip thumbnail with the developed look.
-    private func refreshSelectedThumbnail() {
-        guard let item = selection, let preview else { return }
-        let image = SendableImage(preview.cgImage)
-        Task {
-            let thumbnail = await Task.detached(priority: .utility) {
-                SendableImage(image.image.flatMap { Self.downscale($0, to: Self.thumbnailDimension) })
-            }.value
-            if let thumbnail = thumbnail.image {
-                item.thumbnail = thumbnail
-            }
-        }
-    }
-
-    private nonisolated static func downscale(_ image: CGImage, to maxDimension: Int) -> CGImage? {
-        let scale = Double(maxDimension) / Double(max(image.width, image.height))
-        let width = max(1, Int((Double(image.width) * scale).rounded()))
-        let height = max(1, Int((Double(image.height) * scale).rounded()))
-        guard
-            let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
-            let context = CGContext(
-                data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0,
-                space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
-            )
-        else { return nil }
-        context.interpolationQuality = .high
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return context.makeImage()
-    }
-}
-
-/// Carries an immutable `CGImage` across tasks.
-private struct SendableImage: @unchecked Sendable { // concurrency: CGImage is immutable once created
-    let image: CGImage?
-    init(_ image: CGImage?) {
-        self.image = image
     }
 }

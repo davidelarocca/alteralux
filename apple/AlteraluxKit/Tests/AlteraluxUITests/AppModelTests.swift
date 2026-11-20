@@ -35,6 +35,22 @@ struct AppModelTests {
         #expect(model.films.isEmpty)
     }
 
+    /// A file offered as a folder is refused with the reason, not a bare "could not be added".
+    @Test func aFolderThatCannotBeAddedSaysWhy() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-add-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let file = folder.appendingPathComponent("photo.jpg")
+        try Data("pixels".utf8).write(to: file)
+        let model = AppModel(dataDirectory: dataDirectory, editsDirectory: folder.appendingPathComponent("support"))
+
+        await model.addFolder(file)
+
+        let message = try #require(model.alertMessage)
+        #expect(message.contains("photo.jpg"))
+        #expect(message.contains(LibraryFoldersError.notAFolder(file).localizedDescription))
+    }
+
     @Test func choosingASlideFilmScansItDirectly() async {
         let model = await startedModel()
         model.chooseFilm("fujifilm_velvia_100")
