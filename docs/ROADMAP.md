@@ -115,7 +115,12 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    neutral point, with keyboard and accessibility by step), the film as the heading and its list with
    an emblem per film, collapsible sections that show their values, previous and next in the toolbar
    beside the window's title, the zoom controls under the photo, with snapshots and `KeyboardCheck`
-   tests. Still open:
+   tests. Changed on 2026-11-20 night, seen in the built app: the toolbar's buttons in four groups
+   (undo and redo; crop and the original; Recipe and export; the adjustments), the zoom on the row
+   of the strip, at its trailing end, and the paper's name written whole under its caption; the
+   size and time of each render are no longer on screen but in the system log (category
+   `render`). The sliders keep their title above them: one row per slider was proposed and
+   turned down. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.
@@ -139,8 +144,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      propose upstream, not to patch here.
    - Not measured yet: what SwiftUI redraws while a slider moves (needs Instruments on the app).
 4. **White balance** (temperature and tint) from the RAW decoder. Done: two sliders at the top of the
-   Camera section, starting from what the camera recorded, for RAW files only (other files show them
-   disabled, decided on 2026-11-20); every preview decoded at its size by a decoder kept for the photo
+   Camera section, starting from what the camera recorded, for RAW files only (other files show, in
+   their place, one line that says so); every preview decoded at its size by a decoder kept for the photo
    ([ADR 0007](adr/0007-decode-each-preview-at-its-size.md)); tests on a RAW the tests write
    themselves. Still open:
    - The temperature slider is linear in kelvin, so the warm end is cramped: to judge in the app.
@@ -209,7 +214,7 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    (Return), which is one step of undo. The previews, the 100% view, the strip and the exports are
    all of the framed picture. Seen in the built app on 2026-11-20 with real pointer drags. Also
    done: a quarter turn to the left and a mirror, in the crop bar, before the straightening (seen
-   in the built app). Still open: Return and Escape were not pressed in the built app; the
+   in the built app). Return and Escape were tried by the user in the built app. Still open: the
    library's thumbnails show the whole photo, as they show no other adjustment.
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
@@ -247,8 +252,8 @@ branch of its own. What was said, in the order to take it:
   grid and while developing; Escape from a developed photo back to the library; the View menu's
   items for the developed photo turned off in the library; holding M shows the original while
   developing, as in Photos; typing the beginning of a name in the grid goes to that photo, as in
-  the Finder. Still open: the pinch was not tried on a trackpad; holding M and typing a name were
-  not tried in the built app, which is the user's own and takes no keystrokes from tests.
+  the Finder. Holding M and typing a name were tried by the user in the built app. Still open: the
+  pinch was not tried on a trackpad.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix. Checked on 2026-11-20 at the
   smallest window (900 × 600), in Italian: the develop screen with the adjustments open, the export

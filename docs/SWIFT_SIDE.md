@@ -159,7 +159,7 @@ open photos, the settings of the selected one and its preview.
 - **White balance.** Temperature and tint of a RAW, at the top of the Camera
   section. The sliders start from the camera's values and stop there: beside
   them the settings go back to `nil`, so "as shot" stays true on any photo.
-  A file that is not a RAW shows them disabled.
+  A file that is not a RAW shows, in their place, one line that says so.
 - **Preview resolution.** The preview is rendered at the size the viewer shows
   the photo (`PreviewSize`): 2048 px on the long side while the photo is that
   small on screen, then larger in steps of 512 px, each shown enlarged by up to

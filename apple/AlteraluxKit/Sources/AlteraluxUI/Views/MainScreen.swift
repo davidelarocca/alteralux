@@ -70,7 +70,7 @@ struct MainScreen: View {
     }
 }
 
-/// The photo being developed, with the zoom and the strip of photos below it, and the
+/// The photo being developed, with the strip of photos and the zoom below it, and the
 /// adjustments in an inspector on the right.
 struct DevelopScreen: View {
     @Environment(AppModel.self) private var model
@@ -95,10 +95,11 @@ struct DevelopScreen: View {
             if let session = model.cropSession {
                 CropControls(session: session)
             } else if !model.photos.isEmpty {
-                ZoomControls()
                 if showsStrip {
                     Divider()
                     FilmstripView()
+                } else {
+                    ZoomBar()
                 }
             }
         }
@@ -129,8 +130,8 @@ struct DevelopScreen: View {
 
 /// The toolbar while developing: on the leading side the way back to the library (or open, while
 /// no folder was added), then previous and next, beside the
-/// window's title (the photo's name over its film and paper); on the trailing side undo and
-/// redo, then compare, the recipes, export and the inspector.
+/// window's title (the photo's name over its film and paper); on the trailing side, in groups
+/// of their own, undo and redo; crop and compare; the recipes and export; the adjustments.
 private struct MainToolbar: ToolbarContent {
     @Bindable var model: AppModel
     @Binding var showsInspector: Bool
@@ -190,6 +191,8 @@ private struct MainToolbar: ToolbarContent {
             .disabled(!model.canRedo)
         }
 
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+
         ToolbarItemGroup(placement: .primaryAction) {
             Toggle(isOn: cropping) {
                 Label("Crop", systemImage: "crop")
@@ -202,7 +205,11 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Compare with the original, or hold M")
             .disabled(!model.canCompare)
+        }
 
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+
+        ToolbarItemGroup(placement: .primaryAction) {
             RecipeMenu(model: model, savesNew: true) { model.apply($0) }
                 .help("Give this photo a recipe, or save its look as one")
                 .disabled(!model.hasPhoto)
@@ -214,7 +221,11 @@ private struct MainToolbar: ToolbarContent {
             }
             .help("Export the developed photo")
             .disabled(!model.canPresentExport)
+        }
 
+        ToolbarSpacer(.fixed, placement: .primaryAction)
+
+        ToolbarItem(placement: .primaryAction) {
             Button {
                 showsInspector.toggle()
             } label: {

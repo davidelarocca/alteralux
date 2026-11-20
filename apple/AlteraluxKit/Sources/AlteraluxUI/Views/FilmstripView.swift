@@ -1,8 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// The strip of open photos under the viewer, with the size and time of the render on screen
-/// at its trailing end.
+/// The strip of open photos under the viewer, with the zoom at its trailing end.
 struct FilmstripView: View {
     @Environment(AppModel.self) private var model
     @ReduceMotion private var reduceMotion
@@ -13,11 +12,8 @@ struct FilmstripView: View {
     var body: some View {
         HStack(spacing: 0) {
             thumbnails
-            Text(model.renderSummary)
-                .font(Typography.technical)
-                .foregroundStyle(.tertiary)
-                .lineLimit(1)
-                .padding(.horizontal, Spacing.m)
+            ZoomControls()
+                .padding(.horizontal, Spacing.l)
         }
         .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
         .background(.bar)
