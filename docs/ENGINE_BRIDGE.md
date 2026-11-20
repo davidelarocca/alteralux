@@ -79,7 +79,10 @@ produces this JSON.
 Building a pipeline (spectral LUTs, enlarger calibration) is expensive;
 running it is cheap by comparison. The engine keeps the last calibrated
 pipeline and reuses it when only non-calibration parameters change. This is
-the common case: exposure, grain, halation and scanner settings. The cache key
+the common case: grain, halation, couplers and scanner settings. Moving the
+exposure, the print filters or the preflash builds a new pipeline, about 9 ms
+on an Apple M5: with `print_exposure_compensation` on, which is the default,
+the exposure is part of the calibration. The cache key
 mirrors the upstream GUI's `preview_pipeline_cache_key`. A test checks that a
 warm engine and a fresh one give identical pixels across a sequence of edits.
 

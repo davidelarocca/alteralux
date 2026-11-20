@@ -59,3 +59,4 @@ defaults, and unknown keys are errors.
 | [0002](adr/0002-linear-in-linear-out.md) | Keep the engine linear in, linear out | Accepted |
 | [0003](adr/0003-generate-the-xcode-project.md) | Generate the Xcode project with XcodeGen | Accepted |
 | [0004](adr/0004-ui-in-packages.md) | Keep the screens and the design system in Swift packages | Accepted |
+| [0005](adr/0005-organize-through-the-finder.md) | Organize photos through the Finder, with no catalogue of the app's own | Accepted |
