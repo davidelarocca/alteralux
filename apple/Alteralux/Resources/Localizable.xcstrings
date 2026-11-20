@@ -691,6 +691,26 @@
         }
       }
     },
+    "Temperature" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatura"
+          }
+        }
+      }
+    },
+    "The color of the light, in kelvin. Lower values make the photo cooler." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore della luce, in kelvin. Valori più bassi rendono la foto più fredda."
+          }
+        }
+      }
+    },
     "TIFF (16-bit)" : {
       "localizations" : {
         "it" : {
@@ -717,6 +737,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il bagliore rosso attorno alle luci intense."
+          }
+        }
+      }
+    },
+    "Tint" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tinta"
+          }
+        }
+      }
+    },
+    "White balance can be chosen for RAW photos only." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bilanciamento del bianco si può scegliere solo per le foto RAW."
           }
         }
       }

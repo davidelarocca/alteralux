@@ -36,6 +36,27 @@ extension WindowedTests {
             } == [])
         }
 
+        /// A value in the thousands is one number, without a separator: a temperature.
+        @Test func largeValue() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "large-value", locale: english, source: source) {
+                SliderHost(
+                    "Temperature", value: 5250, in: 2000 ... 12000, step: 50, defaultValue: 4500,
+                    fractionDigits: 0, showsSign: false,
+                )
+            } == [])
+        }
+
+        /// Disabled, the title and the value are dimmed: the slider alone looks the same.
+        @Test func disabled() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "disabled", locale: english, source: source) {
+                SliderHost(
+                    "Temperature", value: 5500, in: 2000 ... 12000, step: 50, defaultValue: 5500,
+                    fractionDigits: 0, showsSign: false,
+                )
+                .disabled(true)
+            } == [])
+        }
+
         @Test func longTitle() {
             #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "long-text", locale: english, source: source) {
                 SliderHost("A long parameter name that has to share the row with its value", value: 0.3)

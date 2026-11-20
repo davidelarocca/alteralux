@@ -22,6 +22,15 @@ struct InspectorSummaryTests {
         #expect(summary.scan == "0.70")
     }
 
+    /// A RAW shows its white balance first, as the section does. A temperature is one number.
+    @Test func theCameraSectionShowsTheWhiteBalanceOfARaw() {
+        let whiteBalance = WhiteBalance(temperature: 5234.6, tint: 7.7)
+        let english = InspectorSummary(settings: settings(), locale: Locale(identifier: "en_US"))
+        #expect(english.camera(formatName: "35 mm", whiteBalance: whiteBalance) == "5235 · 8 · +0.3 · 35 mm")
+        let italian = InspectorSummary(settings: settings(), locale: Locale(identifier: "it_IT"))
+        #expect(italian.camera(formatName: "35 mm", whiteBalance: whiteBalance) == "5235 · 8 · +0,3 · 35 mm")
+    }
+
     @Test func numbersFollowTheLanguageOfTheView() {
         let summary = InspectorSummary(settings: settings(), locale: Locale(identifier: "it_IT"))
         #expect(summary.camera(formatName: "35 mm") == "+0,3 · 35 mm")

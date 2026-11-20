@@ -13,6 +13,15 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     mapping and sharpening turned off; other formats go through ImageIO. It
     also provides the system's default rendering of a file, used for
     thumbnails and for the before/after comparison.
+  - `PhotoDecoder` (an actor) is the decoder of one open photo. It keeps the
+    `CIRAWFilter` between calls and decodes the photo at the size asked and,
+    for a RAW, with the white balance asked; it reports the white balance the
+    camera recorded. The decoder scales the photo itself: a preview costs a
+    fraction of the whole photo
+    ([ADR 0007](adr/0007-decode-each-preview-at-its-size.md)).
+  - `DevelopSettings` carries the white balance as an optional temperature
+    and tint, where `nil` is "as the camera recorded". They are not part of
+    the engine's patch.
   - `DevelopSettings` is the app's model of an edit (`Codable`). It converts to
     the engine's JSON patch; tests check that the engine accepts it and that
     each value lands on the intended parameter.
@@ -58,6 +67,17 @@ open photos, the settings of the selected one and its preview.
 - **Rendering loop.** A settings change requests a render. Requests made while
   a render is running collapse into one follow-up render with the latest
   settings, so dragging a slider never queues stale frames.
+- **Sources.** Opening a photo creates its `PhotoDecoder`; no pixels are
+  decoded yet. Each render asks `PhotoSources` for the photo at the size it
+  renders, and the engine scales nothing. `PhotoSources` keeps three reduced
+  sizes and the whole photo for the current white balance, and drops them
+  when it changes. Once a settled preview is on screen it decodes ahead the
+  1024 px size, then, after a quiet second, the whole photo for the 100% view
+  and for export.
+- **White balance.** Temperature and tint of a RAW, at the top of the Camera
+  section. The sliders start from the camera's values and stop there: beside
+  them the settings go back to `nil`, so "as shot" stays true on any photo.
+  A file that is not a RAW shows them disabled.
 - **Preview resolution.** The preview is rendered at the size the viewer shows
   the photo (`PreviewSize`): 2048 px on the long side while the photo is that
   small on screen, then larger in steps of 512 px, each shown enlarged by up to
@@ -74,10 +94,10 @@ open photos, the settings of the selected one and its preview.
   or more, and the engine cannot interrupt a render (a lighter one asked
   meanwhile waits for the GPU): so the 2048 px preview stands in for it, and
   it is rendered only after that has been on screen for 400 ms with the
-  settings still. A zoom is not held back. The strip's thumbnail follows the
-  settled preview only. The photo is scaled for the 1024 px preview as soon
-  as it is on screen (`FilmRenderer.preparePreview`), so the first move does
-  not wait.
+  settings still. A zoom made while the settings are still is not held back.
+  The strip's thumbnail follows the settled preview only. The photo is
+  decoded for the 1024 px preview as soon as it is on screen (see Sources),
+  so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
   `CGImage` through a layer. Core Animation color-manages it for the display.
   The layer reduces the image through mipmaps only below half size

@@ -10,6 +10,8 @@ import SwiftUI
 /// whatever the system's "Keyboard navigation" setting: the arrow keys move it
 /// one step and Delete resets it.
 ///
+/// Disabled, its title and value are dimmed: the system's slider alone looks the same disabled.
+///
 /// A parameter that can be switched off (grain, halation) passes `isOn`: its switch sits on the
 /// slider's row, and Space flips it. Off, the slider keeps its value and does not move.
 ///
@@ -26,6 +28,7 @@ public struct ParameterSlider: View {
     private let isOn: Binding<Bool>?
 
     @Environment(\.labelsVisibility) private var labelsVisibility
+    @Environment(\.isEnabled) private var isEnabled
 
     /// - Parameters:
     ///   - step: the value snaps to multiples of this.
@@ -58,6 +61,7 @@ public struct ParameterSlider: View {
             if labelsVisibility != .hidden {
                 HStack(alignment: .firstTextBaseline) {
                     Text(title)
+                        .foregroundStyle(isEnabled ? .primary : .tertiary)
                     Spacer()
                     // `Text` formats with the environment's locale, so the value follows the
                     // language of the view it is in.
@@ -129,9 +133,10 @@ public struct ParameterSlider: View {
         isOn?.wrappedValue == false
     }
 
-    /// The value is dimmed at the default, and more when the parameter is switched off.
+    /// The value is dimmed at the default, and more when the parameter is switched off or the
+    /// slider disabled.
     private var valueStyle: HierarchicalShapeStyle {
-        if isSwitchedOff {
+        if isSwitchedOff || !isEnabled {
             return .tertiary
         }
         return isAtDefault ? .secondary : .primary
@@ -159,6 +164,8 @@ public struct ParameterSlider: View {
     private var valueFormat: FloatingPointFormatStyle<Double> {
         .number
             .precision(.fractionLength(fractionDigits))
+            // A large value is read as one number: a temperature is "5200", not "5,200".
+            .grouping(.never)
             .sign(strategy: showsSign ? .always(includingZero: false) : .automatic)
     }
 }
@@ -174,6 +181,10 @@ public struct ParameterSlider: View {
         ParameterSlider("Exposure", value: $exposure, in: -5 ... 5, step: 0.1, fractionDigits: 1, showsSign: true)
         ParameterSlider("Print exposure", value: $printExposure, in: 0.2 ... 3, defaultValue: 1)
         ParameterSlider("Yellow filter", value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0, showsSign: true)
+        ParameterSlider(
+            "A value in the thousands", value: .constant(5250), in: 2000 ... 12000,
+            step: 50, defaultValue: 4500, fractionDigits: 0,
+        )
         ParameterSlider(
             "A long parameter name that has to share the row with its value",
             value: $filter, in: -50 ... 50, step: 1, fractionDigits: 0,
