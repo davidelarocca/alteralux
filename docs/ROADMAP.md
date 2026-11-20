@@ -198,7 +198,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      vision. Photos opened one by one, outside the library, are exported one at a time.
    - Fixed on 2026-11-20: a photo of the strip that receives a recipe from the library showed its
      old look in the strip until it was opened; it is developed small at once.
-8. **Crop and straighten.**
+8. **Crop and straighten.** Decided on 2026-11-20
+   ([ADR 0010](adr/0010-crop-before-the-engine.md)): the photo is framed before the engine, so the
+   grain keeps its size relative to the finished picture; the frame belongs to the photo, not to
+   recipes. The controls are still to be drawn and shown before they are built.
 9. **Camera and lens corrections**, after the open question on their source.
 10. **Workflows from the Finder**: Shortcuts actions that develop the photos they receive with a recipe
    and return the files, so the shortcut saves them (for example in a subfolder beside the originals)
