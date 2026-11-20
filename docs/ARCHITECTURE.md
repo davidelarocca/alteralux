@@ -32,6 +32,9 @@ and for export. White balance is chosen in the RAW decoder, before the engine se
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
 
+The library shows the folders the user adds as they are on disk: it reads them, remembers them with
+security-scoped bookmarks and reads them again when they change. It keeps no catalogue.
+
 The engine works linear in, linear out: every transfer function and color conversion is done by macOS
 (Core Image, ColorSync), never by the engine. Parameters cross the bridge as a JSON patch over the engine
 defaults, and unknown keys are errors.

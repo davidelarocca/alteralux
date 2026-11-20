@@ -186,6 +186,20 @@ extension WindowedTests {
     @MainActor
     struct ThumbnailCellSnapshots {
         private let source = "\(components)/ThumbnailCell.swift"
+
+        /// In a grid the cell has the size the grid gives it and shows the whole photo: an
+        /// upright one keeps its sides, with the cell's ground beside it.
+        @Test(arguments: [false, true])
+        func wholePhotoInAGrid(isSelected: Bool) {
+            let state = isSelected ? "whole-photo-selected" : "whole-photo"
+            #expect(Snapshot.verify("ThumbnailCell", sizes: ["200"], state: state, source: source) {
+                ThumbnailCell(
+                    image: WindowedTests.testPicture(width: 120, height: 240), isSelected: isSelected,
+                    size: CGSize(width: 160, height: 120), showsWholePhoto: true,
+                )
+            } == [])
+        }
+
         private let sizes = ["116x88"]
 
         @Test(arguments: [false, true])
