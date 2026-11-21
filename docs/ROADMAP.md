@@ -319,6 +319,11 @@ branch of its own. What was said, in the order to take it:
 - One look for what asks and what answers: the system's alert (bold title, wide round buttons)
   is the reference the user likes; `FormSheet` follows it. The rest of the app is to be gone
   through the same way, screen by screen, shown to the user before it is built.
+- The controls the app adds to the engine's own, asked on 2026-11-21 ("rivedere i controlli extra
+  che abbiamo aggiunto rispetto a spektrafilm… organizzarli meglio"): the white balance and its
+  automatic switch, the lens correction, the crop and the others that are the app's and not the
+  engine's, gone through together and arranged better beside the engine's controls. A design task
+  for later, after step 10.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.
