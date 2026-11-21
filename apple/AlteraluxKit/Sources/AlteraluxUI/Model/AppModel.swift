@@ -81,6 +81,9 @@ public final class AppModel {
     /// Whether the export sheet develops the photos with a workflow, and not with their own
     /// adjustments and the options it shows.
     var exportsWithWorkflow = false
+    /// Set when photos are sent from the Finder and there is no workflow yet: an alert leads to
+    /// Recipes and Workflows.
+    var isWorkflowNeeded = false
     /// The workflow chosen in the export sheet, kept for the next time.
     var exportWorkflow: Workflow.ID?
     /// An export that found files of an earlier one, and waits to be told what to do with them.
@@ -96,8 +99,6 @@ public final class AppModel {
     /// Long side of the lighter preview shown while the settings are changing.
     private nonisolated static let draftPreviewDimension = 1024
     nonisolated static let thumbnailDimension = 240
-    /// The most the thumbnails kept on disk take, in bytes: thousands of photos' worth.
-    private nonisolated static let thumbnailCacheLimit: Int64 = 512 * 1024 * 1024
     /// How long the settings must stay still before the preview is rendered at its full size.
     var settleDelay = Duration.milliseconds(150)
     /// How long the standard preview stays, once the settings are still, before a preview that
@@ -193,11 +194,7 @@ public final class AppModel {
         workflowStore = WorkflowStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows"),
         )
-        writableFolders = LibraryFolders(
-            storeURL: isApp
-                ? URL.applicationSupportDirectory.appending(path: "Library/writable-folders.plist")
-                : beside.appending(path: "writable-folders.plist"),
-        )
+        writableFolders = LibraryFolders(storeURL: Self.writableFoldersStore(isApp: isApp, beside: beside))
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
@@ -241,17 +238,7 @@ public final class AppModel {
         } catch {
             alertMessage = error.localizedDescription
         }
-        await loadRecipes()
-        await loadWorkflows()
-        // The library is where the app opens, unless it was started on a photo.
-        await library.load()
-        _ = await writableFolders.load()
-        Task.detached(priority: .background) { [thumbnails = library.thumbnails] in
-            thumbnails.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit)
-        }
-        if photos.isEmpty, !library.isEmpty {
-            showsLibrary = true
-        }
+        await loadKeptState()
     }
 
     // MARK: - Opening and selecting

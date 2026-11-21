@@ -31,7 +31,7 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
 
     public func applicationWillFinishLaunching(_: Notification) {
         // Set before launching ends, so a request that launched the app reaches it.
-        NSApp.servicesProvider = self
+        NSApplication.shared.servicesProvider = self
     }
 
     public func application(_: NSApplication, open urls: [URL]) {
@@ -49,7 +49,7 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     ) {
         let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
         guard !urls.isEmpty else { return }
-        NSApp.activate()
+        NSApplication.shared.activate()
         if let model {
             model.developWithWorkflow(handedOver: urls)
         } else {

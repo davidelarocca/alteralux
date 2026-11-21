@@ -103,10 +103,10 @@ extension AppModel {
         await export(photosToExport, to: destination)
     }
 
-    /// Goes on with the export that was waiting, doing with the files already there what the
-    /// user chose.
-    func resumeExport(_ policy: ExistingFilePolicy) async {
-        guard let waiting = exportWaiting else { return }
+    /// Goes on with `waiting`, the export that stopped at files already there, doing with them
+    /// what the user chose. The alert's buttons pass it as they are pressed: the alert clears
+    /// `exportWaiting` as it closes, before this starts.
+    func resumeExport(_ waiting: WaitingExport, _ policy: ExistingFilePolicy) async {
         exportWaiting = nil
         await export(
             waiting.photos, to: waiting.destination, options: waiting.options, recipe: waiting.recipe, existing: policy,

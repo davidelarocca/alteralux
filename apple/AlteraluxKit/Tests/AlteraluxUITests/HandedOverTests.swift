@@ -69,6 +69,19 @@ struct HandedOverTests {
         sent.releaseGlobally()
     }
 
+    @Test func withNoWorkflowYetAnAlertLeadsToMakingOne() async throws {
+        let fixture = try await WorkflowTests.Fixture(photos: 1)
+        defer { fixture.remove() }
+        let photos = try WindowedTests.writeTestPictures(count: 1)
+        defer { try? FileManager.default.removeItem(at: photos[0].deletingLastPathComponent()) }
+        #expect(fixture.model.workflows.isEmpty)
+
+        fixture.model.developWithWorkflow(handedOver: photos)
+
+        #expect(fixture.model.isWorkflowNeeded && !fixture.model.isExportPresented)
+        #expect(fixture.model.photosToExport == photos)
+    }
+
     @Test func onlyFilesThatAreNotPhotosSayWhy() async throws {
         let outside = try await Outside()
         defer { outside.remove() }

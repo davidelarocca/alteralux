@@ -36,13 +36,19 @@ struct ExportSheet: View {
             "\(model.exportWaiting?.existing ?? 0) of these photos were already exported",
             isPresented: isWaiting,
         ) {
-            Button("Replace") { Task { await model.resumeExport(.replace) } }
-            Button("Keep Both") { Task { await model.resumeExport(.keepBoth) } }
-            Button("Skip Them") { Task { await model.resumeExport(.skip) } }
+            Button("Replace") { resume(.replace) }
+            Button("Keep Both") { resume(.keepBoth) }
+            Button("Skip Them") { resume(.skip) }
             Button("Cancel", role: .cancel) {}
         } message: {
             Text("Their files are in the destination folder, some perhaps with another film or format. Replacing moves the old files to the Trash.")
         }
+    }
+
+    /// Goes on with the export that waits, taken now: closing, the alert lets it go.
+    private func resume(_ policy: ExistingFilePolicy) {
+        guard let waiting = model.exportWaiting else { return }
+        Task { await model.resumeExport(waiting, policy) }
     }
 
     private var isWaiting: Binding<Bool> {

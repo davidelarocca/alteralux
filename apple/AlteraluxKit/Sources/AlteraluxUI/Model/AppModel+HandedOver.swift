@@ -25,6 +25,10 @@ extension AppModel {
             return
         }
         photosToExport = photos
+        guard !workflows.isEmpty else {
+            isWorkflowNeeded = true
+            return
+        }
         exportWorkflow = (workflows.first { $0.id == exportWorkflow } ?? workflows.first)?.id
         exportsWithWorkflow = true
         exportWaiting = nil

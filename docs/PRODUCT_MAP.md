@@ -46,7 +46,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Workflow | The Workflow list of the library's selection bar (`LibrarySelectionBar.swift`) | n/a | n/a | Develop only: see Exceptions |
 | Workflow | The Develop with Workflow submenu of a photo's menu in the library (`PhotoMenus.swift`) | n/a | n/a | Develop only: see Exceptions |
 | Workflow | The export sheet's form for a workflow (`WorkflowRunForm.swift`) | n/a | its recipe named as text: see Exceptions | Develop only: see Exceptions |
-| Workflow | The same form, for photos sent from the Finder's "Develop with alteralux…" (`AppModel+HandedOver.swift`); with no workflow yet, it opens `RecipesWindow` | n/a | its recipe named as text: see Exceptions | Develop only: see Exceptions |
+| Workflow | The same form, for photos sent from the Finder's "Develop with alteralux…" (`AppModel+HandedOver.swift`); with no workflow yet, an alert leads to `RecipesWindow` (`MainScreen.swift`) | n/a | its recipe named as text: see Exceptions | Develop only: see Exceptions |
 | Workflow | The Shortcuts action "Develop Photos" (`apple/Alteralux/Shortcuts/DevelopPhotosIntent.swift`), by name with what it writes | n/a, outside the app | n/a | Develop only: see Exceptions |
 | Photo | A tile of the library's grid (`LibraryGrid.swift`) | ✓ double-click, Return, Develop in its menu | ✓ its folder is the one on screen; Show in Finder | ✓ the bar of the selection and the tile's menu |
 | Photo | The photo being developed (`PhotoStage`, from `MainScreen.swift`) | n/a, it is the destination | ✓ Show in Finder; the way back to the library in the toolbar and Escape | ✓ the photo's menu, the toolbar and the menus |
