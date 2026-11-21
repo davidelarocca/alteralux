@@ -56,7 +56,7 @@ click) are the system's and open at the pointer: they are the one exception.
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
 | `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
-| Filter and Sort | Library, the trailing side of the toolbar | system menu | system | system |
+| Filter and Sort | Library, the trailing side of the toolbar | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window (measured at 900 pt) |
 | `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
 | `RecipeManager` | `RecipeMenu`, Manage Recipes… | sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
 | Lists of the selection's bar | Library, Recipe, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |

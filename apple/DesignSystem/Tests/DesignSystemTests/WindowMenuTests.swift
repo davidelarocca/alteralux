@@ -37,6 +37,21 @@ struct WindowMenuTests {
         #expect(chosen)
     }
 
+    @Test @MainActor func choicesShowTheOneChosenUnderTheirHeading() {
+        var chosen: String?
+        let menu = WindowMenu.makeMenu([
+            .heading("Sort By"),
+            .choice("Name", isChosen: true) { chosen = "Name" },
+            .choice("Date", isChosen: false, isEnabled: false) { chosen = "Date" },
+        ])
+        #expect(menu.items.map(\.title) == ["Sort By", "Name", "Date"])
+        #expect(menu.items[0].isSectionHeader)
+        #expect(menu.items[1].state == .on && menu.items[2].state == .off && !menu.items[2].isEnabled)
+        let item = menu.items[1]
+        _ = (item.target as? NSObject)?.perform(item.action, with: item)
+        #expect(chosen == "Name")
+    }
+
         /// Where the system would open the menu past the window's edge, it opens inside.
         @Test func aMenuThatWouldPassAnEdgeMovesInside() throws {
             let room: ClosedRange<CGFloat> = 0 ... 600

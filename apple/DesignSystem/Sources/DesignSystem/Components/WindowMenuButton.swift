@@ -5,6 +5,10 @@ import SwiftUI
 public enum WindowMenuEntry {
     /// A choice, with a line of context under its title.
     case item(_ title: String, subtitle: String? = nil, isEnabled: Bool = true, action: @MainActor () -> Void)
+    /// One option among others, with a checkmark when it is the one chosen ("Sort By: Name").
+    case choice(_ title: String, isChosen: Bool, isEnabled: Bool = true, action: @MainActor () -> Void)
+    /// The title of the group of entries under it, as a menu's section has it ("Sort By").
+    case heading(_ title: String)
     /// A choice that opens a menu of its own.
     case submenu(_ title: String, isEnabled: Bool = true, entries: [WindowMenuEntry])
     /// A line that says something and cannot be chosen ("No recipes").
@@ -17,7 +21,8 @@ public enum WindowMenuEntry {
 /// A SwiftUI `Menu` opens from its button's leading edge toward the trailing one, so near the
 /// window's trailing edge it passes it. This one opens the same system menu under the point
 /// clicked, moved toward the leading side as far as it needs to stay inside the window. The
-/// entries are asked for when it opens, so they are always current.
+/// entries are asked for when it opens, so they are always current: a group of choices under a
+/// heading shows the one chosen with a checkmark, as an inline `Picker` in a `Menu` does.
 public struct WindowMenuButton<Label: View>: View {
     private let entries: () -> [WindowMenuEntry]
     private let label: Label
@@ -81,6 +86,13 @@ enum WindowMenu {
             item.subtitle = subtitle
             item.isEnabled = isEnabled
             return item
+        case let .choice(title, isChosen, isEnabled, action):
+            let item = ActionMenuItem(title: title, action: action)
+            item.state = isChosen ? .on : .off
+            item.isEnabled = isEnabled
+            return item
+        case let .heading(title):
+            return .sectionHeader(title: title)
         case let .submenu(title, isEnabled, entries):
             let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
             item.submenu = makeMenu(entries)
@@ -115,6 +127,24 @@ private final class ActionMenuItem: NSMenuItem {
     @objc private func choose() {
         run()
     }
+}
+
+#Preview("Choices under headings") {
+    WindowMenuButton {
+        [
+            .heading("Sort By"),
+            .choice("Name", isChosen: true) {},
+            .choice("Date", isChosen: false) {},
+            .heading("Order"),
+            .choice("Ascending", isChosen: false) {},
+            .choice("Descending", isChosen: true) {},
+            .separator,
+            .item("Clear Filters", isEnabled: false) {},
+        ]
+    } label: {
+        Label("Filter and Sort", systemImage: "line.3.horizontal.decrease")
+    }
+    .padding(Spacing.xl)
 }
 
 #Preview("Window menu button") {
