@@ -3,9 +3,9 @@ import SwiftUI
 /// The left and right arrows go to the previous and the next photo, as in a photo viewer.
 ///
 /// The app's menu has these shortcuts too, but macOS gives a menu no arrow key pressed alone:
-/// the view on screen takes them. It takes the keys when it appears and when it is clicked; a
-/// control that takes the keys after it (a slider of the adjustments) keeps its arrows until
-/// the photo is clicked again.
+/// the view on screen takes them. It takes the keys when it appears and when it is clicked. The
+/// sliders of the adjustments take no keys when clicked (only with the system's "Keyboard
+/// navigation" on), so the arrows stay with the photos.
 struct StepThroughPhotosKeys: ViewModifier {
     /// Goes `offset` photos further, and says whether it could.
     let step: (_ offset: Int) -> Bool

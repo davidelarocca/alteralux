@@ -48,9 +48,10 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **`Text("a") vs Text(condition ? "a" : "b")`.** A ternary of string literals resolves to `String`, which
   is not localized. Build two `Text` values instead.
 - **A system `Slider` takes the keyboard focus only with "Keyboard navigation" on.** With the setting off
-  (the default) Tab skips it, so its arrow keys and any `onKeyPress` never run. A control that must work
-  from the keyboard takes the focus itself with `.focusable(interactions: .edit)`, as `ParameterSlider`
-  does. Its accessibility increment is a tenth of the range unless `accessibilityAdjustableAction` says
+  (the default) Tab skips it, so its arrow keys and any `onKeyPress` never run. `.focusable(interactions:
+  .edit)` makes a click take the focus too, with a focus ring, and the arrows then move the slider instead
+  of going through the photos: the user did not want that. `ParameterSlider` takes the focus only where
+  `slidersTakeKeyboardFocus` is on, which the app sets from `NSApp.isFullKeyboardAccessEnabled`. Its accessibility increment is a tenth of the range unless `accessibilityAdjustableAction` says
   otherwise. Caught by `ParameterSliderKeyboardTests`.
 - **A trilinear layer filter builds mipmaps on the main thread for every new image.** With
   `minificationFilter = .trilinear` each preview frame cost the main thread about 30 ms at the commit,

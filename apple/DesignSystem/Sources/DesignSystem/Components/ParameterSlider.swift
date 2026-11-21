@@ -6,9 +6,10 @@ import SwiftUI
 /// direction, so the neutral point of a parameter and how far it has been moved are both in
 /// view. At the default the value is dimmed.
 ///
-/// Double-click resets it to its default. It takes the keyboard focus with Tab
-/// whatever the system's "Keyboard navigation" setting: the arrow keys move it
-/// one step and Delete resets it.
+/// Double-click resets it to its default. Where sliders take the keyboard focus
+/// (`slidersTakeKeyboardFocus`: the app follows the system's "Keyboard navigation"
+/// setting) the arrow keys move it one step and Delete resets it. Elsewhere a click
+/// leaves the keys where they were and draws no focus ring: it is moved with the pointer.
 ///
 /// Disabled, its title and value are dimmed: the system's slider alone looks the same disabled.
 ///
@@ -17,6 +18,13 @@ import SwiftUI
 ///
 /// With `.labelsHidden()` only the slider is drawn, for a caller that shows the value itself
 /// (the zoom under the photo). The title is still what assistive technologies read.
+public extension EnvironmentValues {
+    /// Whether a `ParameterSlider` takes the keyboard focus, for its arrows, Delete and Space.
+    /// Off, a click with the pointer leaves the keys where they were and draws no focus ring.
+    /// The app sets it from the system's "Keyboard navigation" setting.
+    @Entry var slidersTakeKeyboardFocus = false
+}
+
 public struct ParameterSlider: View {
     private let title: LocalizedStringKey
     @Binding private var value: Double
@@ -28,6 +36,7 @@ public struct ParameterSlider: View {
     private let isOn: Binding<Bool>?
 
     @Environment(\.labelsVisibility) private var labelsVisibility
+    @Environment(\.slidersTakeKeyboardFocus) private var takesKeyboardFocus
     @Environment(\.isEnabled) private var isEnabled
 
     /// - Parameters:
@@ -95,9 +104,9 @@ public struct ParameterSlider: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(count: 2, perform: reset)
-        // The system gives a slider the keyboard focus only when "Keyboard navigation" is on in
-        // System Settings. The sliders are the main controls here, so they always take it.
-        .focusable(interactions: .edit)
+        // Where sliders take the keys, a click or Tab gives them this one's (the system's own
+        // slider takes them only through Tab with "Keyboard navigation" on).
+        .focusable(takesKeyboardFocus, interactions: .edit)
         .onKeyPress(keys: [.rightArrow, .upArrow]) { _ in
             move(by: 1)
             return .handled

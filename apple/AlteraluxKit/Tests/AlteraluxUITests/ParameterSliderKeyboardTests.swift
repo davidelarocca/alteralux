@@ -14,18 +14,30 @@ private final class Recorder {
 }
 
 extension WindowedTests {
-    /// `ParameterSlider` promises its actions without a pointer: the arrow keys move it one
-    /// step, Delete resets it to its default, and Space flips the switch of a parameter that
-    /// has one. The system's "Keyboard navigation" setting does not matter: the component takes
-    /// the focus by itself.
+    /// `ParameterSlider` promises its actions without a pointer where sliders take the keys
+    /// (the system's "Keyboard navigation" on): the arrow keys move it one step, Delete resets
+    /// it to its default, and Space flips the switch of a parameter that has one. Elsewhere it
+    /// leaves the keys alone.
     @MainActor
     struct ParameterSliderKeyboard {
         private func hostedSlider(value: Double, defaultValue: Double = 0) -> (KeyboardCheck, Recorder) {
             let recorder = Recorder(value)
             let keys = KeyboardCheck.host {
                 SliderHost("Exposure", value: value, defaultValue: defaultValue) { recorder.value = $0 }
+                    .environment(\.slidersTakeKeyboardFocus, true)
             }
             return (keys, recorder)
+        }
+
+        @Test func withoutTheKeysTheArrowsAreLeftAlone() {
+            let recorder = Recorder(1)
+            let keys = KeyboardCheck.host {
+                SliderHost("Exposure", value: 1, defaultValue: 0) { recorder.value = $0 }
+            }
+            defer { keys.close() }
+            keys.press(.rightArrow)
+            keys.press(.delete)
+            #expect(recorder.value == 1)
         }
 
         @Test func rightArrowMovesOneStepUp() {
@@ -76,6 +88,7 @@ extension WindowedTests {
                     "Grain", value: 0.5, in: 0 ... 1, isOn: isOn,
                     onChange: { recorder.value = $0 }, onSwitch: { recorder.isOn = $0 },
                 )
+                .environment(\.slidersTakeKeyboardFocus, true)
             }
             return (keys, recorder)
         }
