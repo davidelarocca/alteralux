@@ -119,6 +119,10 @@ public final class AppModel {
 
     /// Where the engine's `data` folder is. `nil` means the app bundle's resources.
     private let dataDirectory: URL?
+    /// Where the lens profiles are: in the app, lensfun's database among its resources.
+    private let lensesDirectory: URL?
+    /// The lens profiles, once read: they correct the RAWs whose lens Apple's decoder does not know.
+    private(set) var lenses: LensDatabase?
     /// Keeps the adjustments of each photo and the steps to undo.
     let history: EditHistory
     /// The folders the user added and the photos in them.
@@ -139,8 +143,14 @@ public final class AppModel {
     ///   - editsDirectory: where the adjustments of photos that cannot be written are kept. The
     ///     app passes nothing and keeps them in its Application Support folder; anything else
     ///     that passes nothing (a test, a preview) gets a temporary folder, never the user's.
-    public init(dataDirectory: URL? = nil, editsDirectory: URL? = nil) {
+    ///   - lensesDirectory: the lens profiles' folder; the app passes nothing and ships lensfun's
+    ///     database in its resources, anything else that passes nothing has none.
+    public init(dataDirectory: URL? = nil, editsDirectory: URL? = nil, lensesDirectory: URL? = nil) {
         self.dataDirectory = dataDirectory
+        self.lensesDirectory = lensesDirectory ?? (
+            dataDirectory == nil && editsDirectory == nil
+                ? Bundle.main.resourceURL?.appending(path: "lensfun/db") : nil
+        )
         let edits = editsDirectory ?? (
             dataDirectory == nil
                 ? URL.applicationSupportDirectory.appending(path: "Edits")
@@ -179,9 +189,14 @@ public final class AppModel {
                 let data = dataDirectory ?? Bundle.main.resourceURL?.appendingPathComponent("data"),
                 FileManager.default.fileExists(atPath: data.path)
             else { throw AlteraluxError.missingEngineData }
+            // The lens profiles are read meanwhile: a fraction of a second.
+            let lenses = Task.detached(priority: .userInitiated) { [lensesDirectory] in
+                lensesDirectory.flatMap { try? LensDatabase(directory: $0) }
+            }
             let renderer = try await Task.detached(priority: .userInitiated) {
                 try FilmRenderer(dataDirectory: data)
             }.value
+            self.lenses = await lenses.value
             let stocks = try renderer.stocks()
             self.renderer = renderer
             films = stocks.filter { $0.kind == .film }
@@ -333,8 +348,8 @@ public final class AppModel {
             do {
                 // Opening reads what the file says about itself; its pixels are decoded for
                 // each preview, at the size of that preview.
-                let decoder = try await Task.detached(priority: .userInitiated) {
-                    try PhotoDecoder(url: url)
+                let decoder = try await Task.detached(priority: .userInitiated) { [lenses] in
+                    try PhotoDecoder(url: url, lenses: lenses)
                 }.value
                 // Ignore the result if another photo was selected meanwhile.
                 guard generation == loadGeneration else { return }

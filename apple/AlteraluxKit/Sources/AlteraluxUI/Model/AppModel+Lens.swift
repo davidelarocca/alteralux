@@ -10,6 +10,12 @@ extension AppModel {
         sources?.decoder.correctsLens ?? false
     }
 
+    /// The lens profile that corrects the selected photo, by the lens's name: `nil` when Apple's
+    /// decoder corrects it itself, or when nothing does.
+    var lensProfileName: String? {
+        sources?.decoder.lensProfile?.lensName
+    }
+
     /// Whether the lens of the selected photo is corrected. Adjustments saved before the app
     /// had the choice show what the decoder does on its own, until it is changed.
     var isLensCorrected: Bool {

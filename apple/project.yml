@@ -40,6 +40,11 @@ targets:
       - path: ../engine/vendor/spektrafilm-rs/data
         type: folder
         buildPhase: resources
+      # lensfun's lens database (CC BY-SA 3.0), unmodified, with its license.
+      # Copied as a folder to Contents/Resources/lensfun.
+      - path: ../third_party/lensfun
+        type: folder
+        buildPhase: resources
     dependencies:
       # The screens and the app model. The app target itself is only a shell.
       - package: AlteraluxKit

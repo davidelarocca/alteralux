@@ -241,8 +241,15 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    first part ([ADR 0011](adr/0011-recipes-adapt-to-each-photo.md)): a "Lens correction" switch in the
    Camera section, on for new photos, applied by Apple's RAW decoder where it knows the lens, with a
    line that says so where it does not; photos developed before keep what the decoder did on its own.
-   Next: lensfun's database, shipped unmodified as a separate file, for the lenses Apple's decoder does
-   not know.
+   Done, the second part ([ADR 0012](adr/0012-lens-profiles-from-lensfun.md)): for the RAWs whose lens
+   Apple's decoder does not know, lensfun's database (`third_party/lensfun`, unmodified, CC BY-SA 3.0,
+   credited in the About panel and the README), read at launch in a fraction of a second; the camera
+   and lens the photo names are matched as lensfun matches them, the corrections interpolated at its
+   focal length, aperture and distance, and applied by a Core Image kernel (distortion with the
+   picture enlarged to fill the frame, colored fringes, vignetting) before the frame; the inspector
+   names the profile. Seen in the built app on a test RAW that names a Sony A7 III and the FE 24-70mm
+   GM. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
+   real photos; photos that are not RAW are not corrected (their camera may have done it already).
 10. **Recipes and workflows, from the app and the Finder.** Decided with the user on 2026-11-21: a
    workflow is a recipe and what to do with it (format, size, where to save, such as a folder beside the
    originals). Recipes and workflows are managed in one window, each recipe with its workflows; renaming

@@ -22,9 +22,10 @@ extension AppModel {
         let url = item.url
         let settings = item.settings
         let dimension = Self.thumbnailDimension
+        let lenses = lenses
         Task {
             let developed = await Task.detached(priority: .utility) { () -> SendableImage in
-                guard let decoder = try? PhotoDecoder(url: url),
+                guard let decoder = try? PhotoDecoder(url: url, lenses: lenses),
                       let loaded = try? await decoder.decode(maxDimension: dimension, settings: settings),
                       let image = try? await renderer.render(loaded, settings: settings, quality: .preview(maxDimension: dimension))
                 else { return SendableImage(nil) }

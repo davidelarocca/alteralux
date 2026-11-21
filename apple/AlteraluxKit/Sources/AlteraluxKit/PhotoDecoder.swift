@@ -17,9 +17,12 @@ public actor PhotoDecoder {
     /// The white balance the camera recorded. `nil` for a file that is not a RAW: its white
     /// balance is in its pixels and cannot be chosen again.
     public nonisolated let asShotWhiteBalance: WhiteBalance?
-    /// Whether the RAW decoder knows how to correct this photo's lens: its distortion, its
-    /// darker corners and its colored fringes, from what the camera recorded.
+    /// Whether this photo's lens can be corrected: its distortion, its darker corners and its
+    /// colored fringes, by the RAW decoder from what the camera recorded, or with a lens profile.
     public nonisolated let correctsLens: Bool
+    /// The lens profile that corrects this photo, where the RAW decoder does not know the lens:
+    /// `nil` when the decoder does, or when no profile fits.
+    public nonisolated let lensProfile: LensCorrection?
     /// Whether the RAW decoder corrects this photo's lens when it is not told: what adjustments
     /// saved without the choice get.
     public nonisolated let correctsLensByDefault: Bool
@@ -30,7 +33,9 @@ public actor PhotoDecoder {
     private var measuredWhiteBalance: WhiteBalance??
 
     /// Opens `url`. Reads what the file says about itself, not its pixels.
-    public init(url: URL) throws {
+    ///
+    /// - Parameter lenses: the lens profiles to correct a RAW whose lens the decoder does not know.
+    public init(url: URL, lenses: LensDatabase? = nil) throws {
         self.url = url
         isRaw = ImageLoader.isRawFile(url)
         let whole: CIImage
@@ -39,7 +44,6 @@ public actor PhotoDecoder {
             asShotWhiteBalance = WhiteBalance(
                 temperature: Double(filter.neutralTemperature), tint: Double(filter.neutralTint),
             )
-            correctsLens = filter.isLensCorrectionSupported
             correctsLensByDefault = filter.isLensCorrectionEnabled
             whole = try ImageLoader.rawImage(from: filter, url: url, maxDimension: nil, whiteBalance: nil)
             rawFilter = filter
@@ -47,7 +51,6 @@ public actor PhotoDecoder {
         } else {
             whole = try ImageLoader.standardImage(for: url)
             asShotWhiteBalance = nil
-            correctsLens = false
             correctsLensByDefault = false
             rawFilter = nil
             standardImage = whole
@@ -58,6 +61,13 @@ public actor PhotoDecoder {
         }
         width = Int(extent.width)
         height = Int(extent.height)
+        let decoderCorrects = rawFilter?.isLensCorrectionSupported ?? false
+        lensProfile = decoderCorrects || !isRaw ? nil : lenses.flatMap { lenses in
+            PhotoLensInfo.read(from: url).flatMap { info in
+                lenses.lens(for: info)?.correction(for: info, imageWidth: Int(extent.width), imageHeight: Int(extent.height))
+            }
+        }
+        correctsLens = decoderCorrects || lensProfile != nil
     }
 
     /// The size of the whole photo, in pixels.
@@ -141,16 +151,24 @@ public actor PhotoDecoder {
         }
         let image: CIImage
         if let rawFilter {
+            let correctsLens = lensCorrection ?? correctsLensByDefault
             image = try ImageLoader.rawImage(
                 from: rawFilter, url: url, maxDimension: maxDimension,
-                whiteBalance: whiteBalance ?? asShotWhiteBalance,
-                lensCorrection: lensCorrection ?? correctsLensByDefault,
+                whiteBalance: whiteBalance ?? asShotWhiteBalance, lensCorrection: correctsLens,
             )
+            .applyingLensProfile(correctsLens ? lensProfile : nil, fullSize: size)
         } else if let standardImage {
             image = ImageLoader.scaled(standardImage, maxDimension: maxDimension)
         } else {
             throw AlteraluxError.unreadableImage(url)
         }
         return try ImageLoader.pixels(of: crop.map { ImageLoader.framed(image, by: $0) } ?? image, url: url)
+    }
+}
+
+private extension CIImage {
+    /// This image corrected with `profile`, or as it is for `nil`.
+    func applyingLensProfile(_ profile: LensCorrection?, fullSize: CGSize) -> CIImage {
+        profile.map { LensWarp.apply($0, to: self, fullSize: fullSize) } ?? self
     }
 }

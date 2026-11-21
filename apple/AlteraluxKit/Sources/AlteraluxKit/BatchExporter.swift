@@ -44,15 +44,20 @@ public enum ExistingFilePolicy: Sendable, Equatable {
 /// Develops several photos and writes them, one after the other.
 public struct BatchExporter: Sendable {
     private let renderer: FilmRenderer
+    private let lenses: LensDatabase?
     private let discard: @Sendable (URL) throws -> Void
 
-    /// - Parameter discard: takes away an earlier export that a new one replaces. The app
-    ///   passes nothing, and the file goes to the Trash.
+    /// - Parameters:
+    ///   - lenses: the lens profiles, for the RAWs whose lens Apple's decoder does not know.
+    ///   - discard: takes away an earlier export that a new one replaces. The app passes
+    ///     nothing, and the file goes to the Trash.
     public init(
         renderer: FilmRenderer,
+        lenses: LensDatabase? = nil,
         discard: @escaping @Sendable (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) },
     ) {
         self.renderer = renderer
+        self.lenses = lenses
         self.discard = discard
     }
 
@@ -137,7 +142,7 @@ public struct BatchExporter: Sendable {
 
             var reservedURL: URL?
             do {
-                let decoder = try PhotoDecoder(url: job.photo)
+                let decoder = try PhotoDecoder(url: job.photo, lenses: lenses)
                 let photoLongSide = decoder.longSide(framedBy: job.settings.crop)
                 let decodeLimit = options.longSide.flatMap { requested in
                     requested > 0 && requested < photoLongSide ? requested : nil
