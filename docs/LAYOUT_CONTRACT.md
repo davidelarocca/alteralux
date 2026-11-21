@@ -84,7 +84,8 @@ Deliberate departures from the rules above, with the reason.
   copying and tagging show their symbols alone. Its lists (`ChoiceListButton`: recipes, folders, tags)
   open above the bar, inside the window, at most 320 pt tall. A layout test measures the grid with a
   selection.
-- The library's grid lays its photos in rows of one height, each photo as wide as its own shape:
+- The library's grid lays its photos in rows, each photo as wide as its own shape, and every row
+  but the last reaches both edges of the grid, made up to half again taller or shorter to do so:
   the rows are computed for the width the grid has (`LibraryRows`), so no photo is cut or pushed out
   at any size of its row.
 

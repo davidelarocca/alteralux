@@ -250,9 +250,9 @@ branch of its own. What was said, in the order to take it:
 
 - The library's page, drawn first as mockups the user approved. Done: the filter (All, With
   Adjustments, Discarded) in the middle of the toolbar; a Filter and Sort menu at its trailing side
-  (by name, date or kind, ascending or not; RAW or the other kinds; one Finder tag); the photos in
-  rows of one height, each as wide as its own shape, so an upright photo is no longer in a wide
-  tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
+  (by name, date or kind, ascending or not; RAW or the other kinds; one Finder tag), opening inside
+  the window; the photos in rows that reach both edges of the grid, as in Photos, each as wide as
+  its own shape, so an upright photo is no longer in a wide tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
   photo, which stays hidden outside its own filter; the actions on the selection in a bar floating
   over the grid; up and down arrows; under the grid, the size of the photos shown or of the selected
   ones; a rectangle dragged over the grid selects photos; a list of tags in the Finder's manner, with

@@ -121,7 +121,7 @@ struct LibraryGrid: View {
         }
     }
 
-    /// The photos in rows of one height, each as wide as its own shape asks.
+    /// The photos in rows that reach both edges, each as wide as its own shape asks.
     private var grid: some View {
         GeometryReader { proxy in
             let library = model.library
@@ -137,7 +137,7 @@ struct LibraryGrid: View {
                         HStack(alignment: .top, spacing: Spacing.m) {
                             ForEach(row.items) { item in
                                 LibraryTile(
-                                    photo: item.photo, size: CGSize(width: item.width, height: height),
+                                    photo: item.photo, size: CGSize(width: item.width, height: row.height),
                                     isSelected: library.selection.contains(item.photo),
                                     hasAdjustments: library.adjusted.contains(item.photo),
                                     isDiscarded: library.discarded.contains(item.photo),
