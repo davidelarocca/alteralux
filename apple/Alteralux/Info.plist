@@ -24,5 +24,34 @@
 			</array>
 		</dict>
 	</array>
+	<!-- "Develop with alteralux…" in the Finder's right-click menu: the
+	     selected photos are sent to the app, which asks for the workflow to
+	     develop them with. A menu entry only: no extension, no entitlement.
+	     The title is translated in ServicesMenu.xcstrings. -->
+	<key>NSServices</key>
+	<array>
+		<dict>
+			<key>NSMenuItem</key>
+			<dict>
+				<key>default</key>
+				<string>Develop with alteralux…</string>
+			</dict>
+			<key>NSMessage</key>
+			<string>developWithWorkflow</string>
+			<key>NSPortName</key>
+			<string>Alteralux</string>
+			<key>NSRequiredContext</key>
+			<dict/>
+			<key>NSSendFileTypes</key>
+			<array>
+				<string>public.camera-raw-image</string>
+				<string>public.tiff</string>
+				<string>public.jpeg</string>
+				<string>public.heic</string>
+				<string>public.png</string>
+				<string>com.ilm.openexr-image</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

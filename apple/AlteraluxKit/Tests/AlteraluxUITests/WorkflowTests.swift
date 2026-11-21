@@ -8,7 +8,7 @@ import Testing
 struct WorkflowTests {
     /// A folder of test pictures in the library, a started model and a recipe saved from a look
     /// of its own. The caller removes `folder`.
-    private struct Fixture {
+    struct Fixture {
         let folder: URL
         let model: AppModel
         let recipe: Recipe

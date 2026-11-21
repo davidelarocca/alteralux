@@ -140,6 +140,14 @@ public final class AppModel {
     /// The workflows, by name, and where they are kept.
     var workflows: [Workflow] = []
     let workflowStore: WorkflowStore
+    /// The folders outside the library the user let the app write into, for workflows that
+    /// write beside the originals of photos handed over by the Finder. Kept between launches.
+    let writableFolders: LibraryFolders
+    /// Brings the main window back when it was closed, for photos handed over by the Finder.
+    /// Set by the window when it first appears.
+    @ObservationIgnored var openMainWindow: (() -> Void)?
+    /// The start of the engine, once it is asked for: later callers wait for the same one.
+    @ObservationIgnored private var starting: Task<Void, Never>?
     /// The adjustments copied from a photo, to paste on others.
     var copiedAdjustments: DevelopSettings?
     /// The settings the last call of `settingsDidChange` has seen.
@@ -185,14 +193,30 @@ public final class AppModel {
         workflowStore = WorkflowStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows"),
         )
+        writableFolders = LibraryFolders(
+            storeURL: isApp
+                ? URL.applicationSupportDirectory.appending(path: "Library/writable-folders.plist")
+                : beside.appending(path: "writable-folders.plist"),
+        )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
 
     // MARK: - Startup
 
-    /// Creates the engine. Called once when the window appears.
+    /// Creates the engine and reads the recipes, the workflows and the library. Called when the
+    /// window appears, and by the Shortcuts action, which can run with no window: whoever comes
+    /// second waits for the first.
     func start() async {
+        if let starting {
+            return await starting.value
+        }
+        let task = Task { await startOnce() }
+        starting = task
+        await task.value
+    }
+
+    private func startOnce() async {
         guard renderer == nil else { return }
         defer { isStarting = false }
         do {
@@ -221,6 +245,7 @@ public final class AppModel {
         await loadWorkflows()
         // The library is where the app opens, unless it was started on a photo.
         await library.load()
+        _ = await writableFolders.load()
         Task.detached(priority: .background) { [thumbnails = library.thumbnails] in
             thumbnails.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit)
         }

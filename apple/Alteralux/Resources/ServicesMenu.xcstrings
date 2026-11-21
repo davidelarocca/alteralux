@@ -1,0 +1,17 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Develop with alteralux…" : {
+      "comment" : "The Finder's right-click menu entry (a Services entry in Info.plist) that sends the selected photos to the app.",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa con alteralux…"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

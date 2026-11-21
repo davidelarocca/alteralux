@@ -5,6 +5,8 @@ import SwiftUI
 /// The root view of the main window: the main screen plus the window's
 /// minimum size (see `docs/LAYOUT_CONTRACT.md`).
 public struct MainWindow: View {
+    /// The scene's identifier.
+    public static let id = "main"
     /// The smallest size the window can be resized to, in points.
     public static let minimumSize = CGSize(width: 900, height: 600)
     /// The size of a new window, in points.
@@ -26,6 +28,7 @@ struct MainScreen: View {
     @Environment(AppModel.self) private var model
     /// The window's undo manager: the one the Edit menu acts on.
     @Environment(\.undoManager) private var undoManager
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var model = model
@@ -61,6 +64,8 @@ struct MainScreen: View {
             Text(model.alertMessage ?? "")
         }
         .task { await model.start() }
+        // Photos sent from the Finder bring the window back when it was closed.
+        .onAppear { model.openMainWindow = { [openWindow] in openWindow(id: MainWindow.id) } }
     }
 
     private var isAlertPresented: Binding<Bool> {

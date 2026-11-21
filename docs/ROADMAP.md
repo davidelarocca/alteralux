@@ -263,7 +263,7 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    a recipe carries to its workflows and to Shortcuts, deleting one names the workflows that use it.
    From the Finder: "Develop with alteralux…" in the right-click menu (a Services entry, no extension:
    a probe app showed an extension cannot read the app's workflows without an App Group, which needs a
-   developer team), which opens a small alteralux window to choose the workflow and shows the progress;
+   developer team), which shows the sheet to choose the workflow, with its progress, over the main window;
    the first time in a folder outside the library the app asks for access to it, once (the sandbox
    denies a folder beside the originals otherwise). Shortcuts gets a "Develop Photos" action with the
    same workflows.
@@ -273,8 +273,15 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    made and changed in a sheet with the export's own options and a destination (a folder of a given name
    beside the originals, or one folder chosen once); in the library, the selected photos are developed
    with a workflow from the selection's bar or a photo's menu, through the export sheet and its progress.
-   A workflow only writes files: the photos keep their adjustments. Next, the second part: the Finder's
-   Services entry and the Shortcuts action.
+   A workflow only writes files: the photos keep their adjustments. Done, the second part
+   ([ADR 0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md)): "Develop with alteralux…" in
+   the Finder's right-click menu opens the same sheet over the main window for the photos selected
+   there, without adding them to the library; a workflow that writes beside them asks once for each
+   folder outside the library, with the system's panel, and remembers it. Shortcuts has "Develop
+   Photos": photos and a workflow in, the files written out (a workflow with a folder of its own also
+   leaves them there). Checked in the built app: the entry is registered with its Italian title and
+   hands the photos to the app. Still to be seen by the user: the entry in the Finder's own menu, the
+   permission panel, and the action in the Shortcuts editor.
 11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;

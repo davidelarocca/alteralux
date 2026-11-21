@@ -10,7 +10,7 @@ RAW / TIFF / EXR ─► Core Image ─► scene-linear RGB ─► Rust engine �
 
 | Module | Where | Responsibility | May depend on |
 |---|---|---|---|
-| App shell | `apple/Alteralux/` | `@main` scene, resources, entitlements, signing | AlteraluxUI |
+| App shell | `apple/Alteralux/` | `@main` scene, resources, entitlements, signing, the Finder's Services entry and the Shortcuts action | AlteraluxUI |
 | AlteraluxUI | `apple/AlteraluxKit/Sources/AlteraluxUI/` | App model, screens, menu commands | AlteraluxKit, AlteraluxEngine, DesignSystem |
 | DesignSystem | `apple/DesignSystem/` | Tokens and shared components | nothing app-specific |
 | AlteraluxKit | `apple/AlteraluxKit/Sources/AlteraluxKit/` | Image decoding, settings, rendering, export. No UI | AlteraluxEngine |
@@ -37,7 +37,9 @@ opened again. Undo and redo are the window's own.
 A recipe is a look saved under a name: every adjustment but the white balance. Recipes are kept by the
 app, one file each; a photo that receives one keeps only the adjustments. A workflow is a recipe, named
 by id, and the files it writes (format, size, a folder beside the originals or one chosen folder); it
-only writes files, and is kept beside the recipes.
+only writes files, and is kept beside the recipes. The Finder's "Develop with alteralux…" (a Services
+entry) and the Shortcuts action hand photos to the app, which develops them with a workflow; a folder
+outside the library is written into only once the user grants it, and remembered.
 
 The library shows the folders the user adds as they are on disk: it reads them, remembers them with
 security-scoped bookmarks and reads them again when they change. It keeps no catalogue.
@@ -84,3 +86,4 @@ defaults, and unknown keys are errors.
 | [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted |
 | [0012](adr/0012-lens-profiles-from-lensfun.md) | Lens profiles from lensfun's database, applied before the engine | Accepted |
 | [0013](adr/0013-workflows-are-recipes-with-their-files.md) | A workflow is a recipe and the files it writes, kept beside the recipes | Accepted |
+| [0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md) | The Finder and Shortcuts hand photos to the app, which develops them with a workflow | Accepted |

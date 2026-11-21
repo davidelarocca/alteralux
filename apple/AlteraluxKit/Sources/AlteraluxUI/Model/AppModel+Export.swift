@@ -143,19 +143,7 @@ extension AppModel {
                 folder?.stopAccessingSecurityScopedResource()
             }
         }
-        let twins = Self.twins(among: library.photos + photos)
-        let jobs = photos.map { photo in
-            let own = adjustments(of: photo).settings
-            let settings = recipe?.applied(to: own) ?? own
-            let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
-            let namesKind = twins.contains(photo)
-            return ExportJob(
-                photo: photo, settings: settings,
-                fileName: "\(Self.exportName(source: photo, film: film, namesKind: namesKind)).\(options.format.fileExtension)",
-                // An earlier export may carry the name of any film.
-                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName, namesKind: namesKind) },
-            )
-        }
+        let jobs = exportJobs(photos, options: options, recipe: recipe)
         if existing == nil {
             let there = BatchExporter.alreadyExported(jobs, at: destination).count
             if there > 0 {
@@ -184,6 +172,24 @@ extension AppModel {
         let failed = results.filter { !$0.succeeded }
         if !failed.isEmpty {
             alertMessage = Self.exportFailureMessage(for: failed.map(\.source.lastPathComponent))
+        }
+    }
+
+    /// What exporting `photos` means: for each one, the adjustments it is developed with (its
+    /// own, or `recipe` given to them) and the name of its file.
+    func exportJobs(_ photos: [URL], options: ExportOptions, recipe: Recipe?) -> [ExportJob] {
+        let twins = Self.twins(among: library.photos + photos)
+        return photos.map { photo in
+            let own = adjustments(of: photo).settings
+            let settings = recipe?.applied(to: own) ?? own
+            let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
+            let namesKind = twins.contains(photo)
+            return ExportJob(
+                photo: photo, settings: settings,
+                fileName: "\(Self.exportName(source: photo, film: film, namesKind: namesKind)).\(options.format.fileExtension)",
+                // An earlier export may carry the name of any film.
+                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName, namesKind: namesKind) },
+            )
         }
     }
 

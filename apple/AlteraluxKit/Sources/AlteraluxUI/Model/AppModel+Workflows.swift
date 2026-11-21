@@ -106,6 +106,9 @@ extension AppModel {
         let destination: ExportDestination
         switch workflow.destination {
         case let .besideOriginals(folderName):
+            // Photos handed over by the Finder may be in a folder the app cannot write into yet.
+            let folders = await foldersNeedingPermission(for: photosToExport)
+            guard await askToWrite(into: folders, folderName: folderName) else { return }
             destination = .subfolder(folderName)
         case let .folder(bookmark):
             guard let folder = bookmark.resolve(), Self.isFolder(folder) else {

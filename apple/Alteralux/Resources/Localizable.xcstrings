@@ -631,6 +631,36 @@
         }
       }
     },
+    "Allow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consenti"
+          }
+        }
+      }
+    },
+    "alteralux could not start its film engine." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alteralux non è riuscito ad avviare il motore della pellicola."
+          }
+        }
+      }
+    },
+    "alteralux is already developing photos. Try again when it is done." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "alteralux sta già sviluppando delle foto. Riprova quando ha finito."
+          }
+        }
+      }
+    },
     "And %lld more." : {
       "localizations" : {
         "en" : {
@@ -1132,12 +1162,32 @@
         }
       }
     },
+    "Develop ${photos} with ${workflow}" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa ${photos} con ${workflow}"
+          }
+        }
+      }
+    },
     "Develop %lld Photos" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppa %lld foto"
+          }
+        }
+      }
+    },
+    "Develop Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa foto"
           }
         }
       }
@@ -1219,6 +1269,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppo"
+          }
+        }
+      }
+    },
+    "Develops photos with a workflow of alteralux and gives back the files it writes. A workflow with a folder of its own also leaves them there." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa le foto con un flusso di alteralux e restituisce i file che scrive. Un flusso con una cartella sua li lascia anche lì."
           }
         }
       }
@@ -1603,6 +1663,16 @@
         }
       }
     },
+    "None of these files is a photo alteralux can develop." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuno di questi file è una foto che alteralux può sviluppare."
+          }
+        }
+      }
+    },
     "Open With" : {
       "localizations" : {
         "it" : {
@@ -1619,6 +1689,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dimensione originale"
+          }
+        }
+      }
+    },
+    "Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
           }
         }
       }
@@ -3175,6 +3255,16 @@
         }
       }
     },
+    "The recipe of the workflow “%@” is no longer in alteralux." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ricetta del flusso “%@” non è più in alteralux."
+          }
+        }
+      }
+    },
     "The recipe “%@” could not be deleted." : {
       "localizations" : {
         "it" : {
@@ -3215,6 +3305,16 @@
         }
       }
     },
+    "The workflow is no longer in alteralux." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il flusso non è più in alteralux."
+          }
+        }
+      }
+    },
     "The workflow “%@” could not be deleted." : {
       "localizations" : {
         "it" : {
@@ -3241,6 +3341,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "I loro file sono nella cartella di destinazione, alcuni forse con un'altra pellicola o un altro formato. Sostituendoli, i vecchi file vanno nel Cestino."
+          }
+        }
+      }
+    },
+    "There is no workflow yet. Make one in Recipes and Workflows: a recipe and the files it writes." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non c’è ancora nessun flusso. Creane uno in Ricette e flussi: una ricetta e i file che scrive."
           }
         }
       }
@@ -3311,6 +3421,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tinta"
+          }
+        }
+      }
+    },
+    "To write “%@” beside the photos, alteralux needs your permission for the folder “%@”. It is asked only once." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per scrivere “%1$@” accanto alle foto, alteralux ha bisogno del tuo permesso per la cartella “%2$@”. Te lo chiede una volta sola."
           }
         }
       }
@@ -3511,6 +3631,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non è stato possibile rinominare “%@”. %@"
+          }
+        }
+      }
+    },
+    "“%@” does not hold the photos. Choose the folder “%@”, or one that holds it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%1$@” non contiene le foto. Scegli la cartella “%2$@”, o una che la contiene."
           }
         }
       }

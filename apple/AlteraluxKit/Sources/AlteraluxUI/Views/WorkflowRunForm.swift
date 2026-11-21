@@ -2,16 +2,40 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-/// The export sheet's form for developing the selected photos of the library with a workflow:
-/// which workflow, and what it does with them.
+/// The export sheet's form for developing photos with a workflow (the selected photos of the
+/// library, or photos sent from the Finder): which workflow, and what it does with them. With no
+/// workflow yet, it leads to the window where they are made.
 struct WorkflowRunForm: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
+        if model.workflows.isEmpty {
+            noWorkflows
+        } else {
+            form
+        }
+    }
+
+    private var noWorkflows: some View {
+        FormSheet(
+            Text("Develop \(model.photosToExport.count) Photos"),
+            message: Text("There is no workflow yet. Make one in Recipes and Workflows: a recipe and the files it writes."),
+            confirm: SheetAction(Text("Recipes and Workflows…")) {
+                dismiss()
+                openWindow(id: RecipesWindow.id)
+            },
+            cancel: SheetAction(Text("Cancel")) { dismiss() },
+        ) {
+            EmptyView()
+        }
+    }
+
+    private var form: some View {
         @Bindable var model = model
 
-        FormSheet(
+        return FormSheet(
             Text("Develop \(model.photosToExport.count) Photos"),
             message: Text("Each photo is written as a file with the workflow’s recipe, and keeps its own adjustments."),
             confirm: SheetAction(Text("Develop"), isEnabled: model.chosenWorkflow != nil) {
