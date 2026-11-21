@@ -113,12 +113,18 @@ public enum ImageLoader {
     /// - Parameters:
     ///   - maxDimension: the long side of the result, in pixels; `nil` for the photo's own size.
     ///   - whiteBalance: what to take as neutral; `nil` leaves what the filter is set to.
+    ///   - lensCorrection: whether to correct the lens, where the decoder knows how; `nil`
+    ///     leaves what the filter is set to.
     static func rawImage(
         from filter: CIRAWFilter, url: URL, maxDimension: Int?, whiteBalance: WhiteBalance?,
+        lensCorrection: Bool? = nil,
     ) throws -> CIImage {
         if let whiteBalance {
             filter.neutralTemperature = Float(whiteBalance.temperature)
             filter.neutralTint = Float(whiteBalance.tint)
+        }
+        if let lensCorrection, filter.isLensCorrectionSupported {
+            filter.isLensCorrectionEnabled = lensCorrection
         }
         let longSide = max(filter.nativeSize.width, filter.nativeSize.height)
         var scale = 1.0

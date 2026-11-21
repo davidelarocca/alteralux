@@ -26,6 +26,8 @@ public final class AppModel {
 
     /// The selected photo, open and decoded as the engine needs it.
     private(set) var sources: PhotoSources?
+    /// The automatic white balance of the selected photo, once it was measured.
+    var automaticWhiteBalance: WhiteBalance?
     /// The selected photo as the system renders it, for the comparison.
     private(set) var original: CGImage?
     /// The selected photo developed with `settings`.
@@ -295,6 +297,7 @@ public final class AppModel {
         // A photo still being opened must not come back once it has left the strip.
         loadGeneration += 1
         sources = nil
+        automaticWhiteBalance = nil
         original = nil
         preview = nil
         if let next = photos.indices.contains(index) ? photos[index] : photos.last {
@@ -308,6 +311,7 @@ public final class AppModel {
         let generation = loadGeneration
         let url = item.url
         sources = nil
+        automaticWhiteBalance = nil
         original = nil
         preview = nil
         previewCrop = nil
@@ -337,6 +341,7 @@ public final class AppModel {
                 sources = PhotoSources(decoder: decoder)
                 isLoading = false
                 requestRender()
+                measureAutomaticWhiteBalance()
             } catch {
                 guard generation == loadGeneration else { return }
                 isLoading = false
@@ -361,6 +366,7 @@ public final class AppModel {
         item.settings = settings
         history.change(of: item)
         sources?.settingsDidChange(settings)
+        measureAutomaticWhiteBalance()
         isAdjusting = true
         holdsSlowPreview = true
         slowPreviewRelease?.cancel()

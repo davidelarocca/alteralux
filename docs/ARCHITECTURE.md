@@ -77,3 +77,4 @@ defaults, and unknown keys are errors.
 | [0008](adr/0008-keep-edits-in-the-photo.md) | Keep a photo's adjustments in the photo itself | Accepted |
 | [0009](adr/0009-recipes-are-looks-kept-by-the-app.md) | A recipe is a look without white balance, kept by the app | Accepted |
 | [0010](adr/0010-crop-before-the-engine.md) | Crop and straighten before the engine | Accepted |
+| [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted |

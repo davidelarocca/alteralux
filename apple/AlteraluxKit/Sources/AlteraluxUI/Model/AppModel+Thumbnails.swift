@@ -24,13 +24,9 @@ extension AppModel {
         let dimension = Self.thumbnailDimension
         Task {
             let developed = await Task.detached(priority: .utility) { () -> SendableImage in
-                guard let decoder = try? PhotoDecoder(url: url) else { return SendableImage(nil) }
-                let whiteBalance = decoder.asShotWhiteBalance.map { settings.whiteBalance(asShot: $0) }
-                guard
-                    let loaded = try? await decoder.decode(
-                        maxDimension: dimension, whiteBalance: whiteBalance, crop: settings.crop,
-                    ),
-                    let image = try? await renderer.render(loaded, settings: settings, quality: .preview(maxDimension: dimension))
+                guard let decoder = try? PhotoDecoder(url: url),
+                      let loaded = try? await decoder.decode(maxDimension: dimension, settings: settings),
+                      let image = try? await renderer.render(loaded, settings: settings, quality: .preview(maxDimension: dimension))
                 else { return SendableImage(nil) }
                 return SendableImage(image.cgImage)
             }.value

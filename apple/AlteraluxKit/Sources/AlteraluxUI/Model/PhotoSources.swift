@@ -21,11 +21,12 @@ final class PhotoSources {
     /// What the pixels kept were decoded with, apart from their size.
     private struct Decoding: Equatable {
         var whiteBalance: WhiteBalance?
+        var lensCorrection: Bool?
         var crop: PhotoCrop?
     }
 
-    /// The white balance and the frame of what is kept. A change of either makes all of it
-    /// useless.
+    /// The white balance, the lens correction and the frame of what is kept. A change of any
+    /// makes all of it useless.
     private var kind = Decoding()
     /// Counts the changes of white balance or frame, to tell a decode that ends after one.
     private var epoch = 0
@@ -36,6 +37,9 @@ final class PhotoSources {
     private var preparation: Task<Void, Never>?
     /// The white balance and the frame of what is being decoded ahead.
     private var preparedKind: Decoding?
+    /// The automatic white balance of the photo, once the decoder measured it.
+    private(set) var automaticWhiteBalance: WhiteBalance?
+    private var hasMeasuredWhiteBalance = false
 
     init(decoder: PhotoDecoder) {
         self.decoder = decoder
@@ -48,12 +52,27 @@ final class PhotoSources {
 
     /// What `settings` ask to decode, apart from the size.
     private func kind(for settings: DevelopSettings) -> Decoding {
-        Decoding(whiteBalance: whiteBalance(for: settings), crop: settings.crop.flatMap { $0.isWhole ? nil : $0 })
+        Decoding(
+            whiteBalance: whiteBalance(for: settings), lensCorrection: settings.lensCorrection,
+            crop: settings.crop.flatMap { $0.isWhole ? nil : $0 },
+        )
     }
 
-    /// The white balance `settings` give this photo: `nil` when it is not a RAW.
+    /// The white balance `settings` give this photo: `nil` when it is not a RAW. The automatic
+    /// one is known only once ``measureWhiteBalance()`` has measured it.
     func whiteBalance(for settings: DevelopSettings) -> WhiteBalance? {
-        decoder.asShotWhiteBalance.map { settings.whiteBalance(asShot: $0) }
+        let automatic = settings.autoWhiteBalance ? automaticWhiteBalance : nil
+        return decoder.asShotWhiteBalance.map { settings.whiteBalance(asShot: $0, automatic: automatic) }
+    }
+
+    /// Measures the photo's automatic white balance, once.
+    @discardableResult
+    func measureWhiteBalance() async -> WhiteBalance? {
+        if !hasMeasuredWhiteBalance {
+            automaticWhiteBalance = await decoder.automaticWhiteBalance()
+            hasMeasuredWhiteBalance = true
+        }
+        return automaticWhiteBalance
     }
 
     /// The photo decoded for `settings`.
@@ -61,6 +80,9 @@ final class PhotoSources {
     /// - Parameter dimension: the long side, in pixels; 0, or anything not smaller than the
     ///   framed photo, for the whole of it.
     func source(dimension: Int, settings: DevelopSettings) async throws -> LoadedImage {
+        if settings.autoWhiteBalance {
+            await measureWhiteBalance()
+        }
         let wanted = kind(for: settings)
         let framedLongSide = longSide(framedBy: wanted.crop)
         let dimension = dimension <= 0 || dimension >= framedLongSide ? 0 : dimension
@@ -80,7 +102,8 @@ final class PhotoSources {
         let decoder = decoder
         let task = Task {
             try await decoder.decode(
-                maxDimension: dimension, whiteBalance: wanted.whiteBalance, crop: wanted.crop,
+                maxDimension: dimension, whiteBalance: wanted.whiteBalance, lensCorrection: wanted.lensCorrection,
+                crop: wanted.crop,
             )
         }
         decoding[dimension] = task
@@ -115,7 +138,7 @@ final class PhotoSources {
         }
     }
 
-    /// Stops decoding ahead when `settings` ask for another white balance or another frame: what
+    /// Stops decoding ahead when `settings` ask for another white balance, lens correction or frame: what
     /// was being decoded is of no use, and the decoder must be free for the new one. Any other
     /// change leaves it going, since it decodes the same pixels.
     func settingsDidChange(_ settings: DevelopSettings) {

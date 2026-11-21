@@ -481,6 +481,16 @@
         }
       }
     },
+    "Adapts to each photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si adatta a ogni foto"
+          }
+        }
+      }
+    },
     "Add" : {
       "localizations" : {
         "it" : {
@@ -717,6 +727,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esposimetro automatico"
+          }
+        }
+      }
+    },
+    "Automatic white balance" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bianco automatico"
           }
         }
       }
@@ -1163,6 +1183,16 @@
         }
       }
     },
+    "Each photo starts from its own exposure, and from an automatic white balance where the camera's is far off." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni foto parte dalla sua esposizione, e da un bilanciamento del bianco automatico quando quello della fotocamera è lontano."
+          }
+        }
+      }
+    },
     "Export %lld Photos…" : {
       "localizations" : {
         "it" : {
@@ -1189,6 +1219,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lascia il ritaglio com'era"
+          }
+        }
+      }
+    },
+    "Lens correction" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correzione obiettivo"
           }
         }
       }
@@ -1279,6 +1319,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nuovo tag…"
+          }
+        }
+      }
+    },
+    "No correction is known for this photo's lens." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Per l'obiettivo di questa foto non è nota alcuna correzione."
           }
         }
       }
@@ -2595,6 +2645,16 @@
         }
       }
     },
+    "Start from the light measured in the photo where the camera's white balance is far from it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte dalla luce misurata nella foto quando il bilanciamento della fotocamera è lontano da questa."
+          }
+        }
+      }
+    },
     "Stop" : {
       "localizations" : {
         "it" : {
@@ -2611,6 +2671,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Raddrizza"
+          }
+        }
+      }
+    },
+    "Straightens the lens's curved lines and brightens its darker corners, as the camera recorded." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raddrizza le linee curvate dall'obiettivo e schiarisce gli angoli più scuri, come registrato dalla fotocamera."
           }
         }
       }

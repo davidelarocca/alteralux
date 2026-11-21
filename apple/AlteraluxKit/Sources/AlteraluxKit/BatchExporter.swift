@@ -142,12 +142,7 @@ public struct BatchExporter: Sendable {
                 let decodeLimit = options.longSide.flatMap { requested in
                     requested > 0 && requested < photoLongSide ? requested : nil
                 }
-                let whiteBalance = decoder.asShotWhiteBalance.map {
-                    job.settings.whiteBalance(asShot: $0)
-                }
-                let loaded = try await decoder.decode(
-                    maxDimension: decodeLimit, whiteBalance: whiteBalance, crop: job.settings.crop,
-                )
+                let loaded = try await decoder.decode(maxDimension: decodeLimit, settings: job.settings)
                 let developed = try await renderer.render(
                     loaded, settings: job.settings, quality: .full,
                 )

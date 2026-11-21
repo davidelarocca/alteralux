@@ -138,11 +138,16 @@ hand-drawn controls of the mockups were dropped for the system's
 - **Finder tags in the sandbox.** Verified on 2026-11-20 with a probe app signed like this one: in a
   folder the user has added, tags are read and written with the access the sandbox gives, and so are
   moving, copying, the Trash and a file beside a photo. The tag menu is still to design.
-- **Automatic white balance.** Which method gives the starting temperature for adaptive recipes, and
-  when a photo counts as "too far off". To settle on real photos.
+- **Automatic white balance.** Settled on 2026-11-21 ([ADR 0011](adr/0011-recipes-adapt-to-each-photo.md)):
+  a "shades of gray" measure in the RAW decoder, used when it is more than 25 mired or 15 of tint from
+  the camera's, and then 60% of the way. The numbers are still to judge on real photos.
 
-- **Camera and lens profiles: the source.** What Core Image already applies when decoding RAW files, and
-  whether an open database of lens corrections can be used and shipped under the GPL. To verify before
-  designing the feature.
+- **Camera and lens profiles: the source.** Answered on 2026-11-21: `CIRAWFilter` corrects the lenses it
+  knows (`isLensCorrectionSupported`), with no word on which ones or on what it corrects; the app uses
+  it ([ADR 0011](adr/0011-recipes-adapt-to-each-photo.md)). For the others, lensfun: its library is
+  LGPLv3, its database CC BY-SA 3.0, which can be shipped unmodified as a separate file with its
+  attribution, read by models written in Swift. To confirm with a proper legal reading before an
+  official release. Still unknown: which cameras Apple's correction covers, and how well lensfun covers
+  recent lenses.
 - **Photos.** As far as we know, an editing extension receives a rendered image, not the RAW original
   (see `docs/ROADMAP.md`). Reading originals through PhotoKit from the app is the alternative.
