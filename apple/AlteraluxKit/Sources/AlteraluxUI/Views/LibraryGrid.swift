@@ -299,7 +299,7 @@ struct LibraryGrid: View {
                 if library.visiblePhotos.isEmpty {
                     Text("\(library.visiblePhotos.count) photos")
                 } else if library.selection.isEmpty {
-                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos)) · \(Text("double-click to develop"))")
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos))")
                 } else {
                     Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected")) · \(size(of: library.selection))")
                 }

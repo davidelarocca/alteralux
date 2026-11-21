@@ -1122,16 +1122,6 @@
         }
       }
     },
-    "double-click to develop" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "doppio clic per sviluppare"
-          }
-        }
-      }
-    },
     "Double-click to reset" : {
       "localizations" : {
         "it" : {
