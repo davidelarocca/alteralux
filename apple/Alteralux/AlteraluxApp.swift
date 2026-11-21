@@ -1,4 +1,5 @@
 import AlteraluxUI
+import AppIntents
 import AppKit
 import SwiftUI
 
@@ -8,16 +9,20 @@ import SwiftUI
 struct AlteraluxApp: App {
     /// Takes the files opened from the Finder, the Dock or `open`.
     @NSApplicationDelegateAdaptor(OpenFilesDelegate.self) private var openFiles
-    @State private var model = AppModel()
+    @State private var model: AppModel
 
     init() {
+        let model = AppModel()
+        _model = State(initialValue: model)
+        // The Shortcuts action develops photos with the same model as the window.
+        AppDependencyManager.shared.add(dependency: model)
         // Always dark, like a darkroom: colors are judged against a neutral
         // dark interface, whatever the system appearance.
         NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
     }
 
     var body: some Scene {
-        Window("alteralux", id: "main") {
+        Window("alteralux", id: MainWindow.id) {
             MainWindow()
                 .environment(model)
                 .onAppear { openFiles.attach(model) }

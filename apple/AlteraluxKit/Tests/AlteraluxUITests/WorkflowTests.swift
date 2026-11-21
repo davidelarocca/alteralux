@@ -8,7 +8,7 @@ import Testing
 struct WorkflowTests {
     /// A folder of test pictures in the library, a started model and a recipe saved from a look
     /// of its own. The caller removes `folder`.
-    private struct Fixture {
+    struct Fixture {
         let folder: URL
         let model: AppModel
         let recipe: Recipe
@@ -46,7 +46,8 @@ struct WorkflowTests {
 
         var workflow = model.newWorkflow(for: fixture.recipe)
         #expect(workflow.name == "Slide" && workflow.recipeID == fixture.recipe.id)
-        #expect(workflow.destination == .besideOriginals(folderName: AppModel.developedFolderName))
+        // A new workflow adapts, and writes beside the photos, named after them and the film.
+        #expect(workflow.destination == .sameFolder && workflow.adaptsToEachPhoto && workflow.naming == .nameAndFilm)
         workflow.name = " Web "
         workflow.options.longSide = 2048
         workflow.destination = .besideOriginals(folderName: " For the web ")
@@ -86,7 +87,13 @@ struct WorkflowTests {
             var bad = workflow
             bad.destination = .besideOriginals(folderName: name)
             #expect(!AppModel.canSave(bad), "\(name)")
+            var badText = workflow
+            badText.naming = .nameAndText(name)
+            #expect(!AppModel.canSave(badText), "\(name)")
         }
+        var text = workflow
+        text.naming = .nameAndText("web")
+        #expect(AppModel.canSave(text))
     }
 
     @Test func aWorkflowWritesFilesWithItsRecipeAndLeavesThePhotosAlone() async throws {

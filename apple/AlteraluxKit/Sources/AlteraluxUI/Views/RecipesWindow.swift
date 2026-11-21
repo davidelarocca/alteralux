@@ -3,7 +3,7 @@ import DesignSystem
 import SwiftUI
 
 /// The window of recipes and workflows: the recipes on the left, and on the right the one chosen,
-/// with whether it adapts to each photo and the workflows that use it. Renaming and deleting a
+/// with the workflows that use it. Renaming and deleting a
 /// recipe are here; a recipe is made from the look on screen, with the Recipe menu.
 public struct RecipesWindow: View {
     /// The window's identifier, to open it.
@@ -119,7 +119,7 @@ struct RecipesScreen: View {
     }
 }
 
-/// One recipe: its film and paper, whether it adapts to each photo, and its workflows.
+/// One recipe: its film and paper, and the workflows that use it.
 struct RecipeDetail: View {
     @Environment(AppModel.self) private var model
     let recipe: Recipe
@@ -136,10 +136,8 @@ struct RecipeDetail: View {
                 LabeledContent("Film and paper") {
                     Text(verbatim: model.materials(of: recipe.look))
                 }
-                Toggle("Adapts to each photo", isOn: adapts)
-                    .help("Each photo starts from its own exposure, and from an automatic white balance where the camera's is far off.")
             } footer: {
-                note("A recipe is a look saved under a name: everything but the white balance.")
+                note("A recipe is the look of a photo saved under a name: everything but the white balance. Its workflows use it.")
             }
             workflows
             Section {
@@ -191,7 +189,7 @@ struct RecipeDetail: View {
         } header: {
             Text("Workflows")
         } footer: {
-            note("A workflow develops photos with this recipe and writes them as files. In the library, select photos and choose Develop with Workflow.")
+            note("A workflow uses this recipe to write developed photos as files, beside them or in a folder. In the Finder: Develop with alteralux.")
         }
     }
 
@@ -200,14 +198,6 @@ struct RecipeDetail: View {
             .font(Typography.caption)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    /// Whether the recipe adapts to each photo, saved as soon as it changes.
-    private var adapts: Binding<Bool> {
-        Binding(
-            get: { recipe.adaptsToEachPhoto },
-            set: { adapts in Task { await model.setAdapts(recipe, adapts) } },
-        )
     }
 
     private var isDeleting: Binding<Bool> {

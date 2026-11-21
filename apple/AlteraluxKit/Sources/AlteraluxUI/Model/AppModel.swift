@@ -81,6 +81,9 @@ public final class AppModel {
     /// Whether the export sheet develops the photos with a workflow, and not with their own
     /// adjustments and the options it shows.
     var exportsWithWorkflow = false
+    /// Set when photos are sent from the Finder and there is no workflow yet: an alert leads to
+    /// Recipes and Workflows.
+    var isWorkflowNeeded = false
     /// The workflow chosen in the export sheet, kept for the next time.
     var exportWorkflow: Workflow.ID?
     /// An export that found files of an earlier one, and waits to be told what to do with them.
@@ -96,8 +99,6 @@ public final class AppModel {
     /// Long side of the lighter preview shown while the settings are changing.
     private nonisolated static let draftPreviewDimension = 1024
     nonisolated static let thumbnailDimension = 240
-    /// The most the thumbnails kept on disk take, in bytes: thousands of photos' worth.
-    private nonisolated static let thumbnailCacheLimit: Int64 = 512 * 1024 * 1024
     /// How long the settings must stay still before the preview is rendered at its full size.
     var settleDelay = Duration.milliseconds(150)
     /// How long the standard preview stays, once the settings are still, before a preview that
@@ -140,6 +141,16 @@ public final class AppModel {
     /// The workflows, by name, and where they are kept.
     var workflows: [Workflow] = []
     let workflowStore: WorkflowStore
+    /// The folders outside the library the user let the app write into, for workflows that
+    /// write beside the originals of photos handed over by the Finder. Kept between launches.
+    let writableFolders: LibraryFolders
+    /// Brings the main window back when it was closed, for photos handed over by the Finder.
+    /// Set by the window when it first appears.
+    @ObservationIgnored var openMainWindow: (() -> Void)?
+    /// Asks which workflow develops photos sent from the Finder: the list beside the pointer.
+    @ObservationIgnored var chooseWorkflow: @MainActor ([WorkflowChoice], Int) -> WorkflowChoice.ID? = WorkflowChoiceMenu.choose
+    /// The start of the engine, once it is asked for: later callers wait for the same one.
+    @ObservationIgnored private var starting: Task<Void, Never>?
     /// The adjustments copied from a photo, to paste on others.
     var copiedAdjustments: DevelopSettings?
     /// The settings the last call of `settingsDidChange` has seen.
@@ -185,14 +196,23 @@ public final class AppModel {
         workflowStore = WorkflowStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows"),
         )
+        writableFolders = LibraryFolders(storeURL: Self.writableFoldersStore(isApp: isApp, beside: beside))
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
 
     // MARK: - Startup
 
-    /// Creates the engine. Called once when the window appears.
+    /// Creates the engine and reads the recipes, the workflows and the library. Called when the
+    /// window appears, and by the Shortcuts action, which can run with no window: whoever comes
+    /// second waits for the first.
     func start() async {
+        let task = starting ?? Task { await startOnce() }
+        starting = task
+        await task.value
+    }
+
+    private func startOnce() async {
         guard renderer == nil else { return }
         defer { isStarting = false }
         do {
@@ -217,16 +237,7 @@ public final class AppModel {
         } catch {
             alertMessage = error.localizedDescription
         }
-        await loadRecipes()
-        await loadWorkflows()
-        // The library is where the app opens, unless it was started on a photo.
-        await library.load()
-        Task.detached(priority: .background) { [thumbnails = library.thumbnails] in
-            thumbnails.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit)
-        }
-        if photos.isEmpty, !library.isEmpty {
-            showsLibrary = true
-        }
+        await loadKeptState()
     }
 
     // MARK: - Opening and selecting

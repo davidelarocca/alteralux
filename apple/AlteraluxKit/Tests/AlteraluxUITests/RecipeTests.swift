@@ -366,12 +366,12 @@ struct ExportAgainTests {
         // The second finds one file there: it writes nothing and waits.
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
         #expect(model.exportWaiting == WaitingExport(
-            photos: photos, destination: .subfolder(AppModel.developedFolderName), options: model.exportOptions, recipe: nil, existing: 1,
+            photos: photos, destination: .subfolder(AppModel.developedFolderName), options: model.exportOptions, workflow: nil, existing: 1,
         ))
         #expect(try files() == first && !model.isExporting)
 
         // Skipping develops only the photo that was not there, and leaves the old file alone.
-        await model.resumeExport(.skip)
+        try await model.resumeExport(#require(model.exportWaiting), .skip)
         #expect(model.exportWaiting == nil && model.alertMessage == nil)
         #expect(try files().count == 2)
         let untouched = try URL(fileURLWithPath: firstFile.path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
@@ -381,7 +381,11 @@ struct ExportAgainTests {
         try await Task.sleep(for: .milliseconds(1100))
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
         #expect(model.exportWaiting?.existing == 2)
-        await model.resumeExport(.replace)
+        // The alert lets the question go as it closes, before the export goes on: the button
+        // took it when pressed.
+        let waiting = try #require(model.exportWaiting)
+        model.exportWaiting = nil
+        await model.resumeExport(waiting, .replace)
         #expect(try files().count == 2)
         let replaced = try #require(try URL(fileURLWithPath: firstFile.path).resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
         #expect(replaced > firstDate)
@@ -402,7 +406,6 @@ struct ExportAgainTests {
         // Leaving the question drops the export.
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
         model.exportWaiting = nil
-        await model.resumeExport(.replace)
-        #expect(try files().count == 4)
+        #expect(try files().count == 4 && !model.isExporting)
     }
 }

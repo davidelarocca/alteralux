@@ -111,3 +111,8 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   stitchable Metal function in the source", and `LensWarp` silently left photos uncorrected. Declare the
   kernel `[[stitchable]] float4 name(coreimage::sampler …, coreimage::destination dest)`. Caught by
   `LensWarpTests.theKernelCompiles`.
+- **A SwiftUI alert clears its binding before a `Task` started by its button runs.** The export's
+  "Replace / Keep Both / Skip Them" alert cleared `exportWaiting` as it closed, and the button's
+  `Task { await model.resumeExport(.keepBoth) }` then found nothing to resume: the export silently stopped.
+  Found by driving the built app on 2026-11-21. Take what the button acts on synchronously in its action
+  and pass it to the async work (`ExportSheet.resume(_:)`, `AppModel.resumeExport(_:_:)`).

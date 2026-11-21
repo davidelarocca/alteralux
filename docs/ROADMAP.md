@@ -218,6 +218,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      balance unless it is far off. Seen in the built app on the test RAW. Changed the same day after
      measuring 126 of the user's RAWs: a white balance the camera chose itself is kept (ADR 0011).
      Still to judge on real photos whose white balance was set by hand: the thresholds.
+     Moved on 2026-11-21 from the recipe to the workflow, at the user's request
+     ([ADR 0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md)): a recipe given in the app is
+     given as it is, and a workflow says whether it adapts.
    - Recipes are in the order of their names, and deleting one asks first but is not a step of undo.
      Recipe files cannot be imported or handed to someone else yet.
    - The export's progress is the system's bar, not the print coming up in the developer of the
@@ -263,7 +266,7 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    a recipe carries to its workflows and to Shortcuts, deleting one names the workflows that use it.
    From the Finder: "Develop with alteralux…" in the right-click menu (a Services entry, no extension:
    a probe app showed an extension cannot read the app's workflows without an App Group, which needs a
-   developer team), which opens a small alteralux window to choose the workflow and shows the progress;
+   developer team), which develops them at once with the workflow chosen;
    the first time in a folder outside the library the app asks for access to it, once (the sandbox
    denies a folder beside the originals otherwise). Shortcuts gets a "Develop Photos" action with the
    same workflows.
@@ -273,8 +276,20 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    made and changed in a sheet with the export's own options and a destination (a folder of a given name
    beside the originals, or one folder chosen once); in the library, the selected photos are developed
    with a workflow from the selection's bar or a photo's menu, through the export sheet and its progress.
-   A workflow only writes files: the photos keep their adjustments. Next, the second part: the Finder's
-   Services entry and the Shortcuts action.
+   A workflow only writes files: the photos keep their adjustments. Done, the second part
+   ([ADR 0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md)), after the user tried a first
+   version with a sheet and found it not immediate: a recipe is a look, and a workflow is how it is
+   used (the recipe, whether it adapts to each photo, the files, their names, and beside the photos, in
+   a folder beside them or in one folder). "Develop with alteralux…" in the Finder's right-click menu
+   develops the selected photos at once: with the only workflow, or with the one chosen in a list at the
+   pointer; the files appear without a question, and nothing beside the photos is ever replaced. A
+   folder outside the library is asked for once. Shortcuts has "Develop Photos": photos and a workflow
+   in, the files written out. Checked in the built app on test pictures: the entry registered with its
+   Italian title, one workflow developing at once, the list with two, the permission asked once and
+   kept, the files beside the photos and in a folder beside them, the app that sent them back in front.
+   Still to be seen by the user: the entry in the Finder's own menu, and the action in the Shortcuts
+   editor. Later, with a developer team: each workflow as an entry of the Finder's menu, through an
+   extension.
 11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;

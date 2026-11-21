@@ -2,8 +2,8 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-/// The export sheet's form for developing the selected photos of the library with a workflow:
-/// which workflow, and what it does with them.
+/// The export sheet's form for developing photos with a workflow (the selected photos of the
+/// library, or photos sent from the Finder): which workflow, and what it does with them.
 struct WorkflowRunForm: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
