@@ -1,4 +1,5 @@
 import CoreImage
+import os
 import Foundation
 import Testing
 @testable import AlteraluxKit
@@ -197,6 +198,54 @@ struct CameraLensWarpTests {
             let column = Double(value.x) / correction.vignettingGain(at: here) * Double(width) - 0.5
             #expect(abs(column - here.x) < 0.05, "at \(point): x \(column)")
         }
+    }
+
+    /// A photo of a camera's size is corrected a tile at a time, each tile asking only for the
+    /// part of the photo it needs. Asking for the whole photo for every tile made Core Image decode
+    /// the RAW over and over, and a preview never finished (2026-11-21). The photo here passes
+    /// through a kernel that notes the largest part of it asked for.
+    @Test func eachTileAsksOnlyForItsOwnPartOfThePhoto() throws {
+        let width = 6000
+        let height = 4000
+        let correction = try #require(CameraLensCorrection(
+            lensName: "", geometry: .init(distortion: RadialCurve(sampling: { 1 + 0.03 * $0 * $0 })),
+            geometrySource: .camera, light: RadialCurve(sampling: { 1 - 0.4 * $0 * $0 }), vignettingSource: .camera,
+            width: width, height: height,
+        ))
+        // The farthest a pixel moves: about 3% of the half diagonal, less the zoom.
+        #expect(correction.largestShift() > 30 && correction.largestShift() < 150, "\(correction.largestShift())")
+
+        let source = """
+        #include <CoreImage/CoreImage.h>
+        [[stitchable]] float4 passThrough(coreimage::sampler image, coreimage::destination dest) {
+            return image.sample(image.transform(dest.coord()));
+        }
+        """
+        let passThrough = try #require(try CIKernel.kernels(withMetalString: source).first)
+        let largest = OSAllocatedUnfairLock(initialState: 0.0)
+        let random = CIFilter(name: "CIRandomGenerator")!.outputImage!
+        let extent = CGRect(x: 0, y: 0, width: width, height: height)
+        let photo = try #require(passThrough.apply(extent: extent, roiCallback: { _, rect in
+            largest.withLock { $0 = max($0, rect.width * rect.height) }
+            return rect
+        }, arguments: [random]))
+        let corrected = LensWarp.apply(correction, to: photo, fullSize: extent.size)
+        // In four bands, as Core Image renders a large RAW in tiles.
+        var pixels = [UInt8](repeating: 0, count: width * height)
+        for band in 0 ..< 4 {
+            let bounds = CGRect(x: 0, y: band * height / 4, width: width, height: height / 4)
+            Self.context.render(corrected, toBitmap: &pixels, rowBytes: width * 4, bounds: bounds, format: .RGBA8, colorSpace: Self.space)
+        }
+        let asked = largest.withLock { $0 }
+        #expect(asked > 0 && asked < extent.width * extent.height / 2, "\(asked)")
+    }
+
+    @Test func aCorrectionThatMovesNothingShiftsNothing() throws {
+        let correction = try #require(CameraLensCorrection(
+            lensName: "", geometry: nil, geometrySource: .apple, light: RadialCurve(sampling: { 1 - 0.2 * $0 }),
+            vignettingSource: .camera, width: 600, height: 400,
+        ))
+        #expect(correction.largestShift() == 0)
     }
 
     @Test func aReducedCopyIsCorrectedLikeTheWholePhoto() throws {

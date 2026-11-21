@@ -89,6 +89,20 @@ public struct CameraLensCorrection: Sendable, Equatable {
         return center + offset * curve.value(at: radius)
     }
 
+    /// The farthest, in pixels of the whole photo, that a pixel of the corrected picture is taken
+    /// from its own place, for any channel, up to the corners.
+    public func largestShift() -> Double {
+        var largest = 0.0
+        for step in 0 ... 400 {
+            let radius = 1.05 * Double(step) / 400
+            for curve in [red, green, blue] {
+                let shift = radius * abs(curve.value(at: radius / scale) / scale - 1)
+                largest = max(largest, shift)
+            }
+        }
+        return largest * unit
+    }
+
     /// The factor to multiply the pixel taken from `point` by to remove its vignetting.
     public func vignettingGain(at point: SIMD2<Double>) -> Double {
         let offset = point - center

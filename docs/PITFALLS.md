@@ -143,3 +143,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   "56mm F1.4 DC DN | Contemporary 018", Sigma's name, so lensfun matched the Sigma's profile to it
   until the camera's own corrections came first (2026-11-21). A lensfun profile chosen by name is a
   guess for third-party lenses.
+- **A Core Image kernel that asks for the whole input for every tile hangs a RAW.** The camera's lens
+  correction kernel returned the whole photo from its ROI callback: Core Image renders a large RAW in
+  tiles and decoded it again for each one, and a preview never finished (2026-11-21, after #53; the
+  tests used small pictures, rendered in one piece). Ask for the tile widened by the farthest the
+  kernel moves a pixel (`CameraLensCorrection.largestShift()`); test a kernel on a camera-sized picture
+  rendered in bands.
