@@ -65,16 +65,18 @@ struct CropControls: View {
         .accessibilityValue(Text(verbatim: session.aspect.title(isUpright: session.isUpright)))
         .help("The shape of the frame")
 
-        Picker("Orientation", selection: upright) {
-            Label("Landscape", systemImage: "rectangle").tag(false)
-            Label("Portrait", systemImage: "rectangle.portrait").tag(true)
+        // A square has no side to lay down: the switch goes, rather than sit there unusable.
+        if session.aspect.hasOrientation {
+            Picker("Orientation", selection: upright) {
+                Label("Landscape", systemImage: "rectangle").tag(false)
+                Label("Portrait", systemImage: "rectangle.portrait").tag(true)
+            }
+            .labelStyle(.iconOnly)
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .fixedSize()
+            .help("Lay the frame down or stand it upright")
         }
-        .labelStyle(.iconOnly)
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .fixedSize()
-        .disabled(!session.aspect.hasOrientation)
-        .help("Lay the frame down or stand it upright")
 
         Button("Rotate Left", systemImage: "rotate.left") { model.turnCropLeft() }
             .labelStyle(.iconOnly)

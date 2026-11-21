@@ -80,6 +80,31 @@ struct CropTests {
         #expect(session.result == nil && session.aspect == .freeform)
     }
 
+    /// A free frame is laid down or stood up as it is: its sides swap about its center, and it
+    /// stays in the photo. It used to do nothing, the switch being turned off for a free frame.
+    @Test func aFreeFrameStandsUpAndLiesDown() {
+        let photo = CGSize(width: 3000, height: 2000)
+        var session = CropSession(photo: photo, crop: PhotoCrop(left: 0.1, top: 0.35, width: 0.6, height: 0.3, angle: 0))
+        #expect(session.aspect == .freeform && !session.isUpright)
+        let wide = session.crop.framedSize(of: photo)
+        session.setUpright(true)
+        let tall = session.crop.framedSize(of: photo)
+        #expect(session.isUpright && session.crop.fits(in: photo))
+        #expect(abs(tall.width - wide.height) < 1 && abs(tall.height - wide.width) < 1)
+        let center = { (crop: PhotoCrop) in CGPoint(x: crop.left + crop.width / 2, y: crop.top + crop.height / 2) }
+        #expect(abs(center(session.crop).x - 0.4) < 1e-9 && abs(center(session.crop).y - 0.5) < 1e-9)
+        session.setUpright(false)
+        let back = session.crop.framedSize(of: photo)
+        #expect(!session.isUpright && abs(back.width - wide.width) < 1 && abs(back.height - wide.height) < 1)
+        // The whole photo, stood up, is as tall as the photo and keeps the shape it had.
+        session.reset()
+        session.setUpright(true)
+        let upright = session.crop.framedSize(of: photo)
+        #expect(session.isUpright && abs(upright.height - 2000) < 1 && abs(upright.width / upright.height - 2000.0 / 3000) < 1e-3)
+        // A square has no side to lay down.
+        #expect(!CropAspect.square.hasOrientation && CropAspect.freeform.hasOrientation)
+    }
+
     private func waitForPreview(of model: AppModel, until isWanted: (DevelopedImage) -> Bool) async throws {
         let deadline = ContinuousClock.now + .seconds(60)
         while !(model.preview.map(isWanted) ?? false) {

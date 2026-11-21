@@ -29,9 +29,10 @@ enum CropAspect: String, CaseIterable, Identifiable {
         return isUpright ? "\(sides.short):\(sides.long)" : "\(sides.long):\(sides.short)"
     }
 
-    /// Whether the shape can stand upright or lie down.
+    /// Whether the shape can stand upright or lie down: every shape but the square. A free
+    /// frame is laid down or stood up as it is, its sides swapped.
     var hasOrientation: Bool {
-        self != .freeform && self != .square
+        self != .square
     }
 
     /// The width over the height of a frame of this shape, in pixels, upright or lying down;
@@ -59,8 +60,8 @@ struct CropSession: Equatable {
     private(set) var crop: PhotoCrop
     /// The shape the frame is held to.
     private(set) var aspect = CropAspect.freeform
-    /// Whether a shape with an orientation stands upright.
-    private(set) var isUpright: Bool
+    /// Whether a shape with an orientation is held upright.
+    private var holdsUpright: Bool
     /// The frame as it was last set by hand or by a shape. A change of angle fits this one in the
     /// turned photo, so turning the photo and back gives the same frame again.
     private var intent: PhotoCrop
@@ -74,7 +75,14 @@ struct CropSession: Equatable {
         self.crop = crop
         intent = crop
         let framed = crop.framedSize(of: photo)
-        isUpright = framed.height > framed.width
+        holdsUpright = framed.height > framed.width
+    }
+
+    /// Whether the frame stands upright: a free frame when it is taller than wide.
+    var isUpright: Bool {
+        guard aspect == .freeform else { return holdsUpright }
+        let framed = crop.framedSize(of: photo)
+        return framed.height > framed.width
     }
 
     /// The frame to keep: `nil` for the whole photo.
@@ -110,13 +118,18 @@ struct CropSession: Equatable {
 
     /// Holds the frame to `aspect`: the largest frame of that shape in the middle of the photo.
     mutating func setAspect(_ aspect: CropAspect) {
+        // A shape starts the way the free frame stood.
+        holdsUpright = isUpright
         self.aspect = aspect
         applyAspect()
     }
 
     /// Stands the frame upright or lays it down.
     mutating func setUpright(_ isUpright: Bool) {
-        self.isUpright = isUpright
+        if aspect == .freeform, isUpright != self.isUpright {
+            swapSides()
+        }
+        holdsUpright = isUpright
         applyAspect()
     }
 
@@ -125,7 +138,7 @@ struct CropSession: Equatable {
         crop = crop.turnedLeft()
         intent = intent.turnedLeft()
         dragStart = nil
-        isUpright.toggle()
+        holdsUpright.toggle()
     }
 
     /// Mirrors the photo left to right, the frame with it.
@@ -141,11 +154,29 @@ struct CropSession: Equatable {
         crop = .whole
         intent = .whole
         let size = photo
-        isUpright = size.height > size.width
+        holdsUpright = size.height > size.width
     }
 
     private var ratio: Double? {
-        aspect.ratio(photo: photo, isUpright: isUpright)
+        aspect.ratio(photo: photo, isUpright: holdsUpright)
+    }
+
+    /// Lays a free frame down or stands it up: its width and height in pixels swap, about its
+    /// center, as large as the photo lets it be.
+    private mutating func swapSides() {
+        let space = intent.orientedSize(of: photo)
+        var width = intent.height * space.height / space.width
+        var height = intent.width * space.width / space.height
+        let shrink = min(1, 1 / width, 1 / height)
+        width *= shrink
+        height *= shrink
+        let center = CGPoint(x: intent.left + intent.width / 2, y: intent.top + intent.height / 2)
+        intent.width = width
+        intent.height = height
+        intent.left = min(max(center.x - width / 2, 0), 1 - width)
+        intent.top = min(max(center.y - height / 2, 0), 1 - height)
+        crop = intent.fitted(in: photo)
+        dragStart = nil
     }
 
     private mutating func applyAspect() {
