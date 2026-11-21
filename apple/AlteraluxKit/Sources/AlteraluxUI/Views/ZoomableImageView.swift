@@ -7,8 +7,9 @@ import SwiftUI
 /// Built on `NSScrollView`, so pinch to zoom, smart zoom, scrolling and
 /// rubber-banding behave like every other Mac app. Its scroll bars are always the thin ones
 /// that show while scrolling. A mouse's wheel zooms about the pointer, where two fingers on a
-/// trackpad move the photo; with Command held any scroll zooms (a Magic Mouse scrolls as a
-/// trackpad does). A drag moves a photo larger than the view, as a hand would.
+/// trackpad move the photo (told apart by the trackpad's gesture phases, not by precise
+/// deltas, which smooth-scrolling mice send too); with Command held any scroll zooms (a Magic
+/// Mouse scrolls as a trackpad does). A drag moves a photo larger than the view, as a hand would.
 struct ZoomableImageView: NSViewRepresentable {
     let image: CGImage
     /// Size of the full-resolution photo in pixels. Zoom is measured against
@@ -57,7 +58,7 @@ final class ImageScrollView: NSScrollView {
 
     /// How much one step of a mouse's wheel zooms.
     private static let wheelStep = 1.1
-    /// Points of a precise scroll (a trackpad, a Magic Mouse) that make one step of zoom.
+    /// Points of a precise scroll (a smooth wheel, a trackpad with Command) that make one step of zoom.
     private static let pointsPerStep: CGFloat = 10
 
     /// Space left around a fitted photo, in points.
@@ -249,11 +250,14 @@ final class ImageScrollView: NSScrollView {
         zoom(to: min(wanted, maxMagnification), centeredAt: pointer)
     }
 
-    /// Whether a scroll zooms: one from a mouse's wheel, which moves in steps, or any with
-    /// Command held. A trackpad and a Magic Mouse move precisely, and their scrolls move the photo.
+    /// Whether a scroll zooms: one from a mouse's wheel, or any with Command held. A trackpad's
+    /// scroll (and a Magic Mouse's) is a gesture, with a phase and then momentum, and moves the
+    /// photo; a wheel's has neither, even a wheel that scrolls smoothly, in points, as many mice
+    /// do: precise deltas alone do not tell a trackpad.
     static func zoomsOnScroll(_ event: NSEvent) -> Bool {
         guard event.scrollingDeltaY != 0 else { return false }
-        return !event.hasPreciseScrollingDeltas || event.modifierFlags.contains(.command)
+        let isGesture = !event.phase.isEmpty || !event.momentumPhase.isEmpty
+        return !isGesture || event.modifierFlags.contains(.command)
     }
 
     /// Steps of the wheel turned away from the user, which zoom in; the other way they zoom

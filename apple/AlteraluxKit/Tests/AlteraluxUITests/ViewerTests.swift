@@ -26,15 +26,18 @@ struct ViewerTests {
         #expect(viewer.scrollerKnobStyle == .light)
     }
 
-    /// A mouse's wheel zooms: its scroll comes in steps. A trackpad's comes in points, and
-    /// moves the photo unless Command is held.
+    /// A mouse's wheel zooms, in steps or smoothly in points as many mice scroll. A trackpad's
+    /// scroll is a gesture, with phases, and moves the photo unless Command is held. A smooth
+    /// wheel was taken for a trackpad when precise deltas told them apart.
     @Test func aWheelZoomsAndATrackpadMoves() throws {
         let wheel = try #require(Self.scroll(lines: 2))
         #expect(!wheel.hasPreciseScrollingDeltas && ImageScrollView.zoomsOnScroll(wheel))
         #expect(ImageScrollView.wheelSteps(of: wheel) * (wheel.isDirectionInvertedFromDevice ? -1 : 1) == 2)
-        let trackpad = try #require(Self.scroll(points: 20))
-        #expect(trackpad.hasPreciseScrollingDeltas && !ImageScrollView.zoomsOnScroll(trackpad))
-        let withCommand = try #require(Self.scroll(points: 20, flags: .maskCommand))
+        let smoothWheel = try #require(Self.scroll(points: 20))
+        #expect(smoothWheel.hasPreciseScrollingDeltas && ImageScrollView.zoomsOnScroll(smoothWheel))
+        let trackpad = try #require(Self.scroll(points: 20, phase: 2))
+        #expect(!trackpad.phase.isEmpty && !ImageScrollView.zoomsOnScroll(trackpad))
+        let withCommand = try #require(Self.scroll(points: 20, flags: .maskCommand, phase: 2))
         #expect(ImageScrollView.zoomsOnScroll(withCommand))
     }
 
@@ -96,9 +99,11 @@ struct ViewerTests {
             .flatMap(NSEvent.init(cgEvent:))
     }
 
-    private static func scroll(points: Int32, flags: CGEventFlags = []) -> NSEvent? {
+    /// A scroll in points; with `phase` (2: changed), part of a trackpad's gesture.
+    private static func scroll(points: Int32, flags: CGEventFlags = [], phase: Int64 = 0) -> NSEvent? {
         guard let event = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 1, wheel1: points, wheel2: 0, wheel3: 0) else { return nil }
         event.flags = flags
+        event.setIntegerValueField(.scrollWheelEventScrollPhase, value: phase)
         return NSEvent(cgEvent: event)
     }
 }

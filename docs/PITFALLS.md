@@ -92,7 +92,10 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **SwiftUI's `Form` and `List` have no setting for thin scroll bars.** With a mouse connected the system
   draws wide ones that stay. `.thinScrollBars()` finds the `NSScrollView` drawn behind the modifier and sets
   `scrollerStyle = .overlay`, again after each change of the system's preference.
-- **Wheel events made with `CGEvent` do not reach the app** (macOS 27): neither the system's scrolling nor
-  a local event monitor sees them, while clicks and drags made the same way arrive. Test the wheel's logic
-  by calling `scrollWheel(with:)` with an `NSEvent(cgEvent:)`, as `ViewerTests` does, and try the real
-  wheel by hand.
+- **Precise scrolling deltas do not mean a trackpad.** Many mice scroll smoothly, in points, and send
+  `hasPreciseScrollingDeltas` as a trackpad does: the viewer took the user's wheel for a trackpad and moved
+  the photo instead of zooming it. A trackpad's scroll (and a Magic Mouse's) is a gesture, with a `phase`
+  and then a `momentumPhase`; a wheel's has neither.
+- **Wheel events made with `CGEvent` did not change the viewer** while the real wheel did, and clicks and
+  drags made the same way work. Test the wheel's logic by calling `scrollWheel(with:)` with an
+  `NSEvent(cgEvent:)`, as `ViewerTests` does, and try the real wheel by hand.

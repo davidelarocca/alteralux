@@ -181,8 +181,8 @@ open photos, the settings of the selected one and its preview.
   decoded for the 1024 px preview as soon as it is on screen (see Sources),
   so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
-  `CGImage` through a layer. A mouse's wheel zooms about the pointer (a scroll without precise
-  deltas, or any with Command held), a trackpad's two fingers move the photo, and a drag moves
+  `CGImage` through a layer. A mouse's wheel zooms about the pointer (a scroll with no gesture
+  phase, or any with Command held), a trackpad's two fingers move the photo, and a drag moves
   a photo larger than the view. Core Animation color-manages it for the display.
   The layer reduces the image through mipmaps only below half size
   (`ImageScrollView.needsMipmaps`): see `docs/PITFALLS.md`.
