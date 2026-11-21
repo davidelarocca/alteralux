@@ -70,7 +70,7 @@ struct MainScreen: View {
     }
 }
 
-/// The photo being developed, with the strip of photos and the zoom below it, and the
+/// The photo being developed, with the zoom floating over it and the strip of photos below it, and the
 /// adjustments in an inspector on the right.
 struct DevelopScreen: View {
     @Environment(AppModel.self) private var model
@@ -93,13 +93,9 @@ struct DevelopScreen: View {
             PhotoStage()
                 .contextMenu { DevelopPhotoMenu() }
             // While a photo is cropped, its controls float over the bottom of the photo.
-            if !model.isCropping, !model.photos.isEmpty {
-                if showsStrip {
-                    Divider()
-                    FilmstripView()
-                } else {
-                    ZoomBar()
-                }
+            if !model.isCropping, !model.photos.isEmpty, showsStrip {
+                Divider()
+                FilmstripView()
             }
         }
         .inspector(isPresented: $showsInspector) {

@@ -1,7 +1,7 @@
 import DesignSystem
 import SwiftUI
 
-/// The strip of open photos under the viewer, with the zoom at its trailing end.
+/// The strip of open photos under the viewer.
 struct FilmstripView: View {
     @Environment(AppModel.self) private var model
     @ReduceMotion private var reduceMotion
@@ -10,12 +10,9 @@ struct FilmstripView: View {
     private static let addButtonWidth: CGFloat = 44
 
     var body: some View {
-        HStack(spacing: 0) {
-            thumbnails
-            ZoomControls()
-                .padding(.horizontal, Spacing.l)
-        }
-        .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
+        thumbnails
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
         .background(.bar)
     }
 

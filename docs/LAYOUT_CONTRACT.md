@@ -94,5 +94,7 @@ Deliberate departures from the rules above, with the reason.
   the inspector open), the straightening takes a row of its own above the rest. Seen in the built app
   at 900 pt with the inspector, and at the default size; no layout test measures the floating
   controls.
-- The zoom controls under the photo have a fixed width (about 400 pt). At the window's Min the photo
-  pane is 580 pt wide with the inspector at its ideal width, so they fit.
+- The zoom floats on glass over the bottom trailing corner of the photo, with the strip shown or hidden
+  (about 390 pt wide). At the window's Min the photo pane is 580 pt wide with the inspector at its ideal
+  width, so it fits; it covers a corner of the photo, as the user chose. Seen in the built app at
+  900 pt with the inspector.

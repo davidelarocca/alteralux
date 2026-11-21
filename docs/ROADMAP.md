@@ -129,8 +129,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    glass (`GlassGroup`): the shape of the frame, which opens its list upward inside the window,
    upright or lying down, turn, mirror, the straightening in degrees on one row and Reset, with
    Cancel and Done round beside them; on a narrow window the straightening takes a row of its
-   own. Controls in the toolbar were tried and turned down. The zoom bar and the library's
-   selection bar keep their earlier look for now: to bring to the same glass. Still open:
+   own. Controls in the toolbar were tried and turned down. The zoom floats on the same glass
+   over the photo's bottom trailing corner, and the library's selection bar is on glass too; the
+   titles of the buttons on glass are white, dimmed only when disabled. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.

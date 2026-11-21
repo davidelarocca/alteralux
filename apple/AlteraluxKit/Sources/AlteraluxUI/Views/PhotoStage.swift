@@ -67,11 +67,21 @@ struct PhotoStage: View {
                     .padding(Spacing.m)
             }
         }
-        .overlay(alignment: .bottomTrailing) {
+        .overlay(alignment: .topTrailing) {
             if model.isRendering || model.isExporting {
                 ProgressView()
                     .controlSize(.small)
                     .padding(Spacing.m)
+            }
+        }
+        // The zoom floats over the bottom trailing corner of the photo, on glass.
+        .overlay(alignment: .bottomTrailing) {
+            if !model.isCropping, displayedImage != nil {
+                GlassEffectContainer {
+                    ZoomControls()
+                }
+                .controlSize(.large)
+                .padding(Spacing.l)
             }
         }
     }

@@ -270,7 +270,8 @@ extension WindowedTests {
             FloatingBar {
                 Text(verbatim: "3 photos")
                 Divider()
-                Menu {} label: { Text(verbatim: "Recipe") }
+                // A bar near the bottom edge opens its lists upward: no menu there.
+                ChoiceListButton(Text(verbatim: "Recipe"), choices: [], empty: Text(verbatim: ""))
                 Button {} label: { Text(verbatim: "Export…") }
                 Button {} label: { Text(verbatim: "Discard") }
                     .disabled(true)
