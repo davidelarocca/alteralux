@@ -107,14 +107,14 @@ extension AppModel {
 
     /// Ends the change in progress on the photo on screen, so that what follows starts from
     /// adjustments that stand still and are a step of their own.
-    private func closeChange() {
+    func closeChange() {
         settingsDidChange()
         settleChange()
     }
 
     /// Puts adjustments on photos, in the strip and on disk, and registers the way back as one
     /// step of undo.
-    private func set(_ changes: [PhotoAdjustments]) {
+    func set(_ changes: [PhotoAdjustments]) {
         guard !changes.isEmpty else { return }
         let before = changes.map { adjustments(of: $0.photo) }
         for change in changes {

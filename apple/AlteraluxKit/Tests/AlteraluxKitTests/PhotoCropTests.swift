@@ -170,6 +170,25 @@ struct PhotoCropTests {
         #expect(straightened.width < 600 && straightened.height < 400)
         #expect(abs(Double(straightened.width) / Double(straightened.height) - 1.5) < 0.02)
     }
+
+    @Test func aRightTurnUndoesALeftTurn() {
+        let crop = PhotoCrop(left: 0.1, top: 0.2, width: 0.5, height: 0.6, quarterTurns: 1, isFlipped: true)
+        #expect(crop.turnedLeft().turnedRight().isClose(to: crop))
+        #expect(PhotoCrop(left: 0, top: 0, width: 1, height: 1).turnedRight().swapsSides)
+        #expect(!PhotoCrop(left: 0, top: 0, width: 1, height: 1).reorients)
+    }
+
+    @Test func aTurnedThumbnailSwapsItsSides() throws {
+        let context = try #require(CGContext(
+            data: nil, width: 40, height: 20, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue,
+        ))
+        let thumbnail = try #require(context.makeImage())
+        let turned = try #require(ImageLoader.oriented(
+            thumbnail, by: PhotoCrop(left: 0, top: 0, width: 1, height: 1).turnedRight(),
+        ))
+        #expect(turned.width == 20 && turned.height == 40)
+    }
 }
 
 extension PhotoCrop {
@@ -178,4 +197,5 @@ extension PhotoCrop {
         let edges = [left - other.left, top - other.top, width - other.width, height - other.height, angle - other.angle]
         return edges.allSatisfy { abs($0) < 1e-9 } && quarterTurns == other.quarterTurns && isFlipped == other.isFlipped
     }
+
 }

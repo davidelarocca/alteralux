@@ -98,6 +98,21 @@ public struct PhotoCrop: Codable, Equatable, Sendable {
         return crop
     }
 
+    /// This frame with the photo turned a quarter clockwise: the picture turns with it.
+    public func turnedRight() -> PhotoCrop {
+        turnedLeft().turnedLeft().turnedLeft()
+    }
+
+    /// Whether the photo's width and height swap once it is turned: a quarter turn or three.
+    public var swapsSides: Bool {
+        !turns.isMultiple(of: 2)
+    }
+
+    /// Whether the frame turns or mirrors the photo.
+    public var reorients: Bool {
+        turns != 0 || isFlipped
+    }
+
     /// This frame with the photo mirrored left to right: the picture is mirrored with it.
     public func flipped() -> PhotoCrop {
         var crop = self
