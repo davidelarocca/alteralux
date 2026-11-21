@@ -60,6 +60,8 @@ struct InspectorView: View {
             }
         }
         .formStyle(.grouped)
+        // Thin scroll bars, as the photo's: wide ones would stay with a mouse.
+        .thinScrollBars()
         // The same margin on both sides, wide enough for the scroll bar when the system always
         // shows it: the controls keep clear of it and the form stays centered without it.
         .contentMargins(.horizontal, Spacing.s, for: .scrollContent)

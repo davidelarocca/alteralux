@@ -123,9 +123,11 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    turned down. The film list has the system's search field (`SearchField`, with the
    magnifying glass and the button that clears it), no lines between the films, and grows
    with the window: 13 films in view at the default size instead of 8. The zoomed photo's
-   scroll bars are the thin ones that show while scrolling, even with a mouse connected; the
-   panels keep the system's, which are wide with a mouse unless System Settings shows them
-   only while scrolling. The crop's controls float over the bottom of the photo on the system's
+   scroll bars are the thin ones that show while scrolling, even with a mouse connected, and so
+   are the panels' (`thinScrollBars()`: the adjustments, the library, its folders, the films).
+   A mouse's wheel zooms the photo about the pointer, two fingers on a trackpad move it, and
+   Command with any scroll zooms (a Magic Mouse scrolls as a trackpad does); a drag moves a
+   photo larger than the view, with the hand pointer. The crop's controls float over the bottom of the photo on the system's
    glass (`GlassGroup`): the shape of the frame, which opens its list upward inside the window,
    upright or lying down, turn, mirror, the straightening in degrees on one row and Reset, with
    Cancel and Done round beside them; on a narrow window the straightening takes a row of its
