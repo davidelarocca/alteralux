@@ -1,3 +1,5 @@
+import AppKit
+import DesignSystem
 import SwiftUI
 
 /// The root view of the main window: the main screen plus the window's
@@ -13,6 +15,9 @@ public struct MainWindow: View {
     public var body: some View {
         MainScreen()
             .frame(minWidth: Self.minimumSize.width, minHeight: Self.minimumSize.height)
+            // The sliders take the keys as the system's controls do: only with "Keyboard
+            // navigation" on. Moved with the pointer, they leave the arrows to the photos.
+            .environment(\.slidersTakeKeyboardFocus, NSApplication.shared.isFullKeyboardAccessEnabled)
     }
 }
 
@@ -92,6 +97,12 @@ struct DevelopScreen: View {
         VStack(spacing: 0) {
             PhotoStage()
                 .contextMenu { DevelopPhotoMenu() }
+                // The arrows go through the photos; not while one is cropped.
+                .modifier(StepThroughPhotosKeys { offset in
+                    guard !model.isCropping, model.canSelectAdjacent(offset: offset) else { return false }
+                    model.selectAdjacent(offset: offset)
+                    return true
+                })
             // While a photo is cropped, its controls float over the bottom of the photo.
             if !model.isCropping, !model.photos.isEmpty, showsStrip {
                 Divider()

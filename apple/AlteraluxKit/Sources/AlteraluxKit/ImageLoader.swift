@@ -157,6 +157,18 @@ public enum ImageLoader {
         )
     }
 
+    /// A thumbnail turned and mirrored as `crop` says, neither straightened nor cut: how the
+    /// library shows a photo turned there. The thumbnail itself when the frame does neither.
+    public static func oriented(_ thumbnail: CGImage, by crop: PhotoCrop) -> CGImage? {
+        guard crop.reorients else { return thumbnail }
+        // A quarter turn clockwise is what Core Image calls the orientation "right".
+        var image = CIImage(cgImage: thumbnail).oriented([.up, .right, .down, .left][crop.turns])
+        if crop.isFlipped {
+            image = image.oriented(.upMirrored)
+        }
+        return CIContext(options: [.cacheIntermediates: false]).createCGImage(image, from: image.extent)
+    }
+
     /// `image` turned, mirrored, straightened and cut as `crop` says. `image` is the whole photo,
     /// upright, at any size: the frame is relative to it.
     static func framed(_ image: CIImage, by crop: PhotoCrop) -> CIImage {

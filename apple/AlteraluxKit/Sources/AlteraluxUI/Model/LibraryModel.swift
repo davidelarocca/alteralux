@@ -37,6 +37,7 @@ private struct FolderListing: Sendable {
     var adjusted: Set<URL> = []
     var discarded: Set<URL> = []
     var infos: [URL: PhotoInfo] = [:]
+    var crops: [URL: PhotoCrop] = [:]
 }
 
 /// A folder the user added, with what is in it.
@@ -68,6 +69,8 @@ final class LibraryModel {
     private(set) var discarded: Set<URL> = []
     /// The shape, date, kind, size and tags of each of `photos`, read with the folder.
     private(set) var infos: [URL: PhotoInfo] = [:]
+    /// The frames of those of `photos` that are turned or mirrored: their thumbnails turn too.
+    private(set) var crops: [URL: PhotoCrop] = [:]
     /// Which photos are shown. Kept between launches, as the order, the kinds and the tag are.
     var filter = LibraryFilter.all {
         didSet {
@@ -111,6 +114,7 @@ final class LibraryModel {
     @ObservationIgnored let thumbnails: ThumbnailProvider
     @ObservationIgnored private let folders: LibraryFolders
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
+    @ObservationIgnored private let crop: @Sendable (URL) -> PhotoCrop?
     @ObservationIgnored private let discards: DiscardStore
     /// Where the order and the filters are kept; `nil` keeps them for this run only.
     @ObservationIgnored private let preferences: UserDefaults?
@@ -132,16 +136,19 @@ final class LibraryModel {
     ///   - storeURL: the file where the added folders are remembered.
     ///   - cacheDirectory: where thumbnails are kept between launches; `nil` keeps none on disk.
     ///   - hasAdjustments: whether a photo has adjustments kept for it.
+    ///   - crop: the frame kept with a photo that has adjustments, if any.
     ///   - discards: where the discarded mark of a photo is kept.
     init(
         storeURL: URL, cacheDirectory: URL?, discards: DiscardStore, preferences: UserDefaults? = nil,
         hasAdjustments: @escaping @Sendable (URL) -> Bool,
+        crop: @escaping @Sendable (URL) -> PhotoCrop? = { _ in nil },
     ) {
         folders = LibraryFolders(storeURL: storeURL)
         thumbnails = ThumbnailProvider(cacheDirectory: cacheDirectory)
         self.discards = discards
         self.preferences = preferences
         self.hasAdjustments = hasAdjustments
+        self.crop = crop
         sort = preferences?.string(forKey: Self.sortKey).flatMap(LibrarySort.init) ?? .name
         sortsAscending = preferences?.object(forKey: Self.ascendingKey) as? Bool ?? true
         kinds = preferences?.string(forKey: Self.kindsKey).flatMap(LibraryKinds.init) ?? .all
@@ -329,6 +336,7 @@ final class LibraryModel {
         } else {
             adjusted.remove(listed)
         }
+        crops[listed] = adjusted.contains(listed) ? Self.reorienting(crop(listed)) : nil
     }
 
     // MARK: - Selection
@@ -444,7 +452,51 @@ final class LibraryModel {
 
     /// The Finder tags of the selected photos, each with the number of them that carry it.
     func tagsOfSelection() -> [String: Int] {
-        PhotoFileActions.tags(ofAll: Array(selection))
+        tags(of: Array(selection))
+    }
+
+    /// The Finder tags of some photos, each with the number of them that carry it.
+    func tags(of chosen: [URL]) -> [String: Int] {
+        PhotoFileActions.tags(ofAll: chosen)
+    }
+
+    /// Width over height of a photo as the grid shows it: turned when its frame turns it.
+    func shownAspectRatio(of photo: URL) -> Double {
+        let ratio = infos[photo]?.aspectRatio ?? PhotoInfo.unknownAspectRatio
+        return crops[photo]?.swapsSides == true ? 1 / ratio : ratio
+    }
+
+    /// Duplicates photos beside themselves, and selects the copies, as the Finder does.
+    func duplicate(_ files: [URL], suffix: String) async -> [FileActionResult] {
+        let results = await Task.detached(priority: .userInitiated) {
+            PhotoFileActions.duplicate(files, suffix: suffix)
+        }.value
+        await refresh()
+        selectPhotos(results.compactMap(\.destination))
+        return results
+    }
+
+    /// Gives a photo a new name, its extension kept; the photo stays selected.
+    func rename(_ file: URL, to name: String) async -> FileActionResult {
+        let result = await Task.detached(priority: .userInitiated) { PhotoFileActions.rename(file, to: name) }.value
+        await refresh()
+        if let renamed = result.destination {
+            selectPhotos([renamed])
+        }
+        return result
+    }
+
+    /// Moves photos to the Trash.
+    func trash(_ files: [URL]) async -> [FileActionResult] {
+        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
+        await refresh()
+        return results
+    }
+
+    /// Makes these photos the selection, those of them the grid shows.
+    private func selectPhotos(_ chosen: [URL]) {
+        let files = Set(chosen.map(\.standardizedFileURL))
+        selection = Set(visiblePhotos.filter { files.contains($0.standardizedFileURL) })
     }
 
     /// Puts a Finder tag on photos, or takes it off.
@@ -470,6 +522,7 @@ final class LibraryModel {
         adjusted = listing.adjusted
         discarded = listing.discarded
         infos = listing.infos
+        crops = listing.crops
         // A tag no photo of this folder carries would hide them all.
         if let tagFilter, !tagsInFolder.contains(where: { $0.name == tagFilter }) {
             self.tagFilter = nil
@@ -479,15 +532,25 @@ final class LibraryModel {
 
     /// The photos of a folder with their marks, read off the main actor.
     private func contents(of folder: URL) async -> FolderListing {
-        let (hasAdjustments, discards) = (hasAdjustments, discards)
+        let (hasAdjustments, discards, crop) = (hasAdjustments, discards, crop)
         return await Task.detached(priority: .userInitiated) {
             let found = (try? FolderContents.photos(in: folder)) ?? []
+            let adjusted = found.filter(hasAdjustments)
+            var crops: [URL: PhotoCrop] = [:]
+            for photo in adjusted {
+                crops[photo] = Self.reorienting(crop(photo))
+            }
             return FolderListing(
-                photos: found, adjusted: Set(found.filter(hasAdjustments)),
+                photos: found, adjusted: Set(adjusted),
                 discarded: Set(found.filter(discards.isDiscarded)),
-                infos: PhotoInfoReader.infos(of: found),
+                infos: PhotoInfoReader.infos(of: found), crops: crops,
             )
         }.value
+    }
+
+    /// The frame, when it turns or mirrors the photo: the only frames the grid shows.
+    private nonisolated static func reorienting(_ crop: PhotoCrop?) -> PhotoCrop? {
+        crop.flatMap { $0.reorients ? $0 : nil }
     }
 
     private static func root(for folder: LibraryFolder) async -> LibraryRoot {

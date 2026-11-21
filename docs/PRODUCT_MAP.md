@@ -48,7 +48,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 |---|---|---|
 | | Open, Rename, Delete, ... | the shared menu or command type, with its file |
 | Recipe | Give (to the photo on screen or to the selection), Save as New, Rename, Delete | `RecipeMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipeMenu.swift`): give and save from the menu; rename and delete in its sheet, `RecipeManager`, opened with Manage Recipes… |
-| Photo | Develop, Show in Finder, give a Recipe, Export, Move to, Copy to, Tag, Copy and Paste Adjustments, Discard or Take Back; while developing, Crop and Straighten | `LibrarySelectionBar` and `LibraryPhotoMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/PhotoMenus.swift`) in the library, `DevelopPhotoMenu` while developing |
+| Photo | Develop, Show in Finder, Open With, give a Recipe, Export, Share, Move to, Copy to, Duplicate, Rename (one photo), Tags, Copy, Paste and Reset Adjustments, Rotate Left and Right, Discard or Take Back, Move to Trash; while developing, Crop and Straighten. The bar of the selection has Recipe, Export, Move to, Copy to, Tag and Discard; the tile's menu has them all, with the number of photos in their titles when they act on several | `LibrarySelectionBar` and `LibraryPhotoMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/PhotoMenus.swift`) in the library, `DevelopPhotoMenu` while developing |
 
 ## User-managed collections
 
@@ -64,7 +64,6 @@ Deliberate departures from the rules, so they are not reported again.
 |---|---|---|
 | Recipe, in the library's selection bar | Save as New, Rename, Delete | The bar gives a recipe to the selected photos; recipes are made and managed from the toolbar's Recipe menu while developing, where there is a look on screen |
 | Recipes | Reorder | They are listed by name, like the films: an order of one's own waits for people to have many |
-| Photo, in its menu in the library | Tag | The tags of a photo are read from its file; the bar's list reads them when it opens, a menu would read them for every tile shown |
 | Recipes | Undo of create, rename and delete | The window's undo is the history of the photos' adjustments; deleting asks first, and a recipe deleted by mistake is saved again from any photo that has its look |
 
 ## Known gaps

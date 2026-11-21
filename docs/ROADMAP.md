@@ -250,9 +250,9 @@ branch of its own. What was said, in the order to take it:
 
 - The library's page, drawn first as mockups the user approved. Done: the filter (All, With
   Adjustments, Discarded) in the middle of the toolbar; a Filter and Sort menu at its trailing side
-  (by name, date or kind, ascending or not; RAW or the other kinds; one Finder tag); the photos in
-  rows of one height, each as wide as its own shape, so an upright photo is no longer in a wide
-  tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
+  (by name, date or kind, ascending or not; RAW or the other kinds; one Finder tag), opening inside
+  the window; the photos in rows that reach both edges of the grid, as in Photos, each as wide as
+  its own shape, so an upright photo is no longer in a wide tile; a dot for each colored Finder tag beside a photo's name and a small mark on a discarded
   photo, which stays hidden outside its own filter; the actions on the selection in a bar floating
   over the grid; up and down arrows; under the grid, the size of the photos shown or of the selected
   ones; a rectangle dragged over the grid selects photos; a list of tags in the Finder's manner, with
@@ -271,6 +271,15 @@ branch of its own. What was said, in the order to take it:
   developing, as in Photos; typing the beginning of a name in the grid goes to that photo, as in
   the Finder. Holding M and typing a name were tried by the user in the built app. Still open: the
   pinch was not tried on a trackpad.
+- The library's details, gone through with the user on 2026-11-21: the status line without the
+  double-click hint; a photo's menu with everything the bar has and the Finder's actions on the
+  file (Open With, Share, Duplicate, Rename, Tags with their colors, Move to Trash), Reset
+  Adjustments, Rotate Left and Right (the grid's thumbnail turns with the photo), and the number of
+  photos in the titles when it acts on several; while developing, the left and right arrows go
+  through the photos (the View menu's arrows never reached the app), and a click on a slider takes
+  neither the arrows nor draws a focus ring (the sliders take the keys only with the system's
+  Keyboard navigation on); the strip ends at the adjustments' edge instead of running on under
+  their glass.
 - Things that reach past the window's edge when the window is made small: to find one by one in
   the running app, at the sizes of `docs/LAYOUT_CONTRACT.md`, and fix. Checked on 2026-11-20 at the
   smallest window (900 × 600), in Italian: the develop screen with the adjustments open, the export

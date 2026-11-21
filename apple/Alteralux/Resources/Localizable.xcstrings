@@ -171,6 +171,46 @@
         }
       }
     },
+    "%lld photos could not be duplicated." : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photo could not be duplicated."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld photos could not be duplicated."
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile duplicare %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Non è stato possibile duplicare %lld foto."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld photos could not be exported." : {
       "localizations" : {
         "en" : {
@@ -437,6 +477,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dimensioni reali"
+          }
+        }
+      }
+    },
+    "Add" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi"
           }
         }
       }
@@ -831,6 +881,17 @@
         }
       }
     },
+    "copy" : {
+      "comment" : "Put after the name of a duplicated photo: “IMG_0042 copy.jpg”",
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "copia"
+          }
+        }
+      }
+    },
     "Copy Adjustments" : {
       "localizations" : {
         "it" : {
@@ -1042,6 +1103,16 @@
         }
       }
     },
+    "Discard %lld Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarta %lld foto"
+          }
+        }
+      }
+    },
     "Discarded" : {
       "localizations" : {
         "it" : {
@@ -1068,6 +1139,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fine"
+          }
+        }
+      }
+    },
+    "Duplicate" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplica"
+          }
+        }
+      }
+    },
+    "Duplicate %lld Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duplica %lld foto"
+          }
+        }
+      }
+    },
+    "Export %lld Photos…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esporta %lld foto…"
           }
         }
       }
@@ -1102,6 +1203,46 @@
         }
       }
     },
+    "Move %lld Photos to Trash" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta %lld foto nel Cestino"
+          }
+        }
+      }
+    },
+    "New Tag" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo tag"
+          }
+        }
+      }
+    },
+    "New Tag…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo tag…"
+          }
+        }
+      }
+    },
+    "Open With" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri con"
+          }
+        }
+      }
+    },
     "Recipes" : {
       "localizations" : {
         "it" : {
@@ -1112,22 +1253,22 @@
         }
       }
     },
+    "Rename Photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina foto"
+          }
+        }
+      }
+    },
     "Rename…" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rinomina…"
-          }
-        }
-      }
-    },
-    "double-click to develop" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "doppio clic per sviluppare"
           }
         }
       }
@@ -2143,12 +2284,32 @@
         }
       }
     },
+    "Reset Adjustments of %lld Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripristina regolazioni di %lld foto"
+          }
+        }
+      }
+    },
     "Rotate Left" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ruota a sinistra"
+          }
+        }
+      }
+    },
+    "Rotate Right" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruota a destra"
           }
         }
       }
@@ -2424,12 +2585,32 @@
         }
       }
     },
+    "Tags" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tag"
+          }
+        }
+      }
+    },
     "Take Back" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recupera"
+          }
+        }
+      }
+    },
+    "Take Back %lld Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupera %lld foto"
           }
         }
       }
@@ -2494,6 +2675,16 @@
         }
       }
     },
+    "The photo keeps its kind: “.%@” stays at the end of its name." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La foto resta dello stesso tipo: “.%@” rimane alla fine del nome."
+          }
+        }
+      }
+    },
     "The photos that received it keep their adjustments." : {
       "localizations" : {
         "it" : {
@@ -2540,6 +2731,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La forma della cornice"
+          }
+        }
+      }
+    },
+    "The tag is put on the selected photos, as in the Finder." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tag viene messo sulle foto selezionate, come nel Finder."
           }
         }
       }
@@ -2770,6 +2971,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Non è stato possibile aggiungere “%@” alla libreria. %@"
+          }
+        }
+      }
+    },
+    "“%@” could not be renamed. %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile rinominare “%@”. %@"
           }
         }
       }

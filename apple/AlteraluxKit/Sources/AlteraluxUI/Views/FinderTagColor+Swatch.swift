@@ -1,4 +1,5 @@
 import AlteraluxKit
+import AppKit
 import SwiftUI
 
 extension FinderTagColor {
@@ -27,4 +28,29 @@ extension FinderTagColor {
         case .orange: "Orange"
         }
     }
+}
+
+extension FinderTag {
+    /// The tag's dot for a menu, as the Finder shows it there: filled with the tag's color, or
+    /// an empty circle for a tag without one. An image of its own: a menu draws symbols in one
+    /// color.
+    var menuDot: Image {
+        let color = color.map { NSColor($0.swatch) }
+        let side = Self.menuDotSide
+        let image = NSImage(size: NSSize(width: side, height: side), flipped: false) { rect in
+            let circle = NSBezierPath(ovalIn: rect.insetBy(dx: 1, dy: 1))
+            if let color {
+                color.setFill()
+                circle.fill()
+            } else {
+                NSColor.secondaryLabelColor.setStroke()
+                circle.stroke()
+            }
+            return true
+        }
+        return Image(nsImage: image)
+    }
+
+    /// The side of a tag's dot in a menu, in points: as tall as the menu's text.
+    private static let menuDotSide: CGFloat = 12
 }

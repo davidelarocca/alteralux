@@ -69,48 +69,52 @@ struct LibraryScreen: View {
 }
 
 /// The toolbar's Filter and Sort menu: the system's menu, with what the photos are sorted by and
-/// which kinds and tags are shown. Its symbol, the system's for filtering, takes the accent
-/// color while it hides photos.
+/// which kinds and tags are shown, the option chosen in each group with a checkmark. It sits at
+/// the toolbar's trailing edge, so it opens inside the window (`WindowMenuButton`), never past
+/// its edge. Its symbol, the system's for filtering, takes the accent color while it hides photos.
 private struct LibraryFilterMenu: View {
-    @Bindable var library: LibraryModel
+    let library: LibraryModel
 
     var body: some View {
-        Menu {
-            Picker("Sort By", selection: $library.sort) {
-                Text("Name").tag(LibrarySort.name)
-                Text("Date").tag(LibrarySort.date)
-                Text("Kind").tag(LibrarySort.kind)
-            }
-            .pickerStyle(.inline)
-            Picker("Order", selection: $library.sortsAscending) {
-                Text("Ascending").tag(true)
-                Text("Descending").tag(false)
-            }
-            .pickerStyle(.inline)
-            Picker("Kind of File", selection: $library.kinds) {
-                Text("All Kinds").tag(LibraryKinds.all)
-                Text("RAW Only").tag(LibraryKinds.raw)
-                Text("All but RAW").tag(LibraryKinds.other)
-            }
-            .pickerStyle(.inline)
-            Picker("Tag", selection: $library.tagFilter) {
-                Text("Any Tag").tag(String?.none)
-                ForEach(library.tagsInFolder, id: \.name) { tag in
-                    Text(verbatim: tag.name).tag(String?.some(tag.name))
-                }
-            }
-            .pickerStyle(.inline)
-            Divider()
-            Button("Clear Filters") { library.clearFilters() }
-                .disabled(!library.hasFilters)
-        } label: {
+        WindowMenuButton(entries: entries) {
             Label("Filter and Sort", systemImage: "line.3.horizontal.decrease")
                 // In the accent color while it hides photos.
                 .foregroundStyle(library.hasFilters ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
         }
-        .menuIndicator(.hidden)
         .help("Sort the photos of the folder, and choose which kinds and tags are shown")
         .disabled(library.selectedFolder == nil)
+    }
+
+    /// The menu, made when it opens: four groups of choices, then clearing the filters.
+    private func entries() -> [WindowMenuEntry] {
+        let library = library
+        var entries: [WindowMenuEntry] = [.heading(String(localized: "Sort By"))]
+        let sorts: [(LibrarySort, String)] = [
+            (.name, String(localized: "Name")), (.date, String(localized: "Date")), (.kind, String(localized: "Kind")),
+        ]
+        entries += sorts.map { sort, title in
+            .choice(title, isChosen: library.sort == sort) { library.sort = sort }
+        }
+        entries.append(.heading(String(localized: "Order")))
+        entries += [(true, String(localized: "Ascending")), (false, String(localized: "Descending"))].map { ascending, title in
+            .choice(title, isChosen: library.sortsAscending == ascending) { library.sortsAscending = ascending }
+        }
+        entries.append(.heading(String(localized: "Kind of File")))
+        let kinds: [(LibraryKinds, String)] = [
+            (.all, String(localized: "All Kinds")), (.raw, String(localized: "RAW Only")),
+            (.other, String(localized: "All but RAW")),
+        ]
+        entries += kinds.map { kinds, title in
+            .choice(title, isChosen: library.kinds == kinds) { library.kinds = kinds }
+        }
+        entries.append(.heading(String(localized: "Tag")))
+        entries.append(.choice(String(localized: "Any Tag"), isChosen: library.tagFilter == nil) { library.tagFilter = nil })
+        entries += library.tagsInFolder.map { tag in
+            .choice(tag.name, isChosen: library.tagFilter == tag.name) { library.tagFilter = tag.name }
+        }
+        entries.append(.separator)
+        entries.append(.item(String(localized: "Clear Filters"), isEnabled: library.hasFilters) { library.clearFilters() })
+        return entries
     }
 }
 

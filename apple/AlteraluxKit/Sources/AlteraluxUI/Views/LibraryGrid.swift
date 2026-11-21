@@ -11,6 +11,8 @@ struct LibraryGrid: View {
     @Binding var isAddingFolder: Bool
     @AppStorage(LibraryGrid.thumbnailSizeKey) private var thumbnailSize = LibraryGrid.defaultThumbnailSize
     @State private var isEmptyingDiscarded = false
+    /// What a photo's menu is asking a name for, while it is.
+    @State private var question: PhotoQuestion?
     /// The photo Quick Look shows, while it is open.
     @State private var quickLookItem: URL?
     /// The thumbnail size a pinch started from, while the grid is pinched.
@@ -73,6 +75,7 @@ struct LibraryGrid: View {
             Divider()
             statusBar
         }
+        .modifier(PhotoQuestionAlerts(question: $question))
         .confirmationDialog(
             "Move the discarded photos of this folder to the Trash?", isPresented: $isEmptyingDiscarded,
         ) {
@@ -121,14 +124,14 @@ struct LibraryGrid: View {
         }
     }
 
-    /// The photos in rows of one height, each as wide as its own shape asks.
+    /// The photos in rows that reach both edges, each as wide as its own shape asks.
     private var grid: some View {
         GeometryReader { proxy in
             let library = model.library
             let height = thumbnailSize * Self.tileProportion
             let rows = LibraryRows(
                 photos: library.visiblePhotos,
-                aspectRatio: { library.infos[$0]?.aspectRatio ?? PhotoInfo.unknownAspectRatio },
+                aspectRatio: { library.shownAspectRatio(of: $0) },
                 width: proxy.size.width - Spacing.m * 2, height: height, spacing: Spacing.m,
             )
             ScrollView {
@@ -137,11 +140,13 @@ struct LibraryGrid: View {
                         HStack(alignment: .top, spacing: Spacing.m) {
                             ForEach(row.items) { item in
                                 LibraryTile(
-                                    photo: item.photo, size: CGSize(width: item.width, height: height),
+                                    photo: item.photo, size: CGSize(width: item.width, height: row.height),
                                     isSelected: library.selection.contains(item.photo),
                                     hasAdjustments: library.adjusted.contains(item.photo),
                                     isDiscarded: library.discarded.contains(item.photo),
                                     tags: library.infos[item.photo]?.tags ?? [],
+                                    crop: library.crops[item.photo],
+                                    ask: { question = $0 },
                                 )
                                 .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.space)) } action: {
                                     tileFrames[item.photo] = $0
@@ -299,7 +304,7 @@ struct LibraryGrid: View {
                 if library.visiblePhotos.isEmpty {
                     Text("\(library.visiblePhotos.count) photos")
                 } else if library.selection.isEmpty {
-                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos)) · \(Text("double-click to develop"))")
+                    Text("\(Text("\(library.visiblePhotos.count) photos")) · \(size(of: library.visiblePhotos))")
                 } else {
                     Text("\(Text("\(library.visiblePhotos.count) photos")) · \(Text("\(library.selection.count) selected")) · \(size(of: library.selection))")
                 }
@@ -346,6 +351,10 @@ private struct LibraryTile: View {
     let hasAdjustments: Bool
     let isDiscarded: Bool
     let tags: [FinderTag]
+    /// The photo's frame when it turns or mirrors it: the thumbnail turns too.
+    let crop: PhotoCrop?
+    /// Asks for a name before one of the menu's actions.
+    let ask: (PhotoQuestion) -> Void
     @State private var image: CGImage?
 
     /// The diameter of a tag's dot, in points.
@@ -388,7 +397,7 @@ private struct LibraryTile: View {
             .frame(width: size.width)
         }
         .contentShape(.rect)
-        .contextMenu { LibraryPhotoMenu(photo: photo) }
+        .contextMenu { LibraryPhotoMenu(photo: photo, ask: ask) }
         .onTapGesture(count: 2) { model.develop(photo) }
         .gesture(TapGesture().modifiers(.command).onEnded { model.library.click(photo, toggling: true) })
         .gesture(TapGesture().modifiers(.shift).onEnded { model.library.click(photo, extending: true) })
@@ -400,9 +409,20 @@ private struct LibraryTile: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { model.library.click(photo) }
         .accessibilityAction(named: "Develop") { model.develop(photo) }
-        .task(id: pixels) {
-            image = await model.library.thumbnails.thumbnail(for: photo, maxDimension: pixels)
+        .task(id: ThumbnailRequest(pixels: pixels, crop: crop)) {
+            let thumbnail = await model.library.thumbnails.thumbnail(for: photo, maxDimension: pixels)
+            guard let thumbnail, let crop else {
+                image = thumbnail
+                return
+            }
+            image = await Task.detached(priority: .userInitiated) { ImageLoader.oriented(thumbnail, by: crop) }.value
         }
+    }
+
+    /// What a tile's thumbnail is made from: asked again when either changes.
+    private struct ThumbnailRequest: Equatable {
+        let pixels: Int
+        let crop: PhotoCrop?
     }
 
     /// A small mark in a corner of the thumbnail.

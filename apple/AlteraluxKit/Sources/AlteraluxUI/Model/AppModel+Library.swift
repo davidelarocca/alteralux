@@ -156,7 +156,12 @@ extension AppModel {
     /// The Finder's labels come with their colors; a tag of the user's has the color the
     /// photos carry it with, if any.
     var tagChoices: [TagChoice] {
-        let carried = library.tagsOfSelection()
+        tagChoices(for: Array(library.selection))
+    }
+
+    /// The tags to offer for some photos, each with the number of them that carry it.
+    func tagChoices(for photos: [URL]) -> [TagChoice] {
+        let carried = library.tags(of: photos)
         // The first of the Finder's labels is "none": not a tag to put on a photo.
         let labels = NSWorkspace.shared.fileLabels.enumerated().dropFirst().filter { !$0.element.isEmpty }
         var choices = labels.map { TagChoice(name: $0.element, color: FinderTagColor(rawValue: $0.offset), carriedBy: carried[$0.element] ?? 0) }

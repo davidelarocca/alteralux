@@ -56,11 +56,13 @@ click) are the system's and open at the pointer: they are the one exception.
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
 | `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
-| Filter and Sort | Library, the trailing side of the toolbar | system menu | system | system |
+| Filter and Sort | Library, the trailing side of the toolbar | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window (measured at 900 pt) |
 | `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
 | `RecipeManager` | `RecipeMenu`, Manage Recipes… | sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
 | Lists of the selection's bar | Library, Recipe, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |
+| `NewTagSheet` | `LibraryPhotoMenu`, Tags, New Tag… | sheet (`FormSheet`): the name and the color | 420 wide | fits inside the 900 pt window |
+| New name of a photo | `LibraryPhotoMenu`, Rename… | system alert with a text field | system | centered in the window |
 | Name of a recipe | `RecipeMenu`, Save as New Recipe…; `RecipeManager`, Rename… | system alert with a text field | system | centered in the window |
 | Deleting a recipe | `RecipeManager`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
@@ -84,7 +86,8 @@ Deliberate departures from the rules above, with the reason.
   copying and tagging show their symbols alone. Its lists (`ChoiceListButton`: recipes, folders, tags)
   open above the bar, inside the window, at most 320 pt tall. A layout test measures the grid with a
   selection.
-- The library's grid lays its photos in rows of one height, each photo as wide as its own shape:
+- The library's grid lays its photos in rows, each photo as wide as its own shape, and every row
+  but the last reaches both edges of the grid, made up to half again taller or shorter to do so:
   the rows are computed for the width the grid has (`LibraryRows`), so no photo is cut or pushed out
   at any size of its row.
 

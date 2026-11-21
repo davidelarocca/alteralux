@@ -43,6 +43,65 @@ public enum PhotoFileActions {
         }
     }
 
+    // MARK: Duplicate and rename
+
+    /// Copies each file beside itself, as the Finder's Duplicate: "name copy.ext", then
+    /// "name copy 2.ext". The copy carries the file's extended attributes, so its adjustments
+    /// and tags too.
+    ///
+    /// - Parameter suffix: the word put after the name, in the user's language ("copy").
+    public static func duplicate(_ files: [URL], suffix: String) -> [FileActionResult] {
+        files.map { file in
+            guard FileManager.default.fileExists(atPath: file.path) else {
+                return failure(file, CocoaError(.fileNoSuchFile, userInfo: [NSFilePathErrorKey: file.path]))
+            }
+            let ext = file.pathExtension
+            let stem = file.deletingPathExtension().lastPathComponent
+            let name = ext.isEmpty ? "\(stem) \(suffix)" : "\(stem) \(suffix).\(ext)"
+            let destination = freeURL(for: name, in: file.deletingLastPathComponent())
+            do {
+                try FileManager.default.copyItem(at: file, to: destination)
+                return FileActionResult(source: file, destination: destination)
+            } catch {
+                return failure(file, error)
+            }
+        }
+    }
+
+    /// Whether `name` can be a file's new name, its extension left out: not blank, no slash or
+    /// colon, not hidden.
+    public static func isFileName(_ name: String) -> Bool {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isEmpty && !name.hasPrefix(".") && !name.contains("/") && !name.contains(":")
+    }
+
+    /// Gives a file a new name in its folder, keeping its extension. A name another file has
+    /// there is refused, never overwritten.
+    ///
+    /// - Parameter name: the new name without the extension.
+    public static func rename(_ file: URL, to name: String) -> FileActionResult {
+        let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard isFileName(name) else {
+            return failure(file, CocoaError(.fileWriteInvalidFileName, userInfo: [NSFilePathErrorKey: name]))
+        }
+        let ext = file.pathExtension
+        let destination = file.deletingLastPathComponent().appendingPathComponent(ext.isEmpty ? name : "\(name).\(ext)")
+        if destination.lastPathComponent == file.lastPathComponent {
+            return FileActionResult(source: file, destination: file)
+        }
+        // A name that differs only in case is the same file on most Mac disks: that is a rename.
+        let sameFile = destination.lastPathComponent.lowercased() == file.lastPathComponent.lowercased()
+        if !sameFile, exists(destination, FileManager.default) {
+            return failure(file, CocoaError(.fileWriteFileExists, userInfo: [NSFilePathErrorKey: destination.path]))
+        }
+        do {
+            try FileManager.default.moveItem(at: file, to: destination)
+            return FileActionResult(source: file, destination: destination)
+        } catch {
+            return failure(file, error)
+        }
+    }
+
     // MARK: Trash
 
     /// Moves the files to the Trash. `destination` is where the system put each one, when it says.

@@ -3,7 +3,8 @@ import Foundation
 import Testing
 @testable import AlteraluxUI
 
-/// The rows of the library's grid: each photo as wide as its shape asks.
+/// The rows of the library's grid: each photo as wide as its shape asks, every row but the last
+/// reaching both edges.
 struct LibraryRowsTests {
     private func photo(_ name: String) -> URL {
         URL(fileURLWithPath: "/photos/\(name).jpg")
@@ -41,14 +42,37 @@ struct LibraryRowsTests {
         #expect(grid.rows[0].items.map(\.offset) == [0, 190, 280])
     }
 
-    @Test func aRowTakesThePhotosThatFitAndTheNextGoOn() {
-        // 180 + 10 + 180 = 370 fits in 400; a third would not.
+    @Test func aFullRowTakesThePhotosThatKeepItNearestItsHeight() {
+        // 180 + 10 + 180 = 370 fits in 400: made taller by 400 / 370 it reaches the edge, nearer
+        // 120 than a third photo made shorter would be.
         let grid = rows(["wide1", "wide2", "wide3", "tall1", "wide4"], width: 400)
         #expect(grid.rows.map { $0.items.map(\.photo.lastPathComponent) } == [
-            ["wide1.jpg", "wide2.jpg"], ["wide3.jpg", "tall1.jpg"], ["wide4.jpg"],
+            ["wide1.jpg", "wide2.jpg"], ["wide3.jpg", "tall1.jpg", "wide4.jpg"],
         ])
-        #expect(grid.rows.map(\.id) == [0, 1, 2])
-        #expect(grid.rows[1].items[1].offset == 190)
+        #expect(grid.rows.map(\.id) == [0, 1])
+        #expect(grid.rows[0].items.map(\.width) == [195, 195] && grid.rows[0].items[1].offset == 205)
+        // The second row would be half again as tall with two photos: it takes a third, shorter.
+        #expect(grid.rows.map(\.height) == [130, 104])
+    }
+
+    @Test func everyFullRowReachesBothEdges() {
+        let names = ["wide1", "tall1", "square1", "wide2", "tall2", "wide3", "square2", "wide4", "tall3"]
+        for width in [400.0, 523, 777, 1000] {
+            let grid = rows(names, width: width)
+            for row in grid.rows.dropLast() {
+                let last = row.items[row.items.count - 1]
+                #expect(row.items[0].offset == 0 && last.offset + last.width == width)
+            }
+            // The last row keeps the height asked for.
+            #expect(grid.rows.last?.height == 120)
+        }
+    }
+
+    @Test func aRowIsNeverStretchedMoreThanHalfAgain() {
+        // An upright photo alone in a 150 pt grid would have to be nearly twice as tall: it
+        // stops at half again, and the row keeps a gap.
+        let grid = rows(["tall1", "wide1"], width: 150)
+        #expect(grid.rows[0].height == 180 && grid.rows[0].items.map(\.width) == [120])
     }
 
     @Test func extremeShapesStayWithinReason() {
@@ -64,8 +88,8 @@ struct LibraryRowsTests {
     }
 
     @Test func upAndDownGoToThePhotoNearestAboveOrBelow() {
-        // Row 0: wide1 (0...180), wide2 (190...370). Row 1: tall1 (0...80), tall2 (90...170),
-        // wide3 (180...360). Row 2: wide4.
+        // Row 0: wide1 (0...195), wide2 (205...400). Row 1: tall1 (0...89), tall2 (99...188),
+        // wide3 (198...400). Row 2: wide4.
         let grid = rows(["wide1", "wide2", "tall1", "tall2", "wide3", "wide4"], width: 400)
         #expect(grid.rows.map(\.items.count) == [2, 3, 1])
         #expect(grid.photo(from: photo("wide1"), rowsDown: 1) == photo("tall2"))

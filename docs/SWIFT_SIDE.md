@@ -109,8 +109,8 @@ open photos, the settings of the selected one and its preview.
   reads again when a `FolderWatcher` reports. A photo of a folder is
   developed with the folder's photos in the strip, in their order, and the
   toolbar has the way back. Folders come from a panel, the File menu, a drop
-  on the window or the Finder. The grid lays the photos in rows of one height,
-  each as wide as its own shape (`LibraryRows`), with a dot for each colored
+  on the window or the Finder. The grid lays the photos in rows that reach both
+  edges, each photo as wide as its own shape (`LibraryRows`), with a dot for each colored
   Finder tag beside the name; the toolbar has the filter in the middle and a
   Filter and Sort menu at the trailing side; the line under the grid says the
   size of the photos shown, or of the selected ones. Photos are selected as

@@ -25,7 +25,7 @@ struct TagField: View {
                 .focused($isFocused)
                 .onSubmit(add)
             if isNew {
-                colors
+                TagColorPicker(color: $color)
             }
         }
         .padding([.horizontal, .top], Spacing.m)
@@ -47,8 +47,22 @@ struct TagField: View {
         return Text("Assign tags to \(selection.count) photos")
     }
 
-    /// The color of the new tag: none, or one of the Finder's seven.
-    private var colors: some View {
+    private var isNew: Bool {
+        !typed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && model.tagChoices.named(typed) == nil
+    }
+
+    private func add() {
+        model.addTag(named: typed, color: color)
+        typed = ""
+        color = nil
+    }
+}
+
+/// The color of a new tag, as the Finder offers it: none, or one of its seven, in a row of dots.
+struct TagColorPicker: View {
+    @Binding var color: FinderTagColor?
+
+    var body: some View {
         Picker("Color", selection: $color) {
             Image(systemName: "circle")
                 .accessibilityLabel(Text("No Color"))
@@ -65,15 +79,5 @@ struct TagField: View {
         .pickerStyle(.palette)
         .labelsHidden()
         .help("The color of the new tag")
-    }
-
-    private var isNew: Bool {
-        !typed.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && model.tagChoices.named(typed) == nil
-    }
-
-    private func add() {
-        model.addTag(named: typed, color: color)
-        typed = ""
-        color = nil
     }
 }

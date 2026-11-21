@@ -129,6 +129,65 @@ struct PhotoFileActionsTests {
         #expect(attribute(on: copy) == "adjustments")
     }
 
+    // MARK: Duplicate and rename
+
+    @Test func aDuplicateSitsBesideTheOriginalWithItsAttributes() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let photo = try fixture.file("a.jpg")
+        setAttribute("adjustments", on: photo)
+
+        let first = try #require(PhotoFileActions.duplicate([photo], suffix: "copia").first?.destination)
+        let second = try #require(PhotoFileActions.duplicate([photo], suffix: "copia").first?.destination)
+
+        #expect(first.lastPathComponent == "a copia.jpg" && second.lastPathComponent == "a copia 2.jpg")
+        #expect(first.deletingLastPathComponent().path == fixture.source.path)
+        #expect(try text(first) == "pixels" && exists(photo))
+        #expect(attribute(on: first) == "adjustments")
+    }
+
+    @Test func aRenamedFileKeepsItsExtensionAndAttributes() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let photo = try fixture.file("a.jpg")
+        setAttribute("adjustments", on: photo)
+
+        let result = PhotoFileActions.rename(photo, to: "  Tramonto  ")
+
+        let renamed = try #require(result.destination)
+        #expect(renamed.lastPathComponent == "Tramonto.jpg" && !exists(photo))
+        #expect(attribute(on: renamed) == "adjustments")
+    }
+
+    @Test func aRenameNeverOverwritesAnotherFile() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let photo = try fixture.file("a.jpg")
+        let other = try fixture.file("b.jpg", contents: "other")
+
+        let result = PhotoFileActions.rename(photo, to: "b")
+
+        #expect(!result.succeeded && exists(photo))
+        #expect(try text(other) == "other")
+    }
+
+    @Test func aRenameOnlyInCaseIsARename() throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let photo = try fixture.file("a.jpg")
+
+        let result = PhotoFileActions.rename(photo, to: "A")
+
+        #expect(result.succeeded && result.destination?.lastPathComponent == "A.jpg")
+    }
+
+    @Test func namesThatCannotBeAFileNameAreRefused() {
+        #expect(PhotoFileActions.isFileName("Tramonto 2"))
+        for name in ["", "   ", ".hidden", "a/b", "a:b"] {
+            #expect(!PhotoFileActions.isFileName(name))
+        }
+    }
+
     @Test func aMoveCarriesTheExtendedAttributes() throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
