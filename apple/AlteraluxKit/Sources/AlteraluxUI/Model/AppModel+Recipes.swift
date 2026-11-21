@@ -40,14 +40,20 @@ extension AppModel {
         await keep(renamed)
     }
 
-    /// Deletes a recipe. The photos that received it keep their adjustments.
+    /// Deletes a recipe and the workflows that use it. The photos that received it keep their
+    /// adjustments.
     func delete(_ recipe: Recipe) async {
         do {
             try await recipeStore.delete(recipe.id)
         } catch {
             alertMessage = String(localized: "The recipe “\(recipe.name)” could not be deleted.")
+            await loadRecipes()
+            return
         }
         await loadRecipes()
+        for workflow in workflows(using: recipe) {
+            await delete(workflow)
+        }
     }
 
     private func keep(_ recipe: Recipe) async {

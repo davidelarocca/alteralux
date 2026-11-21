@@ -371,6 +371,16 @@
         }
       }
     },
+    "%lld px" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld px"
+          }
+        }
+      }
+    },
     "%lld px on the long side" : {
       "localizations" : {
         "it" : {
@@ -451,12 +461,42 @@
         }
       }
     },
+    "A folder" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una cartella"
+          }
+        }
+      }
+    },
+    "A folder of this name is made beside each photo. If the photos were developed there before, you are asked what to do." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accanto a ogni foto viene creata una cartella con questo nome. Se le foto erano già state sviluppate lì, ti viene chiesto cosa fare."
+          }
+        }
+      }
+    },
     "A recipe is a look saved under a name: everything but the white balance." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una recipe è un aspetto salvato con un nome: tutto tranne il bilanciamento del bianco."
+            "value" : "Una ricetta è un aspetto salvato con un nome: tutto tranne il bilanciamento del bianco."
+          }
+        }
+      }
+    },
+    "A workflow develops photos with this recipe and writes them as files. In the library, select photos and choose Develop with Workflow." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un flusso sviluppa le foto con questa ricetta e le scrive come file. Nella libreria, seleziona le foto e scegli Sviluppa con flusso."
           }
         }
       }
@@ -811,6 +851,16 @@
         }
       }
     },
+    "Choose" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli"
+          }
+        }
+      }
+    },
     "Choose a folder." : {
       "localizations" : {
         "it" : {
@@ -837,6 +887,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scegli quali foto della cartella mostrare"
+          }
+        }
+      }
+    },
+    "Choose…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli…"
           }
         }
       }
@@ -1002,12 +1062,32 @@
         }
       }
     },
+    "Delete Recipe…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina ricetta…"
+          }
+        }
+      }
+    },
     "Delete the recipe “%@”?" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminare la recipe “%@”?"
+            "value" : "Eliminare la ricetta “%@”?"
+          }
+        }
+      }
+    },
+    "Delete the workflow “%@”?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminare il flusso “%@”?"
           }
         }
       }
@@ -1052,12 +1132,42 @@
         }
       }
     },
+    "Develop %lld Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa %lld foto"
+          }
+        }
+      }
+    },
     "Develop the selected photos and write them as files" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppa le foto selezionate e scrivile come file"
+          }
+        }
+      }
+    },
+    "Develop the selected photos with a workflow: a recipe, and the files it writes" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa le foto selezionate con un flusso: una ricetta e i file che scrive"
+          }
+        }
+      }
+    },
+    "Develop with Workflow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa con flusso"
           }
         }
       }
@@ -1109,6 +1219,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppo"
+          }
+        }
+      }
+    },
+    "Develops photos with the recipe “%@” and writes them as files." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa le foto con la ricetta “%@” e le scrive come file."
           }
         }
       }
@@ -1183,6 +1303,16 @@
         }
       }
     },
+    "Each photo is written as a file with the workflow’s recipe, and keeps its own adjustments." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni foto viene scritta come file con la ricetta del flusso, e conserva le sue regolazioni."
+          }
+        }
+      }
+    },
     "Each photo starts from its own exposure, and from an automatic white balance where the camera's is far off." : {
       "localizations" : {
         "it" : {
@@ -1193,12 +1323,102 @@
         }
       }
     },
+    "Edit Workflow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica flusso"
+          }
+        }
+      }
+    },
+    "Edit…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica…"
+          }
+        }
+      }
+    },
+    "Every photo goes into this folder. If it was developed there before, you are asked what to do." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni foto va in questa cartella. Se era già stata sviluppata lì, ti viene chiesto cosa fare."
+          }
+        }
+      }
+    },
     "Export %lld Photos…" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esporta %lld foto…"
+          }
+        }
+      }
+    },
+    "Film and paper" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellicola e carta"
+          }
+        }
+      }
+    },
+    "Folder" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cartella"
+          }
+        }
+      }
+    },
+    "Folder name" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome della cartella"
+          }
+        }
+      }
+    },
+    "in “%@”" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in “%@”"
+          }
+        }
+      }
+    },
+    "in “%@” beside the originals" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "in “%@” accanto agli originali"
+          }
+        }
+      }
+    },
+    "Its workflows are deleted too: %@. The photos that received it keep their adjustments." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vengono eliminati anche i suoi flussi: %@. Le foto che l'hanno ricevuta conservano le loro regolazioni."
           }
         }
       }
@@ -1248,7 +1468,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gestisci recipe…"
+            "value" : "Gestisci ricette…"
           }
         }
       }
@@ -1333,12 +1553,52 @@
         }
       }
     },
+    "New Workflow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo flusso"
+          }
+        }
+      }
+    },
+    "New Workflow…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nuovo flusso…"
+          }
+        }
+      }
+    },
     "No correction is known for this photo's lens." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Per l'obiettivo di questa foto non è nota alcuna correzione."
+          }
+        }
+      }
+    },
+    "No Workflows" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun flusso"
+          }
+        }
+      }
+    },
+    "No workflows yet. Make one in Recipes and Workflows." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ancora nessun flusso. Creane uno in Ricette e flussi."
           }
         }
       }
@@ -1353,12 +1613,42 @@
         }
       }
     },
+    "Original size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione originale"
+          }
+        }
+      }
+    },
     "Recipes" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recipe"
+            "value" : "Ricette"
+          }
+        }
+      }
+    },
+    "Recipes and Workflows" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricette e flussi"
+          }
+        }
+      }
+    },
+    "Recipes and Workflows…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricette e flussi…"
           }
         }
       }
@@ -1369,6 +1659,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rinomina foto"
+          }
+        }
+      }
+    },
+    "Rename Recipe…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina ricetta…"
           }
         }
       }
@@ -1659,7 +1959,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dai una recipe alle foto selezionate. Le recipe si salvano mentre sviluppi una foto."
+            "value" : "Dai una ricetta alle foto selezionate. Le ricette si salvano mentre sviluppi una foto."
           }
         }
       }
@@ -1669,7 +1969,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dai una recipe a questa foto, o salva il suo aspetto come recipe"
+            "value" : "Dai una ricetta a questa foto, o salva il suo aspetto come ricetta"
           }
         }
       }
@@ -2019,7 +2319,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessuna recipe"
+            "value" : "Nessuna ricetta"
           }
         }
       }
@@ -2029,7 +2329,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ancora nessuna recipe. Salvane una mentre sviluppi una foto."
+            "value" : "Ancora nessuna ricetta. Salvane una mentre sviluppi una foto."
           }
         }
       }
@@ -2359,7 +2659,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rinomina recipe"
+            "value" : "Rinomina ricetta"
           }
         }
       }
@@ -2439,7 +2739,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salva come nuova recipe"
+            "value" : "Salva come nuova ricetta"
           }
         }
       }
@@ -2449,7 +2749,17 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salva come nuova recipe…"
+            "value" : "Salva come nuova ricetta…"
+          }
+        }
+      }
+    },
+    "Save the look of a photo as a recipe with the Recipe menu, while developing it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salva l'aspetto di una foto come ricetta dal menu Ricetta, mentre la sviluppi."
           }
         }
       }
@@ -2805,6 +3115,26 @@
         }
       }
     },
+    "The files it wrote stay where they are." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I file che ha scritto restano dove sono."
+          }
+        }
+      }
+    },
+    "The folder “%@” of the workflow “%@” cannot be found." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non si trova la cartella “%1$@” del flusso “%2$@”."
+          }
+        }
+      }
+    },
     "The library shows the photos of the folders you add, as they are on disk." : {
       "localizations" : {
         "it" : {
@@ -2840,7 +3170,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La recipe conserva l'aspetto di questa foto: tutto tranne il bilanciamento del bianco."
+            "value" : "La ricetta conserva l'aspetto di questa foto: tutto tranne il bilanciamento del bianco."
           }
         }
       }
@@ -2850,7 +3180,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non è stato possibile eliminare la recipe “%@”."
+            "value" : "Non è stato possibile eliminare la ricetta “%@”."
           }
         }
       }
@@ -2860,7 +3190,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non è stato possibile salvare la recipe “%@”."
+            "value" : "Non è stato possibile salvare la ricetta “%@”."
           }
         }
       }
@@ -2881,6 +3211,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il tag viene messo sulle foto selezionate, come nel Finder."
+          }
+        }
+      }
+    },
+    "The workflow “%@” could not be deleted." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile eliminare il flusso “%@”."
+          }
+        }
+      }
+    },
+    "The workflow “%@” could not be saved." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile salvare il flusso “%@”."
           }
         }
       }
@@ -3011,6 +3361,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Con regolazioni"
+          }
+        }
+      }
+    },
+    "Workflow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flusso"
+          }
+        }
+      }
+    },
+    "Workflows" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flussi"
           }
         }
       }

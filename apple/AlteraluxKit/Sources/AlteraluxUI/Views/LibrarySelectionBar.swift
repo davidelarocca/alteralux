@@ -1,7 +1,8 @@
 import DesignSystem
 import SwiftUI
 
-/// What can be done with the selected photos: give a recipe, export, move, copy, tag, discard.
+/// What can be done with the selected photos: give a recipe, export, develop with a workflow,
+/// move, copy, tag, discard.
 /// It floats over the grid, near its bottom edge, while photos are selected.
 ///
 /// Its lists open above it, inside the window: a menu would open downward, past the window's
@@ -51,6 +52,11 @@ struct LibrarySelectionBar: View {
             .help("Develop the selected photos and write them as files")
             .disabled(!model.canPresentExport)
         ChoiceListButton(
+            Text("Workflow"), symbol: isCompact ? "flowchart" : nil, choices: workflows,
+            empty: Text("No workflows yet. Make one in Recipes and Workflows."),
+        )
+        .help("Develop the selected photos with a workflow: a recipe, and the files it writes")
+        ChoiceListButton(
             Text("Move to…"), symbol: isCompact ? "folder" : nil,
             choices: destinations { folder in Task { await model.moveSelection(to: folder) } },
             empty: Text("No other folder in the library."),
@@ -76,6 +82,16 @@ struct LibrarySelectionBar: View {
         model.recipes.map { recipe in
             Choice(id: recipe.id.uuidString, title: recipe.name, subtitle: model.materials(of: recipe.look)) {
                 model.applyToSelection(recipe)
+            }
+        }
+    }
+
+    /// The workflows, each with what it writes. Choosing one opens the sheet that develops the
+    /// photos with it.
+    private var workflows: [Choice] {
+        model.workflows.map { workflow in
+            Choice(id: workflow.id.uuidString, title: workflow.name, subtitle: model.summary(of: workflow)) {
+                model.presentWorkflowRun(workflow)
             }
         }
     }

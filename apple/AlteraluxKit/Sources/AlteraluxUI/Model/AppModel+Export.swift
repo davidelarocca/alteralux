@@ -18,6 +18,9 @@ struct BatchExportProgress: Equatable {
 struct WaitingExport: Equatable {
     let photos: [URL]
     let destination: ExportDestination
+    let options: ExportOptions
+    /// The recipe the photos are developed with, for a workflow; `nil` for their own adjustments.
+    let recipe: Recipe?
     /// How many of the photos were exported there before, with this film or another.
     let existing: Int
 }
@@ -33,6 +36,7 @@ extension AppModel {
     func presentExport() {
         guard canPresentExport else { return }
         photosToExport = showsLibrary ? selectedPhotos : []
+        exportsWithWorkflow = false
         isExportPresented = true
     }
 
@@ -104,23 +108,45 @@ extension AppModel {
     func resumeExport(_ policy: ExistingFilePolicy) async {
         guard let waiting = exportWaiting else { return }
         exportWaiting = nil
-        await export(waiting.photos, to: waiting.destination, existing: policy)
+        await export(
+            waiting.photos, to: waiting.destination, options: waiting.options, recipe: waiting.recipe, existing: policy,
+        )
     }
 
-    /// Develops each photo with its own adjustments and writes it, one after the other. At the
-    /// end only the photos that failed are named.
+    /// Develops each photo with its own adjustments, or with a recipe given to them, and writes
+    /// it, one after the other. At the end only the photos that failed are named.
     ///
-    /// - Parameter existing: what to do with the files of an earlier export. `nil` asks: when
-    ///   there are any, nothing is exported and `exportWaiting` says how many.
-    func export(_ photos: [URL], to destination: ExportDestination, existing: ExistingFilePolicy? = nil) async {
+    /// - Parameters:
+    ///   - options: the files' format and size; `nil` for the ones the export sheet shows.
+    ///   - recipe: the recipe a workflow develops the photos with. The photos keep their own
+    ///     adjustments: only the files have its look.
+    ///   - existing: what to do with the files of an earlier export. `nil` asks: when there are
+    ///     any, nothing is exported and `exportWaiting` says how many.
+    func export(
+        _ photos: [URL], to destination: ExportDestination, options: ExportOptions? = nil, recipe: Recipe? = nil,
+        existing: ExistingFilePolicy? = nil,
+    ) async {
         guard let renderer, !isExporting, !photos.isEmpty else { return }
         // What is being changed on the photo on screen is part of what is exported.
         settingsDidChange()
         settleChange()
-        let options = exportOptions
+        let options = options ?? exportOptions
+        // A folder chosen for a workflow is reached through its bookmark while the export runs.
+        let folder: URL? = if case let .folder(url) = destination {
+            url
+        } else {
+            nil
+        }
+        let isScoped = folder?.startAccessingSecurityScopedResource() ?? false
+        defer {
+            if isScoped {
+                folder?.stopAccessingSecurityScopedResource()
+            }
+        }
         let twins = Self.twins(among: library.photos + photos)
         let jobs = photos.map { photo in
-            let settings = adjustments(of: photo).settings
+            let own = adjustments(of: photo).settings
+            let settings = recipe?.applied(to: own) ?? own
             let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
             let namesKind = twins.contains(photo)
             return ExportJob(
@@ -133,7 +159,9 @@ extension AppModel {
         if existing == nil {
             let there = BatchExporter.alreadyExported(jobs, at: destination).count
             if there > 0 {
-                exportWaiting = WaitingExport(photos: photos, destination: destination, existing: there)
+                exportWaiting = WaitingExport(
+                    photos: photos, destination: destination, options: options, recipe: recipe, existing: there,
+                )
                 return
             }
         }

@@ -365,7 +365,9 @@ struct ExportAgainTests {
 
         // The second finds one file there: it writes nothing and waits.
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
-        #expect(model.exportWaiting == WaitingExport(photos: photos, destination: .subfolder(AppModel.developedFolderName), existing: 1))
+        #expect(model.exportWaiting == WaitingExport(
+            photos: photos, destination: .subfolder(AppModel.developedFolderName), options: model.exportOptions, recipe: nil, existing: 1,
+        ))
         #expect(try files() == first && !model.isExporting)
 
         // Skipping develops only the photo that was not there, and leaves the old file alone.

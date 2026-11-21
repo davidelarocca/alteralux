@@ -78,6 +78,11 @@ public final class AppModel {
     var photosToExport: [URL] = []
     /// Whether several photos go to a folder beside each original, or to one folder to choose.
     var exportsBesideOriginals = true
+    /// Whether the export sheet develops the photos with a workflow, and not with their own
+    /// adjustments and the options it shows.
+    var exportsWithWorkflow = false
+    /// The workflow chosen in the export sheet, kept for the next time.
+    var exportWorkflow: Workflow.ID?
     /// An export that found files of an earlier one, and waits to be told what to do with them.
     var exportWaiting: WaitingExport?
     /// Takes away an exported file that a new export replaces. `nil` moves it to the Trash;
@@ -132,6 +137,9 @@ public final class AppModel {
     /// The recipes, by name, and where they are kept.
     var recipes: [Recipe] = []
     let recipeStore: RecipeStore
+    /// The workflows, by name, and where they are kept.
+    var workflows: [Workflow] = []
+    let workflowStore: WorkflowStore
     /// The adjustments copied from a photo, to paste on others.
     var copiedAdjustments: DevelopSettings?
     /// The settings the last call of `settingsDidChange` has seen.
@@ -174,6 +182,9 @@ public final class AppModel {
         recipeStore = RecipeStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Recipes") : beside.appending(path: "recipes"),
         )
+        workflowStore = WorkflowStore(
+            directory: isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows"),
+        )
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
     }
@@ -207,6 +218,7 @@ public final class AppModel {
             alertMessage = error.localizedDescription
         }
         await loadRecipes()
+        await loadWorkflows()
         // The library is where the app opens, unless it was started on a photo.
         await library.load()
         Task.detached(priority: .background) { [thumbnails = library.thumbnails] in

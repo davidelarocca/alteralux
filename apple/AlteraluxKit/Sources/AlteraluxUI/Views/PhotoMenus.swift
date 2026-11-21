@@ -39,6 +39,12 @@ struct LibraryPhotoMenu: View {
         Button { act { model.presentExport() } } label: {
             count > 1 ? Text("Export \(count) Photos…") : Text("Export…")
         }
+        Menu("Develop with Workflow") {
+            ForEach(model.workflows) { workflow in
+                Button(workflow.name) { act { model.presentWorkflowRun(workflow) } }
+            }
+        }
+        .disabled(model.workflows.isEmpty)
         ShareLink(items: targets)
         Divider()
         Menu("Move to") {

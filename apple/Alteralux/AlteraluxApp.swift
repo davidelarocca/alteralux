@@ -27,5 +27,12 @@ struct AlteraluxApp: App {
         .commands {
             AlteraluxCommands(model: model)
         }
+
+        Window("Recipes and Workflows", id: RecipesWindow.id) {
+            RecipesWindow()
+                .environment(model)
+        }
+        .defaultSize(RecipesWindow.defaultSize)
+        .windowResizability(.contentMinSize)
     }
 }
