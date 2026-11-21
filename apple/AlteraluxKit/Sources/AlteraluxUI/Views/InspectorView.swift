@@ -169,8 +169,9 @@ private struct WhiteBalanceControls: View {
     }
 }
 
-/// Whether the lens is corrected, where the RAW decoder knows this camera's lens: otherwise a
-/// line says there is nothing to correct with.
+/// Whether the lens is corrected, where the RAW decoder, the camera's own data or a lens profile
+/// know this camera's lens, with a line that says which of the last two does; otherwise a line
+/// says there is nothing to correct with.
 private struct LensCorrectionToggle: View {
     @Environment(AppModel.self) private var model
 
@@ -181,6 +182,10 @@ private struct LensCorrectionToggle: View {
             .help("Straightens the lens's curved lines, brightens its darker corners and takes away its colored fringes.")
         if model.hasPhoto, !model.correctsLens {
             Text("No correction is known for this photo's lens.")
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+        } else if let lens = model.cameraCorrectedLensName {
+            Text("Camera's own correction: \(lens)")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
         } else if let lens = model.lensProfileName {

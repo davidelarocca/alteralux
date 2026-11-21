@@ -254,11 +254,14 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    names the profile. Seen in the built app on a test RAW that names a Sony A7 III and the FE 24-70mm
    GM. Measured on 2026-11-21 on 126 of the user's RAWs (numbers only): a Sony ZV-E10 with a Viltrox
    56mm F1.7 E, which neither Apple's decoder nor lensfun knows.
-   Next, the third part: the corrections the camera writes in the RAW itself (Sony, Fujifilm,
-   OM/Olympus, Panasonic, Nikon Z, Canon RF record the mounted lens's distortion, vignetting and
-   fringes), for the cameras Apple's decoder does not cover. For recent mirrorless lenses it is the best
-   source there is; darktable (GPLv3) reads it for several makers and shows how. Asked by the user on
-   2026-11-21. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
+   Done, the third part ([ADR 0015](adr/0015-the-cameras-own-lens-corrections.md)), asked by the user
+   on 2026-11-21: the corrections Sony cameras record in each RAW for the lens on them (distortion,
+   fringes, vignetting), read as darktable reads them and applied by a kernel of their own, before
+   lensfun and after Apple's decoder; the inspector says "Camera's own correction". All 920 of the
+   user's Sony RAWs carry them; the Viltrox 56mm and 25mm on the ZV-E10, which nobody corrected, now
+   are (checked with the app's decoder on one of them: the corners about 1.65 EV brighter, as the data
+   say). Not yet: the other makers that record them (Fujifilm, OM/Olympus, Panasonic, Nikon Z, Canon
+   RF) and DNG files' own opcodes, to add when a photo needs them. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
    real photos; photos that are not RAW are not corrected (their camera may have done it already).
 10. **Recipes and workflows, from the app and the Finder.** Decided with the user on 2026-11-21: a
    workflow is a recipe and what to do with it (format, size, where to save, such as a folder beside the

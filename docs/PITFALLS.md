@@ -125,3 +125,7 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **A launch by the Finder's Services menu looks like any other.** `NSApplicationLaunchIsDefaultLaunchKey`
   is true and no launch Apple event reaches the delegate. The service request itself arrives before
   `applicationDidFinishLaunching`: that is the sign (`OpenFilesDelegate`).
+- **ImageIO does not give Sony's lens correction tags.** The distortion, fringing and vignetting a Sony
+  camera records (`0x7032`, `0x7035`, `0x7037`) are in the first directory under the main one of the
+  ARW, and `CGImageSourceCopyPropertiesAtIndex` leaves them out. Read them from the file's TIFF
+  structure (`SonyLensData`); in a probe, look in the sub-directories, not only the first one.

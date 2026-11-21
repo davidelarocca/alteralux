@@ -3824,6 +3824,16 @@
           }
         }
       }
+    },
+    "Camera's own correction: %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correzione della fotocamera: %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
