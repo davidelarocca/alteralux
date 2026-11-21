@@ -63,6 +63,7 @@ click) are the system's and open at the pointer: they are the one exception.
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |
 | `NewTagSheet` | `LibraryPhotoMenu`, Tags, New Tag… | sheet (`FormSheet`): the name and the color | 420 wide | fits inside the 900 pt window |
 | New name of a photo | `LibraryPhotoMenu`, Rename… | system alert with a text field | system | centered in the window |
+| Moving photos to the Trash | `LibraryPhotoMenu`, Move to Trash | system confirmation dialog | system | centered in the window |
 | Name of a recipe | `RecipeMenu`, Save as New Recipe…; `RecipeManager`, Rename… | system alert with a text field | system | centered in the window |
 | Deleting a recipe | `RecipeManager`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |

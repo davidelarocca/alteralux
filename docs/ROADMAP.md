@@ -274,7 +274,8 @@ branch of its own. What was said, in the order to take it:
 - The library's details, gone through with the user on 2026-11-21: the status line without the
   double-click hint; a photo's menu with everything the bar has and the Finder's actions on the
   file (Open With, Share, Duplicate, Rename, Tags with their colors, Move to Trash), Reset
-  Adjustments, Rotate Left and Right (the grid's thumbnail turns with the photo), and the number of
+  Adjustments, Rotate Left and Right (the grid's thumbnail turns with the photo), Move to Trash after
+  a confirmation (undo cannot bring photos back from the Trash; the Finder can), and the number of
   photos in the titles when it acts on several; while developing, the left and right arrows go
   through the photos (the View menu's arrows never reached the app), and a click on a slider takes
   neither the arrows nor draws a focus ring (the sliders take the keys only with the system's
