@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-21T08:47:42Z",
+  "contractSize": "560x90",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "GlassGroup",
+  "size": "560x90",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/GlassGroup.swift",
+  "state": "long-text",
+  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-21T08:56:14Z",
+  "approvedFrom": "missing"
+}

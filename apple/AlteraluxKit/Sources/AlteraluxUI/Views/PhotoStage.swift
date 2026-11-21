@@ -4,6 +4,8 @@ import SwiftUI
 /// Shows the selected photo on a neutral dark surround, or the empty state.
 struct PhotoStage: View {
     @Environment(AppModel.self) private var model
+    /// Height of the controls under the photo being cropped, which the photo stays above.
+    @State private var controlsHeight: CGFloat = 0
 
     /// The developed photo, or the original while comparing.
     private var displayedImage: CGImage? {
@@ -19,12 +21,20 @@ struct PhotoStage: View {
             Color.DS.viewerSurround.ignoresSafeArea()
 
             if let session = model.cropSession {
-                // The whole photo, once it is developed whole.
-                if let preview = model.preview, model.previewCrop == nil {
-                    CropEditor(image: preview.cgImage, session: session)
-                } else {
-                    ProgressView()
-                        .controlSize(.large)
+                // The whole photo, once it is developed whole, with the crop's controls floating
+                // over the bottom of the surround and the photo fitting above them.
+                Group {
+                    if let preview = model.preview, model.previewCrop == nil {
+                        CropEditor(image: preview.cgImage, session: session, bottomRoom: controlsHeight)
+                    } else {
+                        ProgressView()
+                            .controlSize(.large)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    CropControls(session: session)
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { controlsHeight = $0 }
                 }
             } else if let image = displayedImage, let photoSize = model.photoSize {
                 ZoomableImageView(

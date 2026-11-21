@@ -92,9 +92,8 @@ struct DevelopScreen: View {
         VStack(spacing: 0) {
             PhotoStage()
                 .contextMenu { DevelopPhotoMenu() }
-            if let session = model.cropSession {
-                CropControls(session: session)
-            } else if !model.photos.isEmpty {
+            // While a photo is cropped, its controls float over the bottom of the photo.
+            if !model.isCropping, !model.photos.isEmpty {
                 if showsStrip {
                     Divider()
                     FilmstripView()

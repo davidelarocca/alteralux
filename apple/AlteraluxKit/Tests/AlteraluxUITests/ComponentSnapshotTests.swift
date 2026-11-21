@@ -304,6 +304,74 @@ extension WindowedTests {
     }
 
     @MainActor
+    struct GlassGroupSnapshots {
+        private let source = "\(components)/GlassGroup.swift"
+        private let sizes = ["560x90"]
+        private let english = "en"
+
+        /// Groups where the app draws them: over the surround of the photo being cropped, with a
+        /// round button of the system's glass beside them.
+        private func overThePhoto(_ group: some View) -> some View {
+            GlassEffectContainer(spacing: Spacing.s) {
+                HStack(spacing: Spacing.s) {
+                    group
+                    Button {} label: { Image(systemName: "checkmark") }
+                        .buttonStyle(.glassProminent)
+                        .buttonBorderShape(.circle)
+                        .controlSize(.extraLarge)
+                }
+                .controlSize(.large)
+                .fixedSize()
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.DS.viewerSurround)
+        }
+
+        private func controls() -> some View {
+            GlassGroup {
+                Picker(selection: .constant(true)) {
+                    Image(systemName: "rectangle").tag(false)
+                    Image(systemName: "rectangle.portrait").tag(true)
+                } label: {
+                    Text(verbatim: "Orientation")
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .fixedSize()
+                Button {} label: { Image(systemName: "rotate.left") }
+                Divider()
+                Button {} label: { Text(verbatim: "Reset") }
+                Button {} label: { Text(verbatim: "Disabled") }
+                    .disabled(true)
+            }
+        }
+
+        @Test func controlsAndADisabledOne() {
+            #expect(Snapshot.verify("GlassGroup", sizes: sizes, state: "controls", locale: english, source: source) {
+                overThePhoto(controls())
+            } == [])
+        }
+
+        @Test func longText() {
+            #expect(Snapshot.verify("GlassGroup", sizes: sizes, state: "long-text", locale: english, source: source) {
+                overThePhoto(
+                    GlassGroup {
+                        Button {} label: { Text(verbatim: "One Action With a Long Title") }
+                        Divider()
+                        Button {} label: { Text(verbatim: "Another") }
+                    },
+                )
+            } == [])
+        }
+
+        @Test func rightToLeft() {
+            #expect(Snapshot.verify("GlassGroup", sizes: sizes, state: "controls", locale: "ar", source: source) {
+                overThePhoto(controls())
+            } == [])
+        }
+    }
+
+    @MainActor
     struct SelectionMarqueeSnapshots {
         private let source = "\(components)/SelectionMarquee.swift"
         private let sizes = ["320x140"]

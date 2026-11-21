@@ -9,13 +9,16 @@ struct CropEditor: View {
     /// The whole photo, developed.
     let image: CGImage
     let session: CropSession
+    /// Room kept free under the photo for what floats over the bottom of the editor. The frame
+    /// darkens the whole editor, that room included.
+    var bottomRoom: CGFloat = 0
 
     var body: some View {
         GeometryReader { proxy in
             let crop = session.crop
             let turned = crop.orientedSize(of: session.photo)
             // Where the photo goes once turned, and the scale it is drawn at.
-            let photo = Self.photoRect(of: turned, in: proxy.size)
+            let photo = Self.photoRect(of: turned, in: proxy.size, bottomRoom: bottomRoom)
             let scale = photo.width / turned.width
             ZStack(alignment: .topLeading) {
                 Image(decorative: image, scale: 1)
@@ -44,16 +47,17 @@ struct CropEditor: View {
         .clipped()
     }
 
-    /// Where the whole photo is drawn: as large as it fits, with room around it.
-    static func photoRect(of photo: CGSize, in container: CGSize) -> CGRect {
+    /// Where the whole photo is drawn: as large as it fits, with room around it and
+    /// `bottomRoom` kept free under it.
+    static func photoRect(of photo: CGSize, in container: CGSize, bottomRoom: CGFloat = 0) -> CGRect {
         let room = CGSize(
             width: max(1, container.width - 2 * Spacing.xl),
-            height: max(1, container.height - 2 * Spacing.xl),
+            height: max(1, container.height - bottomRoom - 2 * Spacing.xl),
         )
         let scale = min(room.width / photo.width, room.height / photo.height)
         let size = CGSize(width: photo.width * scale, height: photo.height * scale)
         return CGRect(
-            x: (container.width - size.width) / 2, y: (container.height - size.height) / 2,
+            x: (container.width - size.width) / 2, y: (container.height - bottomRoom - size.height) / 2,
             width: size.width, height: size.height,
         )
     }

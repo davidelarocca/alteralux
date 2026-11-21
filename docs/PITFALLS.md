@@ -86,3 +86,6 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   back, or the scroll is clamped and nothing moves.
 - **Synthesized clicks sent to one process are ignored.** `CGEvent.postToPid` delivers keys, not mouse
   clicks, to a SwiftUI app; checking a gesture in the built app needs real pointer events.
+- **A disabled segmented control on glass does not look disabled.** Inside a `GlassGroup` its selected
+  segment keeps the accent color, so a switch turned off reads as broken. Do not leave a control there
+  that does nothing: make it work, or take it away while it cannot.

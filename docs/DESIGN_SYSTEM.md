@@ -46,6 +46,7 @@ Motion gets no animation, or a fade for a transition.
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
 | Actions on what is selected | the selected photos of the library | `FloatingBar`: it floats over the content near its bottom edge while something is selected |
+| Controls floating over the photo | the crop's controls under the photo being cropped | `GlassGroup` on the system's glass, with Cancel and Done as round glass buttons beside it |
 | Choosing from a bar near the bottom of the window | a recipe, a folder or a tag for the selected photos | `ChoiceListButton`: its list opens above it, inside the window, where a menu would open downward and leave it |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |
 | Asking for a name | the name of a new recipe, another name for one | system alert with a text field |

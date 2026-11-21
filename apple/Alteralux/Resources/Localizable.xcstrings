@@ -1052,6 +1052,26 @@
         }
       }
     },
+    "Keep this frame" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni questo ritaglio"
+          }
+        }
+      }
+    },
+    "Leave the frame as it was" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lascia il ritaglio com'era"
+          }
+        }
+      }
+    },
     "double-click to develop" : {
       "localizations" : {
         "it" : {
