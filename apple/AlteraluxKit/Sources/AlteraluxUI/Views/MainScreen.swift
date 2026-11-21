@@ -92,6 +92,12 @@ struct DevelopScreen: View {
         VStack(spacing: 0) {
             PhotoStage()
                 .contextMenu { DevelopPhotoMenu() }
+                // The arrows go through the photos; not while one is cropped.
+                .modifier(StepThroughPhotosKeys { offset in
+                    guard !model.isCropping, model.canSelectAdjacent(offset: offset) else { return false }
+                    model.selectAdjacent(offset: offset)
+                    return true
+                })
             // While a photo is cropped, its controls float over the bottom of the photo.
             if !model.isCropping, !model.photos.isEmpty, showsStrip {
                 Divider()

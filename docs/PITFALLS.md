@@ -99,3 +99,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **Wheel events made with `CGEvent` did not change the viewer** while the real wheel did, and clicks and
   drags made the same way work. Test the wheel's logic by calling `scrollWheel(with:)` with an
   `NSEvent(cgEvent:)`, as `ViewerTests` does, and try the real wheel by hand.
+- **A menu command whose shortcut is an arrow alone never runs from the keyboard.** macOS shows the
+  arrow beside the item but gives the menu no arrow pressed without Command: View > Next Photo worked
+  from the menu and never from the key. The view on screen takes the arrows itself with `onKeyPress`
+  (`StepThroughPhotosKeys`, `LibraryGridKeys`). An arrow's `KeyPress` always carries `.numericPad` in
+  its modifiers: test for Command, Option, Control and Shift, not for none. Caught by
+  `StepThroughPhotosKeysTests`.
