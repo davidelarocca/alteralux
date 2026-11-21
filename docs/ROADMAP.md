@@ -255,13 +255,15 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    GM. Measured on 2026-11-21 on 126 of the user's RAWs (numbers only): a Sony ZV-E10 with a Viltrox
    56mm F1.7 E, which neither Apple's decoder nor lensfun knows.
    Done, the third part ([ADR 0015](adr/0015-the-cameras-own-lens-corrections.md)), asked by the user
-   on 2026-11-21: the corrections Sony cameras record in each RAW for the lens on them (distortion,
-   fringes, vignetting), read as darktable reads them and applied by a kernel of their own, before
-   lensfun and after Apple's decoder; the inspector says "Camera's own correction". All 920 of the
-   user's Sony RAWs carry them; the Viltrox 56mm and 25mm on the ZV-E10, which nobody corrected, now
-   are (checked with the app's decoder on one of them: the corners about 1.65 EV brighter, as the data
-   say). Not yet: the other makers that record them (Fujifilm, OM/Olympus, Panasonic, Nikon Z, Canon
-   RF) and DNG files' own opcodes, to add when a photo needs them. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
+   on 2026-11-21 for every maker, vignetting included: the corrections Sony, Fujifilm, Nikon Z,
+   Olympus/OM System and Panasonic cameras record in each RAW, read as darktable and ART read them and
+   applied by a kernel of their own; the geometry by Apple's decoder, then the camera, then lensfun;
+   the vignetting by the camera wherever Apple's decoder leaves it (always for Sony and Fujifilm),
+   then lensfun. The readings match Apple's own correction to a few pixels on samples of every maker.
+   All 920 of the user's Sony RAWs carry them; the Viltrox 56mm and 25mm on the ZV-E10, which nobody
+   corrected, now are. Not read: older Sony bodies' enciphered block; Canon records nothing readable;
+   DNG opcodes are Apple's decoder's. To be judged by the user's eye: Sony's vignetting, on a plain
+   sky or wall at full aperture (the least certain reading). Still open: how well lensfun covers the user's own lenses, and the look of the correction on
    real photos; photos that are not RAW are not corrected (their camera may have done it already).
 10. **Recipes and workflows, from the app and the Finder.** Decided with the user on 2026-11-21: a
    workflow is a recipe and what to do with it (format, size, where to save, such as a folder beside the

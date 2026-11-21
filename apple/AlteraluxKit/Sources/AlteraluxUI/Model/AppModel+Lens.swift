@@ -17,10 +17,10 @@ extension AppModel {
         sources?.decoder.lensProfile?.lensName
     }
 
-    /// The lens the camera recorded its own corrections for, which correct the selected photo:
-    /// `nil` when Apple's decoder corrects it, or the photo carries none.
-    var cameraCorrectedLensName: String? {
-        sources?.decoder.cameraLensCorrection?.lensName
+    /// The correction made with what the camera recorded, for the selected photo: who corrects the
+    /// geometry and who the vignetting. `nil` when the photo carries nothing that applies.
+    var cameraLensCorrection: CameraLensCorrection? {
+        sources?.decoder.cameraLensCorrection
     }
 
     /// Whether the lens of the selected photo is corrected. Adjustments saved before the app

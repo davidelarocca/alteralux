@@ -125,7 +125,17 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **A launch by the Finder's Services menu looks like any other.** `NSApplicationLaunchIsDefaultLaunchKey`
   is true and no launch Apple event reaches the delegate. The service request itself arrives before
   `applicationDidFinishLaunching`: that is the sign (`OpenFilesDelegate`).
-- **ImageIO does not give Sony's lens correction tags.** The distortion, fringing and vignetting a Sony
-  camera records (`0x7032`, `0x7035`, `0x7037`) are in the first directory under the main one of the
-  ARW, and `CGImageSourceCopyPropertiesAtIndex` leaves them out. Read them from the file's TIFF
-  structure (`SonyLensData`); in a probe, look in the sub-directories, not only the first one.
+- **ImageIO does not give the lens corrections cameras record.** Sony's (`0x7032`, `0x7035`, `0x7037`)
+  are in the raw image's SubIFD, Fujifilm's in a TIFF inside the RAF (the offset at byte 100, directory
+  `0xF000`), not in the maker note of its JPEG, and Nikon's in a blob in tag `0xC7D5`; ImageIO's
+  properties leave them all out. Read them from the files (`Lens/*LensData.swift`); in a probe, look in
+  every sub-directory.
+- **Apple's decoder treats vignetting differently by maker.** Measured against the sensor's own values
+  on 2026-11-21: it lifts Nikon's always, even with its lens correction off, and never Sony's or
+  Fujifilm's; toggling its lens correction shows none of this. Adding vignetting where it already does
+  corrects twice: check a new maker against the sensor first (`CameraMaker.appleLiftsVignetting`).
+- **The DNG from a DJI Osmo Action does not open** (`AlteraluxError.unreadableImage` in
+  `PhotoDecoder`), seen on 2026-11-21 on a raw.pixls.us sample. Not looked into yet.
+- **lensfun picks "Ricoh GR III & compatibles + GW-4" for a GR III sample** (raw.pixls.us, 2026-11-21),
+  the profile with the wide converter, which the photo may not have had. Not looked into yet
+  (`LensFuzzyMatch`).

@@ -184,15 +184,37 @@ private struct LensCorrectionToggle: View {
             Text("No correction is known for this photo's lens.")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
-        } else if let lens = model.cameraCorrectedLensName {
-            Text("Camera's own correction: \(lens)")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
+        } else if let correction = model.cameraLensCorrection {
+            CameraCorrectionLine(correction: correction)
         } else if let lens = model.lensProfileName {
             Text("Lensfun profile: \(lens)")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+/// Who corrects the lens when the camera recorded some of it: the camera alone, or with lensfun,
+/// or only the vignetting after Apple's decoder.
+private struct CameraCorrectionLine: View {
+    let correction: CameraLensCorrection
+
+    var body: some View {
+        let lens = correction.lensName
+        Group {
+            switch (correction.geometrySource, correction.vignettingSource) {
+            case (.apple, _):
+                Text("Vignetting corrected with the camera's data")
+            case (.lensfun, _):
+                Text("Lensfun profile, vignetting from the camera: \(lens)")
+            case (_, .lensfun):
+                Text("Camera's own correction, vignetting from lensfun: \(lens)")
+            default:
+                Text("Camera's own correction: \(lens)")
+            }
+        }
+        .font(Typography.caption)
+        .foregroundStyle(.secondary)
     }
 }
 

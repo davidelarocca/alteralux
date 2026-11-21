@@ -3,129 +3,91 @@ import Foundation
 import Testing
 @testable import AlteraluxKit
 
-/// The corrections a Sony camera records in its RAW: read from the file, turned into curves, and
-/// applied by the kernel as the Swift reference says.
+/// How the camera's corrections are combined with Apple's decoder and lensfun (ADR 0015), and the
+/// zoom that fills the frame.
 struct CameraLensCorrectionTests {
-    /// The numbers a Sony ZV-E10 recorded with a Viltrox 56mm F1.7 at f/1.7: eleven knots each.
-    static let distortion = [11, 2, 3, 6, 13, 23, 37, 53, 71, 90, 111, 131, 0, 0, 0, 0, 0]
-    static let aberration = [22] + [Int](repeating: -256, count: 22) + [Int](repeating: 0, count: 10)
-    static let vignetting = [11, 0, 352, 1152, 2304, 3712, 5280, 6880, 8448, 9888, 11200, 12288, 0, 0, 0, 0, 0]
+    static let size = SIMD2(6000, 4000)
 
-    /// A TIFF laid out as an ARW: a main directory naming the maker and pointing at a raw one
-    /// that holds the three tags as signed 16-bit numbers.
-    static func arw(
-        maker: String = "SONY",
-        distortion: [Int] = distortion,
-        aberration: [Int] = aberration,
-        vignetting: [Int] = vignetting,
-        bigEndian: Bool = false,
-    ) -> Data {
-        var bytes: [UInt8] = []
-        func put(_ value: Int, _ size: Int) {
-            let unsigned = value < 0 ? value + (1 << (size * 8)) : value
-            let ordered = (0 ..< size).map { UInt8((unsigned >> ($0 * 8)) & 0xFF) }
-            bytes += bigEndian ? ordered.reversed() : ordered
-        }
-        bytes += bigEndian ? [0x4D, 0x4D] : [0x49, 0x49]
-        put(42, 2)
-        put(8, 4)
-        // Main directory at 8: two entries, Make and SubIFDs.
-        let makeBytes = Array(maker.utf8) + [0]
-        let mainEnd = 8 + 2 + 2 * 12 + 4
-        let rawDirectory = mainEnd + makeBytes.count + (makeBytes.count % 2)
-        put(2, 2)
-        put(0x010F, 2); put(2, 2); put(makeBytes.count, 4); put(mainEnd, 4)
-        put(0x014A, 2); put(4, 2); put(1, 4); put(rawDirectory, 4)
-        put(0, 4)
-        bytes += makeBytes
-        if makeBytes.count % 2 == 1 {
-            bytes.append(0)
-        }
-        // Raw directory: three entries pointing past it.
-        var valuesAt = rawDirectory + 2 + 3 * 12 + 4
-        put(3, 2)
-        var payload: [[Int]] = []
-        for (tag, values) in [(0x7032, vignetting), (0x7035, aberration), (0x7037, distortion)] {
-            put(tag, 2); put(8, 2); put(values.count, 4); put(valuesAt, 4)
-            valuesAt += values.count * 2
-            payload.append(values)
-        }
-        put(0, 4)
-        for values in payload {
-            for value in values {
-                put(value, 2)
-            }
-        }
-        return Data(bytes)
+    static func sony() throws -> CameraLensData {
+        try #require(SonyLensData.read(CameraLensDataTests.arw()))
     }
 
-    @Test func theCurvesAreReadAsDarktableReadsThem() throws {
-        let curves = try #require(SonyLensData.curves(in: Self.arw()))
-        #expect(curves.green.count == 11)
-        #expect(curves.green[0] == 1 + 2.0 / 16384)
-        #expect(curves.green[10] == 1 + 131.0 / 16384)
-        #expect(abs(curves.red[3] - curves.green[3] * (1 - 256.0 / 2_097_152)) < 1e-15)
-        #expect(curves.vignetting[0] == 1)
-        let kept = pow(2, 0.5 - pow(2, 12288.0 / 8192 - 1))
-        #expect(abs(curves.vignetting[10] - kept * kept) < 1e-12)
-        // About -1.8 EV at the last knot, past the corner.
-        #expect(abs(log2(curves.vignetting[10]) + 1.83) < 0.01)
-    }
+    /// A lensfun profile with barrel distortion and vignetting, centered on a 6000 × 4000 photo.
+    static let lensfun = LensCorrection(
+        lensName: "Profile", distortionModel: .poly3, distortionTerms: SIMD3(-0.02, 0, 0), distortionUnit: 2000,
+        center: SIMD2(2999.5, 1999.5), tcaModel: .none, tcaRed: SIMD3(1, 0, 0), tcaBlue: SIMD3(1, 0, 0),
+        vignettingTerms: SIMD3(-0.3, 0, 0), vignettingUnit: 3605.55, scale: 1,
+    )
 
-    @Test func aBigEndianFileReadsTheSame() {
-        #expect(SonyLensData.curves(in: Self.arw(bigEndian: true)) == SonyLensData.curves(in: Self.arw()))
-    }
-
-    @Test func otherMakersAndMalformedTagsAreLeftAlone() {
-        #expect(SonyLensData.curves(in: Self.arw(maker: "FUJIFILM")) == nil)
-        #expect(SonyLensData.curves(in: Self.arw(aberration: [20] + [Int](repeating: 0, count: 20))) == nil)
-        #expect(SonyLensData.curves(in: Self.arw(vignetting: [16] + [Int](repeating: 0, count: 16))) == nil)
-        #expect(SonyLensData.curves(in: Self.arw(distortion: [17] + [Int](repeating: 1, count: 17))) == nil)
-        #expect(SonyLensData.curves(in: Data("not a tiff".utf8)) == nil)
-        #expect(SonyLensData.curves(in: Data(Self.arw().prefix(60))) == nil)
-    }
-
-    @Test func aCameraThatRecordedNothingIsNotCorrected() {
-        let zeros = [11] + [Int](repeating: 0, count: 16)
-        let noAberration = [22] + [Int](repeating: 0, count: 32)
-        #expect(SonyLensData.curves(in: Self.arw(distortion: zeros, aberration: noAberration, vignetting: zeros)) == nil)
-    }
-
-    @Test func onlyRawFilesFromSonyAreRead() throws {
-        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: folder) }
-        let arw = folder.appendingPathComponent("photo.ARW")
-        let tiff = folder.appendingPathComponent("photo.tif")
-        try Self.arw().write(to: arw)
-        try Self.arw().write(to: tiff)
-        let correction = try #require(SonyLensData.correction(for: arw, lensName: "Viltrox 56mm F1.7 E", width: 6000, height: 4000))
-        #expect(correction.lensName == "Viltrox 56mm F1.7 E")
-        #expect(correction.center == SIMD2(2999.5, 1999.5))
+    @Test func withoutAppleTheCameraCorrectsEverything() throws {
+        let correction = try #require(CameraLensCorrection.combining(
+            camera: Self.sony(), lensfun: Self.lensfun, appleCorrects: false, lensName: "Viltrox", size: Self.size,
+        ))
+        #expect(correction.geometrySource == .camera && correction.vignettingSource == .camera)
+        #expect(correction.movesPixels)
+        #expect(correction.lensName == "Viltrox")
         #expect(abs(correction.unit - 3605.55) < 0.01)
-        #expect(SonyLensData.correction(for: tiff, lensName: "", width: 6000, height: 4000) == nil)
     }
 
-    @Test func theCurveRunsStraightBetweenItsKnots() {
-        // Four knots at 1/6, 1/2, 5/6 and 7/6 of the half diagonal.
-        let curve = [1.0, 2.0, 4.0, 8.0]
-        #expect(CameraLensCorrection.value(of: curve, at: 0) == 1)
-        #expect(CameraLensCorrection.value(of: curve, at: 1.0 / 6) == 1)
-        #expect(abs(CameraLensCorrection.value(of: curve, at: 1.0 / 3) - 1.5) < 1e-12)
-        #expect(abs(CameraLensCorrection.value(of: curve, at: 0.5) - 2) < 1e-12)
-        #expect(abs(CameraLensCorrection.value(of: curve, at: 1) - 6) < 1e-12)
-        #expect(CameraLensCorrection.value(of: curve, at: 2) == 8)
+    @Test func whereAppleCorrectsTheGeometryOnlyTheVignettingIsLifted() throws {
+        let correction = try #require(CameraLensCorrection.combining(
+            camera: Self.sony(), lensfun: nil, appleCorrects: true, lensName: "", size: Self.size,
+        ))
+        #expect(correction.geometrySource == .apple && correction.vignettingSource == .camera)
+        #expect(!correction.movesPixels)
+        let corner = SIMD2(0.0, 0.0)
+        #expect(correction.sourcePoint(ofCorrected: corner, channel: 1) == corner)
+        // Read where the camera's curve says the pixel was, a little further out than the corner.
+        let sony = try Self.sony()
+        let expected = 1 / (sony.vignetting?.value(at: 1 / correction.scale * 1.008) ?? 1)
+        #expect(abs(correction.vignettingGain(at: corner) - expected) / expected < 0.03)
+    }
+
+    @Test func appleLiftsNikonsVignettingItself() throws {
+        let nikon = try #require(NikonLensData.read(CameraLensDataTests.nef()))
+        #expect(CameraLensCorrection.combining(camera: nikon, lensfun: nil, appleCorrects: true, lensName: "", size: Self.size) == nil)
+        let olympus = try #require(OlympusLensData.read(CameraLensDataTests.orf()))
+        #expect(CameraLensCorrection.combining(camera: olympus, lensfun: nil, appleCorrects: true, lensName: "", size: Self.size) == nil)
+        // Where Apple's decoder does not know the lens, Nikon's own numbers do it all.
+        let alone = try #require(CameraLensCorrection.combining(camera: nikon, lensfun: nil, appleCorrects: false, lensName: "", size: Self.size))
+        #expect(alone.geometrySource == .camera && alone.vignettingSource == .camera)
+    }
+
+    @Test func whatTheCameraLeavesOutComesFromLensfun() throws {
+        let olympus = try #require(OlympusLensData.read(CameraLensDataTests.orf()))
+        let withLight = try #require(CameraLensCorrection.combining(
+            camera: olympus, lensfun: Self.lensfun, appleCorrects: false, lensName: "", size: Self.size,
+        ))
+        #expect(withLight.geometrySource == .camera && withLight.vignettingSource == .lensfun)
+        let corner = SIMD2(0.0, 0.0)
+        #expect(abs(withLight.vignettingGain(at: corner) - Self.lensfun.vignettingGain(at: corner)) < 1e-3)
+
+        let lightOnly = try #require(CameraLensData(maker: .sony, geometry: nil, vignetting: Self.sony().vignetting))
+        let withGeometry = try #require(CameraLensCorrection.combining(
+            camera: lightOnly, lensfun: Self.lensfun, appleCorrects: false, lensName: "", size: Self.size,
+        ))
+        #expect(withGeometry.geometrySource == .lensfun && withGeometry.vignettingSource == .camera)
+        // The profile's own mapping, its zoom aside.
+        let along = SIMD2(6000.0, 4000.0) / (2 * withGeometry.unit) * 0.8 * withGeometry.unit
+        let shot = Self.lensfun.sourcePoint(ofCorrected: Self.lensfun.center + along, channel: 1) - Self.lensfun.center
+        let ratio = (shot.x * shot.x + shot.y * shot.y).squareRoot() / (0.8 * withGeometry.unit)
+        #expect(abs(withGeometry.green.value(at: 0.8) - ratio) < 1e-4)
+    }
+
+    @Test func noCameraDataLeavesItToTheOthers() {
+        #expect(CameraLensCorrection.combining(camera: nil, lensfun: Self.lensfun, appleCorrects: false, lensName: "", size: Self.size) == nil)
     }
 
     /// The corrected picture's edge comes from inside the photo, and only just: no empty corners,
     /// and no more zoom than needed.
     @Test(arguments: [false, true])
-    func theCorrectedPictureFillsTheFrame(bigger: Bool) throws {
-        let curves = try #require(SonyLensData.curves(in: Self.arw()))
-        let green = bigger ? curves.green.map { 1 + ($0 - 1) * 6 } : curves.green
+    func theCorrectedPictureFillsTheFrame(stronger: Bool) throws {
+        let sony = try Self.sony()
+        let geometry = try #require(sony.geometry)
+        let green = stronger ? RadialCurve(sampling: { 1 + (geometry.green.value(at: $0) - 1) * 6 }) : geometry.green
         let correction = try #require(CameraLensCorrection(
-            lensName: "Test", green: green, red: curves.red, blue: curves.blue, vignetting: curves.vignetting,
-            width: 6000, height: 4000,
+            lensName: "", geometry: .init(red: geometry.red, green: green, blue: geometry.blue), geometrySource: .camera,
+            light: nil, vignettingSource: nil, width: 6000, height: 4000,
         ))
         var reach = 0.0
         for step in 0 ... 200 {
@@ -146,27 +108,6 @@ struct CameraLensCorrectionTests {
         #expect(reach <= 1)
         #expect(reach > 0.997)
         #expect(correction.scale > 1)
-    }
-
-    @Test func vignettingIsLiftedWhereTheLensDarkens() throws {
-        let curves = try #require(SonyLensData.curves(in: Self.arw()))
-        let correction = try #require(CameraLensCorrection(
-            lensName: "Test", green: curves.green, red: curves.red, blue: curves.blue, vignetting: curves.vignetting,
-            width: 6000, height: 4000,
-        ))
-        #expect(correction.vignettingGain(at: correction.center) == 1)
-        let corner = correction.vignettingGain(at: .zero)
-        // Between knots 9 and 10, about 1.7 EV brighter.
-        #expect(corner > 3 && corner < 3.5, "\(corner)")
-    }
-
-    @Test func curvesOfDifferentLengthsAreRefused() {
-        #expect(CameraLensCorrection(
-            lensName: "", green: [1, 1], red: [1, 1], blue: [1, 1], vignetting: [1], width: 10, height: 10,
-        ) == nil)
-        #expect(CameraLensCorrection(
-            lensName: "", green: [1], red: [1], blue: [1], vignetting: [1], width: 10, height: 10,
-        ) == nil)
     }
 }
 
@@ -209,13 +150,19 @@ struct CameraLensWarpTests {
         CGSize(width: width, height: height)
     }
 
-    /// A strong, wavy distortion with fringes, over thirteen knots, and no vignetting.
+    /// A strong, wavy distortion with fringes, and no vignetting.
     private func wavy() throws -> CameraLensCorrection {
-        let green = (0 ..< 13).map { 1 + 0.04 * sin(Double($0) / 2) }
+        let green = RadialCurve(sampling: { 1 + 0.04 * sin($0 * 6) })
+        let red = RadialCurve(sampling: { (1 + 0.04 * sin($0 * 6)) * 1.003 })
+        let blue = RadialCurve(sampling: { (1 + 0.04 * sin($0 * 6)) * 0.997 })
         return try #require(CameraLensCorrection(
-            lensName: "Test", green: green, red: green.map { $0 * 1.003 }, blue: green.map { $0 * 0.997 },
-            vignetting: [Double](repeating: 1, count: 13), width: width, height: height,
+            lensName: "", geometry: .init(red: red, green: green, blue: blue), geometrySource: .camera,
+            light: nil, vignettingSource: nil, width: width, height: height,
         ))
+    }
+
+    @Test func theKernelCompiles() {
+        #expect(LensWarp.isAvailable)
     }
 
     @Test func theKernelFollowsTheReference() throws {
@@ -234,18 +181,21 @@ struct CameraLensWarpTests {
     }
 
     @Test func theKernelLiftsTheCorners() throws {
-        let light = (0 ..< 11).map { 1 - 0.05 * Double($0) }
+        let light = RadialCurve(sampling: { 1 - 0.5 * $0 * $0 })
         let correction = try #require(CameraLensCorrection(
-            lensName: "Test", green: [Double](repeating: 1, count: 11), red: [Double](repeating: 1, count: 11),
-            blue: [Double](repeating: 1, count: 11), vignetting: light, width: width, height: height,
+            lensName: "", geometry: nil, geometrySource: .apple, light: light, vignettingSource: .camera,
+            width: width, height: height,
         ))
         let corrected = LensWarp.apply(correction, to: positions(blue: 0.4), fullSize: size)
         #expect(abs(pixel(of: corrected, at: SIMD2(150, 100)).z - 0.4) < 0.001)
         for point in [SIMD2(0, 0), SIMD2(299, 120), SIMD2(40, 180)] {
-            let source = correction.sourcePoint(ofCorrected: SIMD2(Double(point.x), Double(point.y)), channel: 2)
-            let expected = 0.4 * correction.vignettingGain(at: source)
-            let blue = Double(pixel(of: corrected, at: point).z)
-            #expect(abs(blue - expected) < 0.002, "at \(point): \(blue), expected \(expected)")
+            let here = SIMD2(Double(point.x), Double(point.y))
+            let expected = 0.4 * correction.vignettingGain(at: here)
+            let value = pixel(of: corrected, at: point)
+            #expect(abs(Double(value.z) - expected) < 0.002, "at \(point): \(value.z), expected \(expected)")
+            // The pixels stay where they are: red, lifted by the same gain, still says so.
+            let x = Double(value.x) / correction.vignettingGain(at: here) * Double(width) - 0.5
+            #expect(abs(x - here.x) < 0.05, "at \(point): x \(x)")
         }
     }
 

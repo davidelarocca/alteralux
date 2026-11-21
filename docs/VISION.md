@@ -148,7 +148,7 @@ hand-drawn controls of the mockups were dropped for the system's
   LGPLv3, its database CC BY-SA 3.0, which can be shipped unmodified as a separate file with its
   attribution, read by models written in Swift. To confirm with a proper legal reading before an
   official release. Still unknown: which cameras Apple's correction covers, and how well lensfun covers
-  recent lenses. Since then, the corrections Sony cameras record in each RAW come before lensfun
+  recent lenses. Since then, the corrections cameras record in each RAW come before lensfun
   ([ADR 0015](adr/0015-the-cameras-own-lens-corrections.md)).
 - **Photos.** As far as we know, an editing extension receives a rendered image, not the RAW original
   (see `docs/ROADMAP.md`). Reading originals through PhotoKit from the app is the alternative.

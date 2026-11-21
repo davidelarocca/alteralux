@@ -24,11 +24,12 @@ public actor PhotoDecoder {
     /// Whether this photo's lens can be corrected: its distortion, its darker corners and its
     /// colored fringes, by the RAW decoder from what the camera recorded, or with a lens profile.
     public nonisolated let correctsLens: Bool
-    /// The corrections the camera recorded in the RAW, which correct this photo where the RAW
-    /// decoder does not know the lens: `nil` when the decoder does, or the file carries none.
+    /// The correction made with what the camera recorded in the RAW: all of it where the RAW
+    /// decoder does not know the lens, the vignetting alone where it does and leaves it (ADR 0015).
+    /// `nil` when the file carries nothing that applies.
     public nonisolated let cameraLensCorrection: CameraLensCorrection?
-    /// The lens profile that corrects this photo, where neither the RAW decoder nor the camera's
-    /// own corrections do: `nil` when one of them does, or when no profile fits.
+    /// The lens profile that corrects this photo alone, where neither the RAW decoder nor the
+    /// camera's own corrections do: `nil` when one of them does, or when no profile fits.
     public nonisolated let lensProfile: LensCorrection?
     /// Whether the RAW decoder corrects this photo's lens when it is not told: what adjustments
     /// saved without the choice get.
@@ -70,16 +71,19 @@ public actor PhotoDecoder {
         }
         width = Int(extent.width)
         height = Int(extent.height)
-        // Apple's decoder first, then what the camera recorded, then lensfun's profiles (ADR 0015).
+        // The geometry by Apple's decoder, then by the camera, then by lensfun; the vignetting by the
+        // camera, then by lensfun (ADR 0015).
         let decoderCorrects = rawFilter?.isLensCorrectionSupported ?? false
-        let info = decoderCorrects || !isRaw ? nil : PhotoLensInfo.read(from: url)
-        cameraLensCorrection = decoderCorrects || !isRaw ? nil : SonyLensData.correction(
-            for: url, lensName: info.map { $0.lensModel.isEmpty ? $0.cameraModel : $0.lensModel } ?? "",
-            width: width, height: height,
-        )
-        lensProfile = cameraLensCorrection != nil ? nil : info.flatMap { info in
+        let info = isRaw ? PhotoLensInfo.read(from: url) : nil
+        let profile = decoderCorrects ? nil : info.flatMap { info in
             lenses?.lens(for: info)?.correction(for: info, imageWidth: Int(extent.width), imageHeight: Int(extent.height))
         }
+        cameraLensCorrection = CameraLensCorrection.combining(
+            camera: isRaw ? CameraLensData.read(from: url) : nil, lensfun: profile, appleCorrects: decoderCorrects,
+            lensName: info.map { $0.lensModel.isEmpty ? $0.cameraModel : $0.lensModel } ?? "",
+            size: SIMD2(Int(extent.width), Int(extent.height)),
+        )
+        lensProfile = cameraLensCorrection == nil ? profile : nil
         correctsLens = decoderCorrects || cameraLensCorrection != nil || lensProfile != nil
     }
 

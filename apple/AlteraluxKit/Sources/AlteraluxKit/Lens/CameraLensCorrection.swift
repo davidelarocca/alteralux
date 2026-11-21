@@ -1,59 +1,82 @@
 import Foundation
 
-/// The corrections the camera recorded in a RAW for the lens on it, at the moment of the shot:
-/// distortion, lateral color fringing and vignetting, as curves over the distance from the center
-/// of the picture (ADR 0015).
-///
-/// Each curve has one value per knot. Knot `i` of `n` lies at the radius `(i + 0.5) / (n - 1)`
-/// of the half diagonal; between knots the value goes in a straight line, and before the first or
-/// past the last it stays the first or the last value, as darktable reads the same data.
+/// Who corrects one part of a photo's lens: Apple's RAW decoder, what the camera recorded in the
+/// file, or lensfun's profile of the lens.
+public enum LensCorrectionSource: Sendable, Equatable {
+    case apple, camera, lensfun
+}
+
+/// The lens correction of a photo when the camera recorded some of it (ADR 0015): as radial
+/// curves, whatever the camera's own reading, with the parts the camera did not record taken from
+/// lensfun, and only the vignetting when Apple's decoder corrects the geometry itself.
 ///
 /// Coordinates are in the pixels of the photo as decoded, as in `LensCorrection`: the origin at the
-/// top left, `y` down, the first pixel's center at (0, 0).
+/// top left, `y` down, the first pixel's center at (0, 0). Radii are in half diagonals.
 public struct CameraLensCorrection: Sendable, Equatable {
     /// The lens, as the photo names it, for the inspector.
     public let lensName: String
-    /// For green, the factor by which the radius of a point of the corrected picture is multiplied
-    /// to find where it comes from in the photo as shot.
-    public let green: [Double]
-    /// The same for red and for blue: green's factor times their own, which moves them apart from
-    /// green to take away the colored fringes.
-    public let red: [Double]
-    public let blue: [Double]
-    /// The fraction of the light the lens lets through at each knot, measured on the photo as
-    /// shot: 1 at the center, less towards the corners. The pixel is divided by it.
-    public let vignetting: [Double]
+    /// Who corrects the distortion and the fringes, and who the vignetting; `nil` for nobody.
+    public let geometrySource: LensCorrectionSource?
+    public let vignettingSource: LensCorrectionSource?
+    /// For each channel, the factor by which the radius of a point of the corrected picture is
+    /// multiplied to find where it comes from in the photo as shot: 1 everywhere when this
+    /// correction does not move the pixels.
+    public let red: RadialCurve
+    public let green: RadialCurve
+    public let blue: RadialCurve
+    /// The fraction of the light the lens let through, by the radius the pixel is taken from. The
+    /// pixel is divided by it.
+    public let light: RadialCurve
     /// The center of the picture, in pixels.
     public let center: SIMD2<Double>
-    /// The half diagonal of the picture in pixels: the radius 1 of the knots.
+    /// The half diagonal of the picture in pixels: the radius 1 of the curves.
     public let unit: Double
     /// The zoom that makes the corrected picture fill the frame with no empty edges: a point of
     /// the corrected picture is looked up at its distance from `center` divided by `scale`.
     public let scale: Double
 
-    /// The correction for a photo of `width` × `height` pixels, with the curves as the camera
-    /// gives them; `nil` when they are not of one length between 2 and 16 knots.
+    /// The correction of a photo of `width` × `height` pixels.
+    ///
+    /// - Parameters:
+    ///   - geometry: the curves that move the pixels; `nil` when nothing here moves them (no one
+    ///     corrects the geometry, or Apple's decoder already did).
+    ///   - light: the light kept, by the radius in the photo as shot; `nil` for no vignetting.
+    ///   - shotRadius: when the pixels are not moved here but were by Apple's decoder, the curve
+    ///     the camera recorded for green, which tells where each pixel was in the photo as shot,
+    ///     so that its vignetting is read there.
     public init?(
-        lensName: String, green: [Double], red: [Double], blue: [Double], vignetting: [Double],
+        lensName: String,
+        geometry: CameraLensData.Geometry?, geometrySource: LensCorrectionSource?,
+        light: RadialCurve?, vignettingSource: LensCorrectionSource?,
+        shotRadius: RadialCurve? = nil,
         width: Int, height: Int,
     ) {
-        let count = green.count
-        guard (2 ... 16).contains(count), red.count == count, blue.count == count, vignetting.count == count,
-              width > 0, height > 0, vignetting.allSatisfy({ $0 > 0 })
-        else { return nil }
+        guard width > 0, height > 0, geometry != nil || light != nil else { return nil }
         self.lensName = lensName
-        self.green = green
-        self.red = red
-        self.blue = blue
-        self.vignetting = vignetting
+        self.geometrySource = geometrySource
+        self.vignettingSource = light == nil ? nil : vignettingSource
+        let identity = RadialCurve.constant(1)
+        red = geometry?.red ?? identity
+        green = geometry?.green ?? identity
+        blue = geometry?.blue ?? identity
         center = SIMD2(Double(width - 1) / 2, Double(height - 1) / 2)
         unit = Double(width * width + height * height).squareRoot() / 2
-        scale = Self.autoScale(curves: [red, green, blue], width: Double(width), height: Double(height))
+        let fill = Self.autoScale(curves: [red, green, blue], width: Double(width), height: Double(height))
+        scale = geometry == nil ? 1 : fill
+        if let light, geometry == nil, let shotRadius {
+            // Where Apple's decoder moved the pixels as the camera's curve says, with the same zoom.
+            let zoom = Self.autoScale(curves: [shotRadius], width: Double(width), height: Double(height))
+            self.light = RadialCurve(sampling: { radius in
+                light.value(at: radius / zoom * shotRadius.value(at: radius / zoom))
+            })
+        } else {
+            self.light = light ?? identity
+        }
     }
 
-    /// The number of knots of every curve.
-    public var knotCount: Int {
-        green.count
+    /// Whether this correction moves the pixels: not when it only lifts the vignetting.
+    public var movesPixels: Bool {
+        scale != 1 || ![red, green, blue].allSatisfy { $0.isEverywhere(1) }
     }
 
     /// Where in the photo as shot the pixel at `point` of the corrected picture gets its
@@ -63,25 +86,14 @@ public struct CameraLensCorrection: Sendable, Equatable {
         let offset = (point - center) / scale
         let radius = (offset.x * offset.x + offset.y * offset.y).squareRoot() / unit
         let curve = channel == 0 ? red : channel == 2 ? blue : green
-        return center + offset * Self.value(of: curve, at: radius)
+        return center + offset * curve.value(at: radius)
     }
 
-    /// The factor to multiply the pixel at `point` of the photo as shot by to remove its
-    /// vignetting.
+    /// The factor to multiply the pixel taken from `point` by to remove its vignetting.
     public func vignettingGain(at point: SIMD2<Double>) -> Double {
         let offset = point - center
         let radius = (offset.x * offset.x + offset.y * offset.y).squareRoot() / unit
-        return 1 / Self.value(of: vignetting, at: radius)
-    }
-
-    /// The value of `curve` at `radius`, in half diagonals.
-    static func value(of curve: [Double], at radius: Double) -> Double {
-        let position = radius * Double(curve.count - 1) - 0.5
-        guard position > 0 else { return curve[0] }
-        guard position < Double(curve.count - 1) else { return curve[curve.count - 1] }
-        let index = Int(position)
-        let fraction = position - Double(index)
-        return curve[index] + (curve[index + 1] - curve[index]) * fraction
+        return 1 / max(light.value(at: radius), 1e-4)
     }
 
     /// The smallest zoom with which every point on the edge of the corrected picture comes from
@@ -91,7 +103,7 @@ public struct CameraLensCorrection: Sendable, Equatable {
     /// from the center stays inside when the curve, read at `R / scale`, is at most `scale`. Every
     /// `R` from half the short side to the half diagonal is on the edge; the zoom is the fixed
     /// point of taking the largest of those values, found in a few rounds.
-    static func autoScale(curves: [[Double]], width: Double, height: Double) -> Double {
+    static func autoScale(curves: [RadialCurve], width: Double, height: Double) -> Double {
         let halfDiagonal = (width * width + height * height).squareRoot() / 2
         let shortest = min(width, height) / 2 / halfDiagonal
         let samples = 400
@@ -101,7 +113,7 @@ public struct CameraLensCorrection: Sendable, Equatable {
             for step in 0 ... samples {
                 let radius = shortest + (1 - shortest) * Double(step) / Double(samples)
                 for curve in curves {
-                    largest = max(largest, value(of: curve, at: radius / scale))
+                    largest = max(largest, curve.value(at: radius / scale))
                 }
             }
             if abs(largest - scale) < 1e-9 {
@@ -110,5 +122,66 @@ public struct CameraLensCorrection: Sendable, Equatable {
             scale = largest
         }
         return scale * 1.001
+    }
+}
+
+public extension CameraLensCorrection {
+    /// The correction of a photo of `size` pixels (width, height) from what its camera recorded and
+    /// lensfun's profile, as ADR 0015 orders them: the geometry by Apple's decoder where it knows
+    /// the lens, then by the camera, then by lensfun; the vignetting by the camera, except where
+    /// Apple's decoder lifts it itself, then by lensfun when Apple's decoder leaves the photo
+    /// alone. `nil` when the camera recorded nothing that applies: lensfun's profile alone, or
+    /// Apple's decoder alone, does it then.
+    static func combining(
+        camera: CameraLensData?, lensfun: LensCorrection?, appleCorrects: Bool, lensName: String, size: SIMD2<Int>,
+    ) -> CameraLensCorrection? {
+        guard let camera else { return nil }
+        let (width, height) = (size.x, size.y)
+        if appleCorrects {
+            guard let vignetting = camera.vignetting, !camera.maker.appleLiftsVignetting else { return nil }
+            return CameraLensCorrection(
+                lensName: lensName, geometry: nil, geometrySource: .apple, light: vignetting,
+                vignettingSource: .camera, shotRadius: camera.geometry?.green, width: width, height: height,
+            )
+        }
+        let lensfunGeometry = lensfun?.radialGeometry(width: width, height: height)
+        let lensfunLight = lensfun?.radialLight(width: width, height: height)
+        let geometry = camera.geometry ?? lensfunGeometry
+        let light = camera.vignetting ?? lensfunLight
+        return CameraLensCorrection(
+            lensName: lensName,
+            geometry: geometry, geometrySource: camera.geometry != nil ? .camera : lensfunGeometry != nil ? .lensfun : nil,
+            light: light, vignettingSource: camera.vignetting != nil ? .camera : lensfunLight != nil ? .lensfun : nil,
+            width: width, height: height,
+        )
+    }
+}
+
+extension LensCorrection {
+    /// The distortion and the fringes of this profile as radial curves over the half diagonal of
+    /// a photo of `width` × `height` pixels, without its zoom; `nil` when it corrects neither.
+    func radialGeometry(width: Int, height: Int) -> CameraLensData.Geometry? {
+        guard correctsDistortion || correctsFringing else { return nil }
+        let halfDiagonal = Double(width * width + height * height).squareRoot() / 2
+        let direction = SIMD2(Double(width), Double(height)) / (2 * halfDiagonal)
+        func curve(_ channel: Int) -> RadialCurve {
+            RadialCurve(sampling: { radius in
+                let along = max(radius, 1e-4) * halfDiagonal
+                let source = sourcePoint(ofCorrected: center + direction * along * scale, channel: channel) - center
+                return (source.x * source.x + source.y * source.y).squareRoot() / along
+            })
+        }
+        return CameraLensData.Geometry(red: curve(0), green: curve(1), blue: curve(2))
+    }
+
+    /// The vignetting of this profile as the light kept by the radius in half diagonals; `nil`
+    /// when it has none.
+    func radialLight(width: Int, height: Int) -> RadialCurve? {
+        guard correctsVignetting else { return nil }
+        let halfDiagonal = Double(width * width + height * height).squareRoot() / 2
+        let direction = SIMD2(Double(width), Double(height)) / (2 * halfDiagonal)
+        return RadialCurve(sampling: { radius in
+            1 / vignettingGain(at: center + direction * radius * halfDiagonal)
+        })
     }
 }
