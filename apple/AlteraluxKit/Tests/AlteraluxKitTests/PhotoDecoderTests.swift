@@ -124,6 +124,10 @@ struct PhotoDecoderTests {
         let plain = try await grayCard(of: decoder)
         let asked = try await grayCard(of: decoder, whiteBalance: WhiteBalance(temperature: 3000, tint: 0))
         #expect(plain.red == asked.red && plain.blue == asked.blue)
+        // Nothing to measure or to correct either.
+        #expect(await decoder.automaticWhiteBalance() == nil)
+        #expect(await decoder.whiteBalance(for: DevelopSettings(autoWhiteBalance: true)) == nil)
+        #expect(!decoder.correctsLens)
         let reduced = try await decoder.decode(maxDimension: 32)
         #expect(reduced.width == 32 && reduced.height == 24)
     }
@@ -141,6 +145,35 @@ struct PhotoDecoderTests {
     /// The interface tests open this file; it is what `TestDNG` writes.
     @Test func theFixtureIsTheTestRaw() throws {
         #expect(try Data(contentsOf: fixture) == TestDNG.grayCard())
+    }
+
+    @Test func aWhiteBalanceChosenByHandWinsOverTheAutomaticOne() {
+        let asShot = WhiteBalance(temperature: 5200, tint: 8)
+        let automatic = WhiteBalance(temperature: 4400, tint: 2)
+        #expect(DevelopSettings().whiteBalance(asShot: asShot, automatic: automatic) == automatic)
+        var settings = DevelopSettings()
+        settings.temperature = 6000
+        #expect(settings.whiteBalance(asShot: asShot, automatic: automatic) == WhiteBalance(temperature: 6000, tint: 8))
+    }
+
+    @Test func adjustmentsSavedBeforeTheNewChoicesKeepTheirLook() throws {
+        // Saved by a version without automatic white balance and lens correction.
+        let old = try JSONDecoder().decode(DevelopSettings.self, from: Data(#"{"filmID":"kodak_portra_400"}"#.utf8))
+        #expect(!old.autoWhiteBalance)
+        #expect(old.lensCorrection == nil)
+        // New photos have the lens corrected.
+        #expect(DevelopSettings().lensCorrection == true)
+    }
+
+    @Test func theTestRawHasNoLensToCorrect() async throws {
+        let url = try TestDNG.writeGrayCard()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = try PhotoDecoder(url: url)
+        #expect(!decoder.correctsLens)
+        // Asking for a correction that is not known decodes the photo as it is.
+        let plain = try await decoder.pixels(maxDimension: nil, whiteBalance: nil)
+        let corrected = try await decoder.pixels(maxDimension: nil, whiteBalance: nil, lensCorrection: true)
+        #expect(plain.pixels == corrected.pixels)
     }
 
     @Test func settingsNameAWhiteBalanceOverTheCameras() throws {

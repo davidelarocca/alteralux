@@ -187,15 +187,16 @@ struct EditStoreTests {
         #expect(store.load(for: photo) == edited())
     }
 
-    /// Settings saved before a parameter existed are read with its default.
+    /// Settings saved before a parameter existed are read with its default; the lens correction,
+    /// with what the decoder does on its own, so the photo looks as it did.
     @Test func settingsSavedByAnEarlierVersionAreRead() throws {
         let saved = Data(#"{"filmID":"fujifilm_velvia_100","exposureEV":0.7}"#.utf8)
         let settings = try JSONDecoder().decode(DevelopSettings.self, from: saved)
-        var expected = DevelopSettings()
+        var expected = DevelopSettings(lensCorrection: nil)
         expected.filmID = "fujifilm_velvia_100"
         expected.exposureEV = 0.7
         #expect(settings == expected)
-        #expect(try JSONDecoder().decode(DevelopSettings.self, from: Data("{}".utf8)) == DevelopSettings())
+        #expect(try JSONDecoder().decode(DevelopSettings.self, from: Data("{}".utf8)) == DevelopSettings(lensCorrection: nil))
         // And what is saved now is read back whole.
         var edited = edited()
         edited.advancedJSON = #"{"camera":{"film_format_mm":60}}"#

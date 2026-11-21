@@ -34,6 +34,7 @@ struct InspectorView: View {
                 ),
             ) {
                 WhiteBalanceControls()
+                LensCorrectionToggle()
                 CameraControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
             }
             if !model.settings.scanFilm {
@@ -146,6 +147,8 @@ private struct WhiteBalanceControls: View {
                 .foregroundStyle(.secondary)
         } else {
             Group {
+                Toggle("Automatic white balance", isOn: $model.isWhiteBalanceAutomatic)
+                    .help("Start from the light measured in the photo where the camera's white balance is far from it.")
                 ParameterSlider(
                     "Temperature", value: $model.temperature, in: model.temperatureRange,
                     step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
@@ -157,6 +160,24 @@ private struct WhiteBalanceControls: View {
                 )
             }
             .disabled(!model.canAdjustWhiteBalance)
+        }
+    }
+}
+
+/// Whether the lens is corrected, where the RAW decoder knows this camera's lens: otherwise a
+/// line says there is nothing to correct with.
+private struct LensCorrectionToggle: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        Toggle("Lens correction", isOn: $model.isLensCorrected)
+            .disabled(!model.correctsLens)
+            .help("Straightens the lens's curved lines and brightens its darker corners, as the camera recorded.")
+        if model.hasPhoto, !model.correctsLens {
+            Text("No correction is known for this photo's lens.")
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
         }
     }
 }

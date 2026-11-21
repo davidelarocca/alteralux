@@ -105,6 +105,45 @@ struct WhiteBalanceTests {
         #expect(model.alertMessage == nil)
     }
 
+    @Test func theAutomaticWhiteBalanceShowsInTheSlidersAndLeavesWhenOneMoves() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open(raws)
+        try await wait("the preview") { model.preview != nil }
+        let asShot = try #require(model.asShotWhiteBalance)
+
+        // The warm ramp of the test RAW reads as a warm light, far from the camera's daylight.
+        model.isWhiteBalanceAutomatic = true
+        model.settingsDidChange()
+        try await wait("the measured white balance") { model.automaticWhiteBalance != nil }
+        let automatic = try #require(model.automaticWhiteBalance)
+        #expect(automatic.temperature < asShot.temperature - 300, "automatic: \(automatic)")
+        #expect(model.temperature == automatic.temperature && model.tint == automatic.tint)
+        #expect(model.settings.temperature == nil && model.settings.autoWhiteBalance)
+
+        // Moving the tint chooses by hand from where the automatic one stood.
+        model.tint = automatic.tint + 10
+        #expect(!model.settings.autoWhiteBalance)
+        #expect(model.temperature == automatic.temperature && model.tint == automatic.tint + 10)
+
+        // Turned on again and off: back to the camera's.
+        model.isWhiteBalanceAutomatic = true
+        #expect(model.settings.temperature == nil && model.settings.tint == nil)
+        model.isWhiteBalanceAutomatic = false
+        #expect(model.temperature == asShot.temperature && model.tint == asShot.tint)
+        #expect(model.alertMessage == nil)
+    }
+
+    @Test func theTestRawHasNoLensToCorrect() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = await startedModel()
+        model.open(raws)
+        try await wait("the preview") { model.preview != nil }
+        #expect(!model.correctsLens && !model.isLensCorrected)
+    }
+
     @Test func theExportedFileHasTheWhiteBalanceChosen() async throws {
         let raws = try writeTestRaws(count: 1)
         let folder = raws[0].deletingLastPathComponent()

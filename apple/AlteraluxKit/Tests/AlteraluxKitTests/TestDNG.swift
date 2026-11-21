@@ -32,6 +32,30 @@ enum TestDNG {
     /// The bytes of a DNG of `width` × `height` pixels: the left half a gray card (18%), the
     /// right half a warm ramp from dark to bright.
     static func grayCard(width: Int = 240, height: Int = 160) -> Data {
+        dng(width: width, height: height, asShotNeutral: [(1, 1), (1, 1), (1, 1)], pixels: pixels(width: width, height: height))
+    }
+
+    /// The bytes of a DNG of a scene that is gray all over, in steps from dark to bright, whose
+    /// camera recorded `asShotNeutral` (red, green, blue) as the color of white: equal parts
+    /// is the true light, anything else a white balance the camera got wrong.
+    static func grayScene(asShotNeutral: [Double], width: Int = 240, height: Int = 160) -> Data {
+        dng(
+            width: width, height: height,
+            asShotNeutral: asShotNeutral.map { (Int(($0 * 10000).rounded()), 10000) },
+            pixels: grays(width: width, height: height),
+        )
+    }
+
+    /// Writes ``grayScene(asShotNeutral:width:height:)`` to a new temporary file. The caller
+    /// removes it.
+    static func writeGrayScene(asShotNeutral: [Double]) throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("alteralux-test-\(UUID().uuidString).dng")
+        try grayScene(asShotNeutral: asShotNeutral).write(to: url)
+        return url
+    }
+
+    private static func dng(width: Int, height: Int, asShotNeutral: [(Int, Int)], pixels: Data) -> Data {
         let stripBytes = width * height * 6
         var entries = [
             Entry(tag: 254, type: FieldType.long, count: 1, payload: long(0)), // NewSubFileType
@@ -57,7 +81,10 @@ enum TestDNG {
                 payload: colorMatrix.reduce(Data()) { $0 + long(Int(($1 * 10000).rounded())) + long(10000) },
             ),
             // AsShotNeutral: the camera's white is equal parts of its three channels.
-            Entry(tag: 50728, type: FieldType.rational, count: 3, payload: (0 ..< 6).reduce(Data()) { data, _ in data + long(1) }),
+            Entry(
+                tag: 50728, type: FieldType.rational, count: 3,
+                payload: asShotNeutral.reduce(Data()) { data, value in data + long(value.0) + long(value.1) },
+            ),
             Entry(tag: 50778, type: FieldType.short, count: 1, payload: short(21)), // CalibrationIlluminant1: D65
         ]
 
@@ -90,7 +117,7 @@ enum TestDNG {
         }
         data += long(0)
         data += values
-        data += pixels(width: width, height: height)
+        data += pixels
         return data
     }
 
@@ -112,6 +139,21 @@ enum TestDNG {
                 let level = 1000 + 50000 * (column - width / 2) / (width / 2)
                 row += short(level) + short(level * 8 / 10) + short(level * 6 / 10)
             }
+        }
+        var data = Data(capacity: row.count * height)
+        for _ in 0 ..< height {
+            data += row
+        }
+        return data
+    }
+
+    /// Gray in five steps across the picture, from 3% to 60% of the white level.
+    private static func grays(width: Int, height: Int) -> Data {
+        let levels = [2000, 6000, 12000, 24000, 39000]
+        var row = Data(capacity: width * 6)
+        for column in 0 ..< width {
+            let level = levels[min(levels.count - 1, column * levels.count / width)]
+            row += short(level) + short(level) + short(level)
         }
         var data = Data(capacity: row.count * height)
         for _ in 0 ..< height {

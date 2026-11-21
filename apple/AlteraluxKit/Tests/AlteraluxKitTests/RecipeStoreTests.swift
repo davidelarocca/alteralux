@@ -144,4 +144,40 @@ struct RecipeStoreTests {
         let reread = try #require(await fixture.store.all().first)
         #expect(reread.look.temperature == nil)
     }
+
+    @Test func whetherARecipeAdaptsIsKept() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        var recipe = Recipe(name: "Portra di sera", from: DevelopSettings())
+        #expect(!recipe.adaptsToEachPhoto)
+        recipe.adaptsToEachPhoto = true
+        try await fixture.store.save(recipe)
+        #expect(try #require(await fixture.store.all().first).adaptsToEachPhoto)
+    }
+
+    @Test func aRecipeThatAdaptsMetersEachPhotoAndBalancesItsWhite() {
+        var look = DevelopSettings(filmID: "kodak_ektar_100")
+        look.autoExposure = false
+        look.exposureEV = 0.7
+        let recipe = Recipe(name: "Ektar", from: look, adaptsToEachPhoto: true)
+        let given = recipe.applied(to: DevelopSettings())
+        #expect(given.filmID == "kodak_ektar_100" && given.exposureEV == 0.7)
+        #expect(given.autoExposure && given.autoWhiteBalance)
+
+        // A white balance chosen by hand stays.
+        let chosen = DevelopSettings(temperature: 3200, tint: 4)
+        let kept = recipe.applied(to: chosen)
+        #expect(kept.temperature == 3200 && kept.tint == 4 && !kept.autoWhiteBalance)
+
+        // A recipe that does not adapt leaves the photo's white balance and exposure as the look has them.
+        let plain = Recipe(name: "Ektar", from: look)
+        let plainGiven = plain.applied(to: DevelopSettings())
+        #expect(!plainGiven.autoExposure && !plainGiven.autoWhiteBalance)
+    }
+
+    @Test func aRecipeLeavesThePhotosLensCorrection() {
+        let recipe = Recipe(name: "Senza correzione", from: DevelopSettings(lensCorrection: false))
+        #expect(recipe.applied(to: DevelopSettings()).lensCorrection == true)
+        #expect(recipe.applied(to: DevelopSettings(lensCorrection: nil)).lensCorrection == nil)
+    }
 }

@@ -24,6 +24,14 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     public var temperature: Double?
     /// The tint that goes with ``temperature``. `nil` leaves what the camera recorded.
     public var tint: Double?
+    /// Choose the white balance from the light measured in the photo, where the camera's is far
+    /// from it. Used only while ``temperature`` and ``tint`` are `nil`.
+    public var autoWhiteBalance: Bool
+    /// Correct the lens (distortion, darker corners, colored fringes) where the RAW decoder
+    /// knows how, before the film sees the photo. `nil`, for adjustments saved before the app
+    /// had this choice, leaves what the decoder does on its own, so those photos stay as they
+    /// were.
+    public var lensCorrection: Bool?
     /// How the photo is straightened and cut, before the engine sees it (ADR 0010). `nil` keeps
     /// the whole photo. It is never sent to the engine.
     public var crop: PhotoCrop?
@@ -91,6 +99,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         scanFilm: Bool = false,
         temperature: Double? = nil,
         tint: Double? = nil,
+        autoWhiteBalance: Bool = false,
+        lensCorrection: Bool? = true,
         crop: PhotoCrop? = nil,
         exposureEV: Double = 0,
         autoExposure: Bool = true,
@@ -117,6 +127,8 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.scanFilm = scanFilm
         self.temperature = temperature
         self.tint = tint
+        self.autoWhiteBalance = autoWhiteBalance
+        self.lensCorrection = lensCorrection
         self.crop = crop
         self.exposureEV = exposureEV
         self.autoExposure = autoExposure
@@ -153,6 +165,8 @@ public extension DevelopSettings {
         scanFilm = try values.decodeIfPresent(Bool.self, forKey: .scanFilm) ?? defaults.scanFilm
         temperature = try values.decodeIfPresent(Double.self, forKey: .temperature)
         tint = try values.decodeIfPresent(Double.self, forKey: .tint)
+        autoWhiteBalance = try values.decodeIfPresent(Bool.self, forKey: .autoWhiteBalance) ?? defaults.autoWhiteBalance
+        lensCorrection = try values.decodeIfPresent(Bool.self, forKey: .lensCorrection)
         crop = try values.decodeIfPresent(PhotoCrop.self, forKey: .crop)
         exposureEV = try values.decodeIfPresent(Double.self, forKey: .exposureEV) ?? defaults.exposureEV
         autoExposure = try values.decodeIfPresent(Bool.self, forKey: .autoExposure) ?? defaults.autoExposure
@@ -179,10 +193,11 @@ public extension DevelopSettings {
 // MARK: - White balance
 
 public extension DevelopSettings {
-    /// The white balance to decode a RAW with: the values chosen here, over the ones the
-    /// camera recorded.
-    func whiteBalance(asShot: WhiteBalance) -> WhiteBalance {
-        WhiteBalance(temperature: temperature ?? asShot.temperature, tint: tint ?? asShot.tint)
+    /// The white balance to decode a RAW with: the values chosen here, over the automatic ones
+    /// when there are, over the ones the camera recorded.
+    func whiteBalance(asShot: WhiteBalance, automatic: WhiteBalance? = nil) -> WhiteBalance {
+        let start = temperature == nil && tint == nil ? automatic ?? asShot : asShot
+        return WhiteBalance(temperature: temperature ?? start.temperature, tint: tint ?? start.tint)
     }
 }
 

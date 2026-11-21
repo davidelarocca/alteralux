@@ -90,6 +90,8 @@ struct RecipeManager: View {
                     Text(verbatim: recipe.name)
                     Text(verbatim: model.materials(of: recipe.look))
                 }
+                Toggle("Adapts to each photo", isOn: adapts(recipe))
+                    .help("Each photo starts from its own exposure, and from an automatic white balance where the camera's is far off.")
             }
         }
         .alert("Rename Recipe", isPresented: isAsking(.rename)) {
@@ -105,6 +107,14 @@ struct RecipeManager: View {
         } message: {
             Text("The photos that received it keep their adjustments.")
         }
+    }
+
+    /// Whether `recipe` adapts to each photo, saved as soon as it changes.
+    private func adapts(_ recipe: Recipe) -> Binding<Bool> {
+        Binding(
+            get: { recipe.adaptsToEachPhoto },
+            set: { adapts in Task { await model.setAdapts(recipe, adapts) } },
+        )
     }
 
     private func ask(_ kind: RecipeQuestion.Kind, _ recipe: Recipe) {

@@ -1,7 +1,7 @@
 import AlteraluxKit
 import Foundation
 
-// Recipes, and giving the look of one photo to others: saving, renaming and deleting recipes,
+// Recipes, and giving the look of one photo to others: saving, renaming, adapting and deleting recipes,
 // applying one to the photo on screen or to the selection of the library, copying and pasting
 // adjustments. A look is every adjustment but the white balance, which stays each photo's own
 // (ADR 0009).
@@ -63,12 +63,19 @@ extension AppModel {
 
     /// Gives a recipe to the photo on screen. One undo takes it back whole.
     func apply(_ recipe: Recipe) {
-        giveLook(recipe.look)
+        give(recipe.applied(to:))
     }
 
     /// Gives a recipe to the selected photos of the library. One undo takes it back from all.
     func applyToSelection(_ recipe: Recipe) {
-        giveLook(recipe.look, to: selectedPhotos)
+        give(recipe.applied(to:), to: selectedPhotos)
+    }
+
+    /// Whether a recipe adapts to each photo, as the recipe sheet sets it.
+    func setAdapts(_ recipe: Recipe, _ adapts: Bool) async {
+        var changed = recipe
+        changed.adaptsToEachPhoto = adapts
+        await keep(changed)
     }
 
     /// Whether the selected photos of the library can receive a look: discarded photos are
@@ -80,20 +87,30 @@ extension AppModel {
     /// Gives the photo on screen the look of `look`, as one change: one step of undo, kept at
     /// once.
     func giveLook(_ look: DevelopSettings) {
-        guard hasPhoto else { return }
-        closeChange()
-        settings = settings.takingLook(of: look)
-        closeChange()
+        give { $0.takingLook(of: look) }
     }
 
     /// Gives photos the look of `look`, whether they are in the strip or not, as one step of
     /// undo for all of them.
     func giveLook(_ look: DevelopSettings, to photos: [URL]) {
+        give({ $0.takingLook(of: look) }, to: photos)
+    }
+
+    /// Changes the adjustments of the photo on screen with `change`, as one change: one step of
+    /// undo, kept at once.
+    private func give(_ change: (DevelopSettings) -> DevelopSettings) {
+        guard hasPhoto else { return }
+        closeChange()
+        settings = change(settings)
+        closeChange()
+    }
+
+    /// Changes the adjustments of photos with `change`, whether they are in the strip or not, as
+    /// one step of undo for all of them.
+    private func give(_ change: (DevelopSettings) -> DevelopSettings, to photos: [URL]) {
         closeChange()
         set(photos.map { photo in
-            PhotoAdjustments(
-                photo: photo, settings: adjustments(of: photo).settings.takingLook(of: look), isKept: true,
-            )
+            PhotoAdjustments(photo: photo, settings: change(adjustments(of: photo).settings), isKept: true)
         })
     }
 
