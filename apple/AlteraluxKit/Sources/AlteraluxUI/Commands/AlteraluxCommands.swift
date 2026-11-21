@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// The app's menu commands: File (Open, Export), Edit (Reset, copy and paste adjustments), View (compare,
@@ -8,12 +9,26 @@ public struct AlteraluxCommands: Commands {
     @AppStorage(LibraryGrid.thumbnailSizeKey) private var thumbnailSize = LibraryGrid.defaultThumbnailSize
     /// Whether the strip of photos shows under the photo being developed.
     @AppStorage(DevelopScreen.showsStripKey) private var showsStrip = true
+    @Environment(\.openWindow) private var openWindow
 
     public init(model: AppModel) {
         self.model = model
     }
 
+    /// No command: gives the model the way to open the main window. The commands are there from
+    /// launch, with no window, and the model opens it through them when the app is opened.
+    private var mainWindowOpener: some Commands {
+        model.openMainWindow = { [openWindow] in
+            // Started by the Finder, the app had no Dock icon: it takes it back.
+            NSApplication.shared.setActivationPolicy(.regular)
+            openWindow(id: MainWindow.id)
+            NSApplication.shared.activate()
+        }
+        return EmptyCommands()
+    }
+
     public var body: some Commands {
+        mainWindowOpener
         CommandGroup(replacing: .appInfo) {
             Button("About alteralux") { AboutPanel.show() }
         }

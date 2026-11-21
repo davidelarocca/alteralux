@@ -481,6 +481,16 @@
         }
       }
     },
+    "A setting asked each time is chosen when the workflow runs: the rest is done alone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un’impostazione chiesta ogni volta si sceglie quando il flusso parte: il resto va da sé."
+          }
+        }
+      }
+    },
     "A workflow develops photos with a recipe and writes them as files. In the Finder: Develop with alteralux." : {
       "localizations" : {
         "it" : {
@@ -741,6 +751,26 @@
         }
       }
     },
+    "Ask Each Time" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiedi ogni volta"
+          }
+        }
+      }
+    },
+    "Asked each time, as Save As would." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiesta ogni volta, come in Salva con nome."
+          }
+        }
+      }
+    },
     "Aspect Ratio" : {
       "localizations" : {
         "it" : {
@@ -927,6 +957,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Scegli una cartella."
+          }
+        }
+      }
+    },
+    "Choose how. It is kept as a workflow: next time the photos are developed without asking." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli come. Resta come flusso: la prossima volta le foto si sviluppano senza chiedere."
           }
         }
       }
@@ -1208,16 +1248,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppa %lld foto"
-          }
-        }
-      }
-    },
-    "Develop %lld Photos with" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sviluppa %lld foto con"
           }
         }
       }
@@ -1739,6 +1769,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nessuno di questi file è una foto che alteralux può sviluppare."
+          }
+        }
+      }
+    },
+    "Open alteralux" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apri alteralux"
           }
         }
       }
@@ -3405,6 +3445,26 @@
         }
       }
     },
+    "The rest as the workflow says: %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il resto come dice il flusso: %@"
+          }
+        }
+      }
+    },
+    "the rest asked each time" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "il resto chiesto ogni volta"
+          }
+        }
+      }
+    },
     "The shape of the frame" : {
       "localizations" : {
         "it" : {
@@ -3465,12 +3525,12 @@
         }
       }
     },
-    "There is no workflow yet. Make one in Recipes and Workflows: a recipe and the files it writes." : {
+    "There is no recipe yet: open a photo in alteralux, give it the look you like and save it as a recipe." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Non c’è ancora nessun flusso. Creane uno in Ricette e flussi: una ricetta e i file che scrive."
+            "value" : "Non c’è ancora una ricetta: apri una foto in alteralux, dalle l’aspetto che ti piace e salvala come ricetta."
           }
         }
       }

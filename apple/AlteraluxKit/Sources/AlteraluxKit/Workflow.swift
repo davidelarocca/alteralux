@@ -20,6 +20,17 @@ public struct Workflow: NamedItem, Equatable {
     public var options: ExportOptions
     public var naming: Naming
     public var destination: Destination
+    /// The settings left open: asked each time the workflow runs from the Finder or the library,
+    /// with the values kept here chosen at first. The Shortcuts action uses the values kept.
+    public var asks: Set<Setting>
+
+    /// A setting a workflow can leave open, to be asked each time it runs.
+    public enum Setting: String, Codable, Sendable, CaseIterable {
+        case format
+        case size
+        case naming
+        case destination
+    }
 
     /// What the files written are called, from the photo's own name.
     public enum Naming: Codable, Sendable, Equatable {
@@ -46,6 +57,7 @@ public struct Workflow: NamedItem, Equatable {
     public init(
         id: UUID = UUID(), name: String, recipeID: Recipe.ID, adaptsToEachPhoto: Bool = true,
         options: ExportOptions = ExportOptions(), naming: Naming = .nameAndFilm, destination: Destination = .sameFolder,
+        asks: Set<Setting> = [],
     ) {
         self.id = id
         self.name = name
@@ -54,10 +66,11 @@ public struct Workflow: NamedItem, Equatable {
         self.options = options
         self.naming = naming
         self.destination = destination
+        self.asks = asks
     }
 
-    /// Reads a saved workflow. One kept before workflows adapted and named their files did
-    /// neither: its files took the photo's name and the film.
+    /// Reads a saved workflow. One kept before workflows adapted, named their files and asked
+    /// for settings did none of it: its files took the photo's name and the film.
     public init(from decoder: any Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         try self.init(
@@ -68,6 +81,7 @@ public struct Workflow: NamedItem, Equatable {
             options: values.decode(ExportOptions.self, forKey: .options),
             naming: values.decodeIfPresent(Naming.self, forKey: .naming) ?? .nameAndFilm,
             destination: values.decode(Destination.self, forKey: .destination),
+            asks: values.decodeIfPresent(Set<Setting>.self, forKey: .asks) ?? [],
         )
     }
 

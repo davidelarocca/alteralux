@@ -116,3 +116,12 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   `Task { await model.resumeExport(.keepBoth) }` then found nothing to resume: the export silently stopped.
   Found by driving the built app on 2026-11-21. Take what the button acts on synchronously in its action
   and pass it to the async work (`ExportSheet.resume(_:)`, `AppModel.resumeExport(_:_:)`).
+- **An `NSHostingController` that sizes its window from `preferredContentSize` can crash the app.**
+  The Finder's panel set `sizingOptions = [.preferredContentSize]` on the controller of an `NSPanel`: the
+  window asked for the size while updating constraints, the hosting view asked for constraints again,
+  and AppKit raised `NSGenericException` (crash on 2026-11-21, `_postWindowNeedsUpdateConstraints`).
+  Host the view with `sizingOptions = []` and set the window's size from the content's own geometry
+  (`FinderPanel`).
+- **A launch by the Finder's Services menu looks like any other.** `NSApplicationLaunchIsDefaultLaunchKey`
+  is true and no launch Apple event reaches the delegate. The service request itself arrives before
+  `applicationDidFinishLaunching`: that is the sign (`OpenFilesDelegate`).

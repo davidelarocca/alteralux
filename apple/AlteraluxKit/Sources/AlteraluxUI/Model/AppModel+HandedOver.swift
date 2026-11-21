@@ -11,55 +11,74 @@ import UniformTypeIdentifiers
 extension AppModel {
     // MARK: - From the Finder
 
-    /// Develops photos handed over by the Finder with a workflow, at once: the only one there
-    /// is, or the one chosen in the list beside the pointer. The files are written without a
-    /// question, and a file already there keeps its name. What is not a photo is left out.
-    ///
-    /// - Parameter previous: the app that was in front, the Finder, which comes back to the
-    ///   front once the workflow is chosen and its folders allowed.
-    public func developWithWorkflow(handedOver urls: [URL], from previous: NSRunningApplication? = nil) async {
-        // Launched by the request, the app reads its workflows first.
-        await start()
+    /// Develops photos sent from the Finder with a workflow, out of sight: with the only one
+    /// there is, at once; otherwise with the one chosen, or made, in a small panel at the center
+    /// of the screen. The files are written without a question, and a file already there keeps
+    /// its name. What is not a photo is left out.
+    public func developWithWorkflow(handedOver urls: [URL]) async {
+        // The engine starts while the question, if any, is on screen.
+        await loadRecipes()
+        await loadWorkflows()
+        let engine = Task { await start() }
         let photos = urls.filter(Self.isPhoto)
         guard !photos.isEmpty else {
-            return report(String(localized: "None of these files is a photo alteralux can develop."))
+            return await tell(String(localized: "None of these files is a photo alteralux can develop."))
         }
         guard !isExporting else {
-            return report(String(localized: "alteralux is already developing photos. Try again when it is done."))
+            return await tell(String(localized: "alteralux is already developing photos. Try again when it is done."))
         }
-        guard !workflows.isEmpty else {
-            photosToExport = photos
-            openMainWindow?()
-            isWorkflowNeeded = true
-            return
-        }
-        let choices = workflows.map { WorkflowChoice(id: $0.id, name: $0.name, summary: summary(of: $0)) }
-        let chosen = workflows.count == 1 ? workflows[0].id : chooseWorkflow(choices, photos.count)
-        guard let workflow = workflows.first(where: { $0.id == chosen }) else {
-            previous?.activate()
-            return
-        }
-        exportWorkflow = workflow.id
-        // The folders asked for now, while the app is in front; the Finder comes back after.
+        guard let workflow = await workflowForFinder(photos: photos.count) else { return }
         if workflow.writesBesidePhotos {
-            guard await askToWrite(into: foldersNeedingPermission(for: photos)) else {
-                previous?.activate()
-                return
-            }
-        }
-        previous?.activate()
-        await develop(photos, with: workflow, existing: .keepBoth)
-        if alertMessage != nil {
-            openMainWindow?()
+            // The system's panel needs the app in front; it has no window of its own to show.
             NSApplication.shared.activate()
+            guard await askToWrite(into: foldersNeedingPermission(for: photos)) else { return }
+        }
+        await engine.value
+        await develop(photos, with: workflow, existing: .keepBoth)
+        if let message = alertMessage {
+            alertMessage = nil
+            await tell(message)
         }
     }
 
-    /// Says what went wrong, in the main window, brought to the front.
-    private func report(_ message: String) {
+    /// The workflow photos sent from the Finder are developed with: the only one, when it
+    /// settles everything; otherwise the one chosen, or made, in the panel, with the answers to
+    /// what it asks. `nil` when there is none to use.
+    private func workflowForFinder(photos: Int) async -> Workflow? {
+        if workflows.count == 1, workflows[0].asks.isEmpty {
+            return workflows[0]
+        }
+        let question: FinderQuestion = if !workflows.isEmpty {
+            .run(photos: photos, workflows: workflows, recipes: recipes, chosen: exportWorkflow)
+        } else if !recipes.isEmpty {
+            .newWorkflow(photos: photos, recipes: recipes)
+        } else {
+            .noRecipe(photos: photos)
+        }
+        switch await askAboutFinderPhotos(question) {
+        case let .run(workflow):
+            await remember(workflow)
+            return workflow
+        case let .newWorkflow(workflow):
+            await save(workflow)
+            exportWorkflow = workflow.id
+            return workflows.first { $0.id == workflow.id }
+        case .openApp:
+            showApp()
+            return nil
+        case .cancel:
+            return nil
+        }
+    }
+
+    /// Says what went wrong, in the system's alert, without the app's window.
+    private func tell(_ message: String) async {
+        _ = await askAboutFinderPhotos(.problem(message))
+    }
+
+    /// Shows the app: its Dock icon and its main window, in front.
+    public func showApp() {
         openMainWindow?()
-        NSApplication.shared.activate()
-        alertMessage = message
     }
 
     /// Whether `url` is a file of a kind the app develops.
@@ -176,6 +195,28 @@ extension AppModel {
         }
         return files
     }
+}
+
+/// What the app asks about photos sent from the Finder, when the workflows do not say it alone.
+public enum FinderQuestion: Equatable, Sendable {
+    /// Which workflow, among several, and what the one chosen leaves open; `chosen` is the one
+    /// shown first.
+    case run(photos: Int, workflows: [Workflow], recipes: [Recipe], chosen: Workflow.ID?)
+    /// How to develop them, with no workflow yet: the answer is kept as one.
+    case newWorkflow(photos: Int, recipes: [Recipe])
+    /// Nothing to develop them with: there is no recipe yet.
+    case noRecipe(photos: Int)
+    /// Something that went wrong, to say.
+    case problem(String)
+}
+
+/// The answer to a `FinderQuestion`.
+public enum FinderAnswer: Equatable, Sendable {
+    /// The workflow chosen, with the answers to what it asks.
+    case run(Workflow)
+    case newWorkflow(Workflow)
+    case openApp
+    case cancel
 }
 
 /// A workflow as the Shortcuts action offers it.

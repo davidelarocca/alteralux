@@ -229,7 +229,7 @@ struct WorkflowStoreTests {
         older["workflow"] = item
         try JSONSerialization.data(withJSONObject: older).write(to: file)
         let reread = try #require(await WorkflowStore(directory: folder.appendingPathComponent("workflows")).all().last)
-        #expect(!reread.adaptsToEachPhoto && reread.naming == .nameAndFilm && reread.destination == beside.destination)
+        #expect(!reread.adaptsToEachPhoto && reread.naming == .nameAndFilm && reread.asks.isEmpty && reread.destination == beside.destination)
 
         // The bookmark finds the folder again.
         if case let .folder(bookmark) = chosen.destination {

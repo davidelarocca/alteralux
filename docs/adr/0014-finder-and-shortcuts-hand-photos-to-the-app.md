@@ -30,13 +30,22 @@ Info.plist: one entry per workflow is not possible without an extension.
   workflow), the files (format, color profile, quality, size, metadata), their names (the photo's name
   and the film, the photo's name, or the photo's name and a text) and where they go: beside the photos,
   in a folder of a name beside them, or in one folder. A new workflow writes beside the photos.
+- **A workflow can leave settings open**: its format, size, file names and destination can each be
+  "asked each time". Settled ones are never asked.
 - **The Finder**: "Develop with alteralux…" is an `NSServices` entry in `apple/Alteralux/Info.plist`, for
   the kinds of photo the app opens; no extension, no new entitlement (approved by the user on
-  2026-11-21). The photos are developed at once: with one workflow, with it; with several, with the one
-  chosen in a menu that opens at the pointer (`WorkflowChoiceMenu`). There is no sheet and no question:
-  a file already there keeps its name and the new one takes a number. The app that sent the photos
-  comes back to the front once the workflow is chosen. With no workflow, an alert leads to Recipes and
-  Workflows. The photos are not added to the library or the strip.
+  2026-11-21). It is invisible when the workflow says everything: with one workflow that leaves nothing
+  open, the photos are developed and the files appear. Otherwise a small panel at the center of the
+  screen (`FinderPanel`, a non-activating panel drawn as the app's sheets) asks only what is open:
+  which workflow, when there are several, and the settings the chosen one leaves open (one folder is
+  chosen with the system's panel, as Save As does); the answers are offered first next time. With no
+  workflow, the panel asks the few choices that make one, and keeps it. With no recipe, or when
+  something goes wrong, the system's alert says so. The app's window never opens for it.
+- **Out of sight**: started by the system for photos from the Finder (their request reaches the app
+  before launching ends), the app takes no Dock icon, opens no window, and quits once the photos are
+  developed. Opened by the user, it shows its main window, which no longer opens by itself at launch
+  (`defaultLaunchBehavior(.suppressed)`); the app delegate holds the model from launch.
+- The photos are not added to the library or the strip.
 - **Beside the photos nothing is replaced**: in a photo's own folder a file of the same name may be an
   original, so the export never counts a file there as an earlier export, never takes one away, and
   never writes over a photo being developed, whatever the policy.
@@ -56,6 +65,8 @@ Info.plist: one entry per workflow is not possible without an extension.
 |---|---|
 | A Finder Quick Action or Finder Sync extension listing each workflow | Cannot read the workflows without an App Group, which needs a developer team; to be done once the app is signed with one |
 | A sheet in the app for the photos sent from the Finder | The first version: the user found it not immediate |
+| A menu of workflows at the pointer | The second version: it opened wherever the pointer was by then, once over the Dock; the user wants it invisible, or a small panel at the center |
+| Telling the Finder's launch from the launch event (`keyAELaunchedAsServiceItem`, `NSApplicationLaunchIsDefaultLaunchKey`) | Measured on 2026-11-21: no launch event reaches the delegate, and the launch is reported as a default one |
 | Adapting kept in the recipe | The user sees adapting as a way of using a recipe, chosen with the files and their place |
 | Adding the photos' folder to the library | Changes what the library shows for a one-off action |
 | Writing beside the originals from Shortcuts | The files are often copies in a temporary folder; the result would be lost or fail without a word |
@@ -65,7 +76,7 @@ Info.plist: one entry per workflow is not possible without an extension.
 - Supersedes the part of [ADR 0011](0011-recipes-adapt-to-each-photo.md) that made adapting a recipe's:
   a recipe file that still says so is read without it, and a workflow kept before reads as not adapting.
 - From the Finder there is no progress on screen: the files appear as they are written; only a failure
-  is shown, in the app's window.
+  is shown, in the system's alert.
 - The first use in a folder outside the library asks once.
 - The Shortcuts action loads the photos it gives back into memory: fine for photos, not for hundreds of
   large TIFFs at once.
