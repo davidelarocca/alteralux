@@ -6,7 +6,10 @@ import SwiftUI
 ///
 /// Built on `NSScrollView`, so pinch to zoom, smart zoom, scrolling and
 /// rubber-banding behave like every other Mac app. Its scroll bars are always the thin ones
-/// that show while scrolling.
+/// that show while scrolling. A mouse's wheel zooms about the pointer, where two fingers on a
+/// trackpad move the photo (told apart by the trackpad's gesture phases, not by precise
+/// deltas, which smooth-scrolling mice send too); with Command held any scroll zooms (a Magic
+/// Mouse scrolls as a trackpad does). A drag moves a photo larger than the view, as a hand would.
 struct ZoomableImageView: NSViewRepresentable {
     let image: CGImage
     /// Size of the full-resolution photo in pixels. Zoom is measured against
@@ -50,6 +53,13 @@ final class ImageScrollView: NSScrollView {
     /// While set, the photo is kept fitted to the view as the window resizes.
     private var fitsView = true
     private var reportedZoom: ViewerZoom?
+    /// Where a drag of the photo began: the pointer in the window, and the visible part's origin.
+    private var dragStart: (pointer: NSPoint, origin: NSPoint)?
+
+    /// How much one step of a mouse's wheel zooms.
+    private static let wheelStep = 1.1
+    /// Points of a precise scroll (a smooth wheel, a trackpad with Command) that make one step of zoom.
+    private static let pointsPerStep: CGFloat = 10
 
     /// Space left around a fitted photo, in points.
     private static let padding = Spacing.xl
@@ -219,6 +229,94 @@ final class ImageScrollView: NSScrollView {
 
     // MARK: Events
 
+    /// A mouse's wheel zooms the photo about the pointer; a trackpad's two fingers, and a wheel
+    /// turned sideways, move it, as in any other view.
+    override func scrollWheel(with event: NSEvent) {
+        guard Self.zoomsOnScroll(event) else {
+            super.scrollWheel(with: event)
+            return
+        }
+        let steps = Self.wheelSteps(of: event)
+        guard steps != 0 else { return }
+        let fit = fitMagnification() ?? minMagnification
+        let wanted = magnification * pow(Self.wheelStep, steps)
+        if wanted <= fit {
+            // Back to the whole photo, which then follows the window again.
+            fitsView = true
+            zoomToFit()
+            return
+        }
+        let pointer = contentView.convert(event.locationInWindow, from: nil)
+        zoom(to: min(wanted, maxMagnification), centeredAt: pointer)
+    }
+
+    /// Whether a scroll zooms: one from a mouse's wheel, or any with Command held. A trackpad's
+    /// scroll (and a Magic Mouse's) is a gesture, with a phase and then momentum, and moves the
+    /// photo; a wheel's has neither, even a wheel that scrolls smoothly, in points, as many mice
+    /// do: precise deltas alone do not tell a trackpad.
+    static func zoomsOnScroll(_ event: NSEvent) -> Bool {
+        guard event.scrollingDeltaY != 0 else { return false }
+        let isGesture = !event.phase.isEmpty || !event.momentumPhase.isEmpty
+        return !isGesture || event.modifierFlags.contains(.command)
+    }
+
+    /// Steps of the wheel turned away from the user, which zoom in; the other way they zoom
+    /// out, whatever the direction of scrolling set in System Settings.
+    static func wheelSteps(of event: NSEvent) -> CGFloat {
+        let delta = event.isDirectionInvertedFromDevice ? -event.scrollingDeltaY : event.scrollingDeltaY
+        return event.hasPreciseScrollingDeltas ? delta / pointsPerStep : delta
+    }
+
+    /// Whether the photo is larger than the view, so a drag can move it.
+    private var canPan: Bool {
+        let document = imageView.frame.size
+        let visible = contentView.bounds.size
+        return document.width > visible.width + 0.5 || document.height > visible.height + 0.5
+    }
+
+    override func resetCursorRects() {
+        super.resetCursorRects()
+        if canPan {
+            addCursorRect(contentView.frame, cursor: .openHand)
+        }
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        guard canPan else {
+            super.mouseDown(with: event)
+            return
+        }
+        dragStart = (event.locationInWindow, contentView.bounds.origin)
+        NSCursor.closedHand.push()
+    }
+
+    override func mouseDragged(with event: NSEvent) {
+        guard let dragStart else {
+            super.mouseDragged(with: event)
+            return
+        }
+        // The photo follows the pointer: the visible part moves the other way, in the
+        // photo's own points.
+        let moved = NSPoint(
+            x: (event.locationInWindow.x - dragStart.pointer.x) / magnification,
+            y: (event.locationInWindow.y - dragStart.pointer.y) / magnification,
+        )
+        let flip: CGFloat = imageView.isFlipped ? -1 : 1
+        var visible = contentView.bounds
+        visible.origin = NSPoint(x: dragStart.origin.x - moved.x, y: dragStart.origin.y - moved.y * flip)
+        contentView.scroll(to: contentView.constrainBoundsRect(visible).origin)
+        reflectScrolledClipView(contentView)
+    }
+
+    override func mouseUp(with event: NSEvent) {
+        guard dragStart != nil else {
+            super.mouseUp(with: event)
+            return
+        }
+        dragStart = nil
+        NSCursor.pop()
+    }
+
     @objc private func willStartMagnify(_: Notification) {
         fitsView = false
     }
@@ -246,6 +344,8 @@ final class ImageScrollView: NSScrollView {
 
     private func reportZoom() {
         updateFiltering()
+        // The hand that moves the photo shows only while it is larger than the view.
+        window?.invalidateCursorRects(for: self)
         let zoom = ViewerZoom(
             scale: Double(magnification),
             fitScale: Double(fitMagnification() ?? magnification),

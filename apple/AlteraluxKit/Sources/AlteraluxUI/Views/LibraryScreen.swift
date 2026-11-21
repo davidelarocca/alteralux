@@ -136,6 +136,8 @@ struct LibrarySidebar: View {
                 }
             }
         }
+        // Thin scroll bars, as the photo's: wide ones would stay with a mouse.
+        .thinScrollBars()
         .safeAreaInset(edge: .bottom, alignment: .leading) {
             Button {
                 isAddingFolder = true

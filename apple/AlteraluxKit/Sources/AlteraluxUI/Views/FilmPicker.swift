@@ -98,6 +98,8 @@ private struct FilmList: View {
                     }
                 }
             }
+            // Thin scroll bars, as the photo's: wide ones would stay with a mouse.
+            .thinScrollBars()
             .scrollContentBackground(.hidden)
             // With the keyboard in the list itself, Return chooses as it does from the field.
             .onKeyPress(.return) {

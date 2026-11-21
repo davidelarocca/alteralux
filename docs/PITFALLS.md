@@ -89,3 +89,13 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **A disabled segmented control on glass does not look disabled.** Inside a `GlassGroup` its selected
   segment keeps the accent color, so a switch turned off reads as broken. Do not leave a control there
   that does nothing: make it work, or take it away while it cannot.
+- **SwiftUI's `Form` and `List` have no setting for thin scroll bars.** With a mouse connected the system
+  draws wide ones that stay. `.thinScrollBars()` finds the `NSScrollView` drawn behind the modifier and sets
+  `scrollerStyle = .overlay`, again after each change of the system's preference.
+- **Precise scrolling deltas do not mean a trackpad.** Many mice scroll smoothly, in points, and send
+  `hasPreciseScrollingDeltas` as a trackpad does: the viewer took the user's wheel for a trackpad and moved
+  the photo instead of zooming it. A trackpad's scroll (and a Magic Mouse's) is a gesture, with a `phase`
+  and then a `momentumPhase`; a wheel's has neither.
+- **Wheel events made with `CGEvent` did not change the viewer** while the real wheel did, and clicks and
+  drags made the same way work. Test the wheel's logic by calling `scrollWheel(with:)` with an
+  `NSEvent(cgEvent:)`, as `ViewerTests` does, and try the real wheel by hand.

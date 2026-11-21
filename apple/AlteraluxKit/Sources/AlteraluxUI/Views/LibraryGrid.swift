@@ -172,6 +172,8 @@ struct LibraryGrid: View {
                 }
                 .coordinateSpace(.named(Self.space))
             }
+            // Thin scroll bars, as the photo's: wide ones would stay with a mouse.
+            .thinScrollBars()
             .scrollPosition($scrollPosition)
             .onScrollGeometryChange(for: ScrollGeometry.self, of: { $0 }, action: { scroll.geometry = $1 })
             .onGeometryChange(for: CGFloat.self, of: \.size.height) { scroll.height = $0 }

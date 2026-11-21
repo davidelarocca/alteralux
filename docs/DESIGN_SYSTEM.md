@@ -49,6 +49,7 @@ Motion gets no animation, or a fade for a transition.
 | Controls floating over the photo | the crop's controls under the photo being cropped; the zoom, over the photo's bottom trailing corner | `GlassGroup` on the system's glass, with Cancel and Done as round glass buttons beside the crop's |
 | A menu on the trailing side of the toolbar | the recipes | `WindowMenuButton`: the system's menu, opened under the button and moved to stay inside the window; no submenus |
 | Choosing from a bar near the bottom of the window | a recipe, a folder or a tag for the selected photos | `ChoiceListButton`: its list opens above it, inside the window, where a menu would open downward and leave it |
+| A pane that scrolls | the adjustments, the library, its folders, the films | `.thinScrollBars()`: the thin bars that show while scrolling, as the photo viewer's |
 | Blocking decision | destructive or irreversible actions | system alert or confirmation dialog |
 | Asking for a name | the name of a new recipe, another name for one | system alert with a text field |
 | Options before acting, or a progress that can be stopped | export options, the export of several photos | `FormSheet`: it follows the look of the system's alert (bold title, wide round buttons), so the two read as one family |
