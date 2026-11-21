@@ -45,28 +45,85 @@ struct HandedOverTests {
         return pasteboard
     }
 
-    @Test func photosSentFromTheFinderOpenTheWorkflowSheetWithoutJoiningTheLibrary() async throws {
-        let outside = try await Outside()
+    @Test func photosSentFromTheFinderAreDevelopedAtOnceBesideThemWithTheOnlyWorkflow() async throws {
+        let outside = try await Outside(destination: .sameFolder)
         defer { outside.remove() }
         let model = outside.fixture.model
+        try await model.writableFolders.add(outside.folder)
         let note = outside.folder.appendingPathComponent("Notes.txt")
         try Data("not a photo".utf8).write(to: note)
         let libraryPhotos = model.library.photos
         let strip = model.photos.map(\.url)
+        model.chooseWorkflow = { _, _ in
+            Issue.record("With one workflow nothing is asked")
+            return nil
+        }
 
         // Sent before the window is there: kept until the model comes.
         let delegate = OpenFilesDelegate()
         let sent = pasteboard(with: outside.photos + [note])
+        defer { sent.releaseGlobally() }
         var error: NSString?
         delegate.developWithWorkflow(sent, userData: nil, error: &error)
-        #expect(!model.isExportPresented)
+        #expect(delegate.workflowRequest == nil)
         delegate.attach(model)
+        await delegate.workflowRequest?.value
 
-        #expect(model.isExportPresented && model.exportsWithWorkflow)
-        #expect(model.photosToExport == outside.photos)
-        #expect(model.chosenWorkflow == outside.workflow)
+        // No sheet, no question: the files are beside the photos, which stay out of the library.
+        #expect(!model.isExportPresented && model.alertMessage == nil && !model.isExporting)
+        let velvia = try #require(model.films.first { $0.id == "fujifilm_velvia_100" }?.displayName)
+        let written = try FileManager.default.contentsOfDirectory(atPath: outside.folder.path).filter { $0.contains(velvia) }
+        #expect(written.sorted() == outside.photos.map { "\($0.deletingPathExtension().lastPathComponent) \(velvia).png" }.sorted())
         #expect(model.library.photos == libraryPhotos && model.photos.map(\.url) == strip)
-        sent.releaseGlobally()
+    }
+
+    @Test func withSeveralWorkflowsTheOneChosenInTheListDevelops() async throws {
+        let outside = try await Outside()
+        defer { outside.remove() }
+        let model = outside.fixture.model
+        try await model.writableFolders.add(outside.folder)
+        var other = model.newWorkflow(for: outside.fixture.recipe)
+        other.name = "Other"
+        await model.save(other)
+        var offered: [String] = []
+        model.chooseWorkflow = { choices, photos in
+            offered = choices.map(\.name)
+            #expect(photos == 2 && choices.allSatisfy { !$0.summary.isEmpty })
+            return nil
+        }
+
+        // Leaving the list writes nothing.
+        await model.developWithWorkflow(handedOver: outside.photos)
+        #expect(Set(offered) == ["Other", outside.workflow.name])
+        #expect(!FileManager.default.fileExists(atPath: outside.folder.appendingPathComponent("Out").path))
+
+        model.chooseWorkflow = { _, _ in outside.workflow.id }
+        await model.developWithWorkflow(handedOver: outside.photos)
+        let written = try FileManager.default.contentsOfDirectory(atPath: outside.folder.appendingPathComponent("Out").path)
+        #expect(written.count == 2 && model.alertMessage == nil)
+
+        // A second time, the files already there keep their names, with no question.
+        await model.developWithWorkflow(handedOver: outside.photos)
+        #expect(try FileManager.default.contentsOfDirectory(atPath: outside.folder.appendingPathComponent("Out").path).count == 4)
+        #expect(model.exportWaiting == nil)
+    }
+
+    @Test func besideThePhotosAnOriginalIsNeverReplaced() async throws {
+        let outside = try await Outside(destination: .sameFolder)
+        defer { outside.remove() }
+        let model = outside.fixture.model
+        try await model.writableFolders.add(outside.folder)
+        var workflow = outside.workflow
+        workflow.naming = .name
+        let original = try Data(contentsOf: outside.photos[0])
+
+        // Named as the photo, in its folder, in its format: even Replace leaves the photo alone.
+        await model.develop([outside.photos[0]], with: workflow, existing: .replace)
+
+        #expect(try Data(contentsOf: outside.photos[0]) == original && model.alertMessage == nil)
+        let name = outside.photos[0].deletingPathExtension().lastPathComponent
+        #expect(FileManager.default.fileExists(atPath: outside.folder.appendingPathComponent("\(name) 2.png").path))
+        #expect(model.exportWaiting == nil)
     }
 
     @Test func withNoWorkflowYetAnAlertLeadsToMakingOne() async throws {
@@ -76,7 +133,7 @@ struct HandedOverTests {
         defer { try? FileManager.default.removeItem(at: photos[0].deletingLastPathComponent()) }
         #expect(fixture.model.workflows.isEmpty)
 
-        fixture.model.developWithWorkflow(handedOver: photos)
+        await fixture.model.developWithWorkflow(handedOver: photos)
 
         #expect(fixture.model.isWorkflowNeeded && !fixture.model.isExportPresented)
         #expect(fixture.model.photosToExport == photos)
@@ -89,7 +146,7 @@ struct HandedOverTests {
         let note = outside.folder.appendingPathComponent("Notes.txt")
         try Data("not a photo".utf8).write(to: note)
 
-        model.developWithWorkflow(handedOver: [note])
+        await model.developWithWorkflow(handedOver: [note])
 
         #expect(!model.isExportPresented && model.alertMessage != nil)
     }
@@ -121,20 +178,6 @@ struct HandedOverTests {
         #expect(AppModel.isInside(URL(fileURLWithPath: "/Photos/Trip/Day 1"), folder))
         #expect(!AppModel.isInside(URL(fileURLWithPath: "/Photos/Trip 2"), folder))
         #expect(!AppModel.isInside(URL(fileURLWithPath: "/Photos"), folder))
-    }
-
-    @Test func photosSentFromTheFinderAreWrittenBesideTheirOriginals() async throws {
-        let outside = try await Outside()
-        defer { outside.remove() }
-        let model = outside.fixture.model
-        try await model.writableFolders.add(outside.folder)
-
-        model.developWithWorkflow(handedOver: outside.photos)
-        await model.developWithWorkflow()
-
-        #expect(model.alertMessage == nil && !model.isExportPresented)
-        let written = try FileManager.default.contentsOfDirectory(atPath: outside.folder.appendingPathComponent("Out").path)
-        #expect(written.count == 2 && written.allSatisfy { $0.hasSuffix(".png") })
     }
 
     @Test func aShortcutGetsTheFilesBack() async throws {

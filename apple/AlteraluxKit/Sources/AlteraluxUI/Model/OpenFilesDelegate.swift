@@ -12,8 +12,12 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     /// Files that arrived before the model was attached: at launch the system
     /// can ask to open files before the window exists.
     private var pending: [URL] = []
-    /// Photos sent to "Develop with alteralux…" before the model was attached.
+    /// Photos sent to "Develop with alteralux…" before the model was attached, and the app
+    /// that sent them.
     private var pendingForWorkflow: [URL] = []
+    private var sender: NSRunningApplication?
+    /// The latest photos sent to "Develop with alteralux…", being developed.
+    private(set) var workflowRequest: Task<Void, Never>?
 
     /// Gives the delegate the model to open files in, and opens the ones that
     /// arrived meanwhile.
@@ -24,7 +28,7 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
             pending = []
         }
         if !pendingForWorkflow.isEmpty {
-            model.developWithWorkflow(handedOver: pendingForWorkflow)
+            develop(pendingForWorkflow, in: model)
             pendingForWorkflow = []
         }
     }
@@ -49,11 +53,19 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     ) {
         let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
         guard !urls.isEmpty else { return }
+        // The Finder comes back to the front once the workflow is chosen.
+        let front = NSWorkspace.shared.frontmostApplication
+        sender = front == .current ? nil : front
         NSApplication.shared.activate()
         if let model {
-            model.developWithWorkflow(handedOver: urls)
+            develop(urls, in: model)
         } else {
             pendingForWorkflow += urls
         }
+    }
+
+    private func develop(_ urls: [URL], in model: AppModel) {
+        let sender = sender
+        workflowRequest = Task { await model.developWithWorkflow(handedOver: urls, from: sender) }
     }
 }

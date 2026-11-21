@@ -69,19 +69,12 @@ extension AppModel {
 
     /// Gives a recipe to the photo on screen. One undo takes it back whole.
     func apply(_ recipe: Recipe) {
-        give(recipe.applied(to:))
+        give { recipe.applied(to: $0) }
     }
 
     /// Gives a recipe to the selected photos of the library. One undo takes it back from all.
     func applyToSelection(_ recipe: Recipe) {
-        give(recipe.applied(to:), to: selectedPhotos)
-    }
-
-    /// Whether a recipe adapts to each photo, as the recipe sheet sets it.
-    func setAdapts(_ recipe: Recipe, _ adapts: Bool) async {
-        var changed = recipe
-        changed.adaptsToEachPhoto = adapts
-        await keep(changed)
+        give({ recipe.applied(to: $0) }, to: selectedPhotos)
     }
 
     /// Whether the selected photos of the library can receive a look: discarded photos are

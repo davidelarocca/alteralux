@@ -11,28 +11,55 @@ import UniformTypeIdentifiers
 extension AppModel {
     // MARK: - From the Finder
 
-    /// Shows the sheet that develops photos with a workflow, for photos handed over by the
-    /// Finder. What is not a photo is left out.
-    public func developWithWorkflow(handedOver urls: [URL]) {
-        openMainWindow?()
+    /// Develops photos handed over by the Finder with a workflow, at once: the only one there
+    /// is, or the one chosen in the list beside the pointer. The files are written without a
+    /// question, and a file already there keeps its name. What is not a photo is left out.
+    ///
+    /// - Parameter previous: the app that was in front, the Finder, which comes back to the
+    ///   front once the workflow is chosen and its folders allowed.
+    public func developWithWorkflow(handedOver urls: [URL], from previous: NSRunningApplication? = nil) async {
+        // Launched by the request, the app reads its workflows first.
+        await start()
         let photos = urls.filter(Self.isPhoto)
         guard !photos.isEmpty else {
-            alertMessage = String(localized: "None of these files is a photo alteralux can develop.")
-            return
+            return report(String(localized: "None of these files is a photo alteralux can develop."))
         }
         guard !isExporting else {
-            alertMessage = String(localized: "alteralux is already developing photos. Try again when it is done.")
-            return
+            return report(String(localized: "alteralux is already developing photos. Try again when it is done."))
         }
-        photosToExport = photos
         guard !workflows.isEmpty else {
+            photosToExport = photos
+            openMainWindow?()
             isWorkflowNeeded = true
             return
         }
-        exportWorkflow = (workflows.first { $0.id == exportWorkflow } ?? workflows.first)?.id
-        exportsWithWorkflow = true
-        exportWaiting = nil
-        isExportPresented = true
+        let choices = workflows.map { WorkflowChoice(id: $0.id, name: $0.name, summary: summary(of: $0)) }
+        let chosen = workflows.count == 1 ? workflows[0].id : chooseWorkflow(choices, photos.count)
+        guard let workflow = workflows.first(where: { $0.id == chosen }) else {
+            previous?.activate()
+            return
+        }
+        exportWorkflow = workflow.id
+        // The folders asked for now, while the app is in front; the Finder comes back after.
+        if workflow.writesBesidePhotos {
+            guard await askToWrite(into: foldersNeedingPermission(for: photos)) else {
+                previous?.activate()
+                return
+            }
+        }
+        previous?.activate()
+        await develop(photos, with: workflow, existing: .keepBoth)
+        if alertMessage != nil {
+            openMainWindow?()
+            NSApplication.shared.activate()
+        }
+    }
+
+    /// Says what went wrong, in the main window, brought to the front.
+    private func report(_ message: String) {
+        openMainWindow?()
+        NSApplication.shared.activate()
+        alertMessage = message
     }
 
     /// Whether `url` is a file of a kind the app develops.
@@ -66,7 +93,7 @@ extension AppModel {
     /// Asks the user, for each of `folders`, to let the app write into it: the system's open
     /// panel, on that folder. The folders allowed are remembered, so each is asked for once.
     /// Returns whether all of them were allowed.
-    func askToWrite(into folders: [URL], folderName: String) async -> Bool {
+    func askToWrite(into folders: [URL]) async -> Bool {
         for folder in folders {
             let panel = NSOpenPanel()
             panel.canChooseFiles = false
@@ -75,7 +102,7 @@ extension AppModel {
             panel.directoryURL = folder
             let name = folder.lastPathComponent
             panel.message = String(
-                localized: "To write “\(folderName)” beside the photos, alteralux needs your permission for the folder “\(name)”. It is asked only once.",
+                localized: "alteralux needs your permission to write in “\(name)”. Choosing a folder that holds it allows all inside, once and for all.",
             )
             panel.prompt = String(localized: "Allow")
             guard await panel.begin() == .OK, let chosen = panel.url else { return false }
@@ -118,7 +145,7 @@ extension AppModel {
         guard let recipe = recipe(of: workflow) else { throw HandedOverError.recipeMissing(workflow.name) }
         let folder: URL
         switch workflow.destination {
-        case .besideOriginals:
+        case .sameFolder, .besideOriginals:
             folder = scratch
         case let .folder(bookmark):
             guard let chosen = bookmark.resolve() else {
@@ -133,7 +160,7 @@ extension AppModel {
             }
         }
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let jobs = exportJobs(photos.filter(Self.isPhoto), options: workflow.options, recipe: recipe)
+        let jobs = exportJobs(photos.filter(Self.isPhoto), options: workflow.options, workflow: WorkflowUse(workflow: workflow, recipe: recipe))
         guard !jobs.isEmpty else { throw HandedOverError.noPhotos }
         let results = await BatchExporter(renderer: renderer, lenses: lenses)
             .export(jobs, to: .folder(folder), options: workflow.options, existing: .keepBoth)

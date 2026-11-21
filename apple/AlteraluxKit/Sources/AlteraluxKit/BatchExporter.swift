@@ -22,6 +22,9 @@ public struct ExportJob: Sendable, Equatable {
 
 /// Where exported photos are written.
 public enum ExportDestination: Sendable, Equatable {
+    /// The folder each photo is in. Nothing there is ever replaced or taken away: a file of the
+    /// same name may be an original, so a new file takes the next free name.
+    case sameFolder
     /// A folder with this name beside each photo, created when it is not there.
     case subfolder(String)
     /// One folder for all the photos.
@@ -64,6 +67,7 @@ public struct BatchExporter: Sendable {
     /// The photos among `jobs` that were exported to `destination` before: the ones a new
     /// export has to decide about.
     public static func alreadyExported(_ jobs: [ExportJob], at destination: ExportDestination) -> [ExportJob] {
+        guard destination != .sameFolder else { return [] }
         let earlier = earlierExports(of: jobs, at: destination)
         return jobs.filter { earlier[$0.photo] != nil }
     }
@@ -72,7 +76,11 @@ public struct BatchExporter: Sendable {
     /// formats the app writes, named as the photo's job would name it or as another film would
     /// have, with or without the number a second copy takes ("name 2.jpg").
     static func earlierExports(of jobs: [ExportJob], at destination: ExportDestination) -> [URL: [URL]] {
+        // Beside the originals, a file of an earlier export cannot be told from a photo.
+        guard destination != .sameFolder else { return [:] }
         let extensions = Set(ExportOptions.Format.allCases.map(\.fileExtension))
+        // A photo being developed is never an earlier export of another.
+        let developing = Set(jobs.map(\.photo.standardizedFileURL))
         var found: [URL: [URL]] = [:]
         for (folder, jobs) in Dictionary(grouping: jobs, by: { outputFolder(for: $0.photo, destination: destination) }) {
             var photos: [String: URL] = [:]
@@ -83,7 +91,7 @@ public struct BatchExporter: Sendable {
                 }
             }
             let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? []
-            for file in files where extensions.contains(file.pathExtension.lowercased()) {
+            for file in files where extensions.contains(file.pathExtension.lowercased()) && !developing.contains(file.standardizedFileURL) {
                 let name = file.deletingPathExtension().lastPathComponent.lowercased()
                 // "name 2" is a second copy of "name".
                 let withoutNumber = Self.withoutCopyNumber(name)
@@ -127,6 +135,10 @@ public struct BatchExporter: Sendable {
         let earlier = Self.earlierExports(of: jobs, at: destination)
         // What this export wrote is never replaced by a later photo of the same name.
         var finished: Set<URL> = []
+        // Nothing is written over a photo being developed, nor is it taken away.
+        let developing = Set(jobs.map(\.photo.standardizedFileURL))
+        // Beside the originals nothing is replaced: a new file takes the next free name.
+        let existing = destination == .sameFolder ? .keepBoth : existing
 
         for (index, job) in jobs.enumerated() {
             guard !Task.isCancelled else { break }
@@ -134,6 +146,7 @@ public struct BatchExporter: Sendable {
 
             let named = Self.file(for: job, at: destination)
             let isThere = PhotoFileActions.exists(named, manager) && !finished.contains(named.standardizedFileURL)
+                && !developing.contains(named.standardizedFileURL)
             let old = earlier[job.photo] ?? []
             if existing == .skip, let kept = old.first {
                 results.append(FileActionResult(source: job.photo, destination: isThere ? named : kept))
@@ -199,6 +212,8 @@ public struct BatchExporter: Sendable {
 
     private static func outputFolder(for photo: URL, destination: ExportDestination) -> URL {
         switch destination {
+        case .sameFolder:
+            photo.deletingLastPathComponent()
         case let .subfolder(name):
             photo.deletingLastPathComponent().appendingPathComponent(name, isDirectory: true)
         case let .folder(url):

@@ -62,7 +62,9 @@ click) are the system's and open at the pointer: they are the one exception.
 | `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
 | `RecipesWindow` | `RecipeMenu`, Recipes and Workflows…; the Window menu | a window of its own | 780x640, down to 640x480 | on screen, where the system opens a new window |
 | `WorkflowEditor` | `RecipesWindow`, New Workflow… and Edit… | sheet (`FormSheet`) on the recipes window | 420 wide | fits inside the 640 pt window |
-| Destination, Format, Color profile, Size of a workflow | `WorkflowEditor` | system pop-up button (`WindowPopUp`) | system | moved inside the window where the system's would pass an edge |
+| Recipe, Format, Color profile, Size, File name, Destination of a workflow | `WorkflowEditor` | system pop-up button (`WindowPopUp`) | system | moved inside the window where the system's would pass an edge |
+| The list of workflows (`WorkflowChoiceMenu`) | The Finder's "Develop with alteralux…", with more than one workflow | system menu at the pointer, over the Finder | system | where the system places a menu at the pointer: outside the app's windows, as a context menu (the rule's exception) |
+| "Develop N Photos" with no workflow | The Finder's "Develop with alteralux…" | system alert on the main window | system | centered in the window |
 | `WorkflowRunForm` | Library, Workflow of the selection's bar; Develop with Workflow in a photo's menu | the export sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
 | Lists of the selection's bar | Library, Recipe, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |

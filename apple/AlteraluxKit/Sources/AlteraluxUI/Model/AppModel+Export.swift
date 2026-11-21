@@ -19,10 +19,17 @@ struct WaitingExport: Equatable {
     let photos: [URL]
     let destination: ExportDestination
     let options: ExportOptions
-    /// The recipe the photos are developed with, for a workflow; `nil` for their own adjustments.
-    let recipe: Recipe?
+    /// The workflow the photos are developed with; `nil` for their own adjustments.
+    let workflow: WorkflowUse?
     /// How many of the photos were exported there before, with this film or another.
     let existing: Int
+}
+
+/// A workflow as an export uses it: what it says about the photos and their files, and its
+/// recipe, found by its id.
+struct WorkflowUse: Equatable {
+    let workflow: Workflow
+    let recipe: Recipe
 }
 
 extension AppModel {
@@ -109,7 +116,7 @@ extension AppModel {
     func resumeExport(_ waiting: WaitingExport, _ policy: ExistingFilePolicy) async {
         exportWaiting = nil
         await export(
-            waiting.photos, to: waiting.destination, options: waiting.options, recipe: waiting.recipe, existing: policy,
+            waiting.photos, to: waiting.destination, options: waiting.options, workflow: waiting.workflow, existing: policy,
         )
     }
 
@@ -118,12 +125,12 @@ extension AppModel {
     ///
     /// - Parameters:
     ///   - options: the files' format and size; `nil` for the ones the export sheet shows.
-    ///   - recipe: the recipe a workflow develops the photos with. The photos keep their own
-    ///     adjustments: only the files have its look.
+    ///   - workflow: the workflow the photos are developed with. The photos keep their own
+    ///     adjustments: only the files have its recipe's look, and the names it gives.
     ///   - existing: what to do with the files of an earlier export. `nil` asks: when there are
     ///     any, nothing is exported and `exportWaiting` says how many.
     func export(
-        _ photos: [URL], to destination: ExportDestination, options: ExportOptions? = nil, recipe: Recipe? = nil,
+        _ photos: [URL], to destination: ExportDestination, options: ExportOptions? = nil, workflow: WorkflowUse? = nil,
         existing: ExistingFilePolicy? = nil,
     ) async {
         guard let renderer, !isExporting, !photos.isEmpty else { return }
@@ -143,12 +150,12 @@ extension AppModel {
                 folder?.stopAccessingSecurityScopedResource()
             }
         }
-        let jobs = exportJobs(photos, options: options, recipe: recipe)
+        let jobs = exportJobs(photos, options: options, workflow: workflow)
         if existing == nil {
             let there = BatchExporter.alreadyExported(jobs, at: destination).count
             if there > 0 {
                 exportWaiting = WaitingExport(
-                    photos: photos, destination: destination, options: options, recipe: recipe, existing: there,
+                    photos: photos, destination: destination, options: options, workflow: workflow, existing: there,
                 )
                 return
             }
@@ -176,19 +183,22 @@ extension AppModel {
     }
 
     /// What exporting `photos` means: for each one, the adjustments it is developed with (its
-    /// own, or `recipe` given to them) and the name of its file.
-    func exportJobs(_ photos: [URL], options: ExportOptions, recipe: Recipe?) -> [ExportJob] {
+    /// own, or the ones a workflow gives it) and the name of its file.
+    func exportJobs(_ photos: [URL], options: ExportOptions, workflow use: WorkflowUse?) -> [ExportJob] {
         let twins = Self.twins(among: library.photos + photos)
         return photos.map { photo in
             let own = adjustments(of: photo).settings
-            let settings = recipe?.applied(to: own) ?? own
+            let settings = use.map { $0.workflow.settings(for: own, recipe: $0.recipe) } ?? own
             let film = films.first { $0.id == settings.filmID }?.displayName ?? settings.filmID
             let namesKind = twins.contains(photo)
+            let name = Self.exportName(source: photo, film: film, namesKind: namesKind, workflow: use?.workflow)
+            // An earlier export may carry the name of any film, unless its name has none.
+            let namesFilm = (use?.workflow.naming ?? .nameAndFilm) == .nameAndFilm
             return ExportJob(
-                photo: photo, settings: settings,
-                fileName: "\(Self.exportName(source: photo, film: film, namesKind: namesKind)).\(options.format.fileExtension)",
-                // An earlier export may carry the name of any film.
-                earlierNames: films.map { Self.exportName(source: photo, film: $0.displayName, namesKind: namesKind) },
+                photo: photo, settings: settings, fileName: "\(name).\(options.format.fileExtension)",
+                earlierNames: namesFilm
+                    ? films.map { Self.exportName(source: photo, film: $0.displayName, namesKind: namesKind, workflow: use?.workflow) }
+                    : [name],
             )
         }
     }

@@ -35,11 +35,12 @@ A photo's adjustments are kept in the photo itself, as an extended attribute, an
 opened again. Undo and redo are the window's own.
 
 A recipe is a look saved under a name: every adjustment but the white balance. Recipes are kept by the
-app, one file each; a photo that receives one keeps only the adjustments. A workflow is a recipe, named
-by id, and the files it writes (format, size, a folder beside the originals or one chosen folder); it
-only writes files, and is kept beside the recipes. The Finder's "Develop with alteralux…" (a Services
-entry) and the Shortcuts action hand photos to the app, which develops them with a workflow; a folder
-outside the library is written into only once the user grants it, and remembered.
+app, one file each; a photo that receives one keeps only the adjustments. A workflow is how a recipe is
+used: the recipe, named by id, whether it adapts to each photo, and the files it writes (format, size,
+name, beside the photos, in a folder beside them or in one folder); it only writes files, and is kept
+beside the recipes. The Finder's "Develop with alteralux…" (a Services entry) develops the selected
+photos at once with a workflow, and the Shortcuts action does the same; a folder outside the library is
+written into only once the user grants it, and remembered.
 
 The library shows the folders the user adds as they are on disk: it reads them, remembers them with
 security-scoped bookmarks and reads them again when they change. It keeps no catalogue.
@@ -83,7 +84,7 @@ defaults, and unknown keys are errors.
 | [0008](adr/0008-keep-edits-in-the-photo.md) | Keep a photo's adjustments in the photo itself | Accepted |
 | [0009](adr/0009-recipes-are-looks-kept-by-the-app.md) | A recipe is a look without white balance, kept by the app | Accepted |
 | [0010](adr/0010-crop-before-the-engine.md) | Crop and straighten before the engine | Accepted |
-| [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted |
+| [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted; adapting moved to workflows by 0014 |
 | [0012](adr/0012-lens-profiles-from-lensfun.md) | Lens profiles from lensfun's database, applied before the engine | Accepted |
 | [0013](adr/0013-workflows-are-recipes-with-their-files.md) | A workflow is a recipe and the files it writes, kept beside the recipes | Accepted |
-| [0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md) | The Finder and Shortcuts hand photos to the app, which develops them with a workflow | Accepted |
+| [0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md) | A workflow is how a recipe is used, run from the Finder's right-click menu and from Shortcuts | Accepted |

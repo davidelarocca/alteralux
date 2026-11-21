@@ -25,13 +25,10 @@ extension AppModel {
         recipes.first { $0.id == workflow.recipeID }
     }
 
-    /// A new workflow for `recipe`, not kept yet: files the size of the original, in the
-    /// folder exports go to beside the originals.
+    /// A new workflow for `recipe`, not kept yet: adapted to each photo, files the size of the
+    /// original named after the photo and the film, beside the photos.
     func newWorkflow(for recipe: Recipe) -> Workflow {
-        Workflow(
-            name: recipe.name, recipeID: recipe.id,
-            destination: .besideOriginals(folderName: Self.developedFolderName),
-        )
+        Workflow(name: recipe.name, recipeID: recipe.id)
     }
 
     /// Keeps a workflow, new or changed. Its name and the name of a folder beside the
@@ -42,6 +39,9 @@ extension AppModel {
         if case let .besideOriginals(folderName) = workflow.destination {
             workflow.destination = .besideOriginals(folderName: folderName.trimmingCharacters(in: .whitespacesAndNewlines))
         }
+        if case let .nameAndText(text) = workflow.naming {
+            workflow.naming = .nameAndText(text.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
         guard Self.canSave(workflow) else { return }
         do {
             try await workflowStore.save(workflow)
@@ -51,17 +51,21 @@ extension AppModel {
         await loadWorkflows()
     }
 
-    /// Whether a workflow can be kept as it is: it has a name, and a folder to write to.
+    /// Whether a workflow can be kept as it is: it has a name, a folder to write to, and a text
+    /// for the files' names when it adds one.
     static func canSave(_ workflow: Workflow) -> Bool {
         guard isRecipeName(workflow.name) else { return false }
+        if case let .nameAndText(text) = workflow.naming, !isFolderName(text) {
+            return false
+        }
         if case let .besideOriginals(folderName) = workflow.destination {
             return isFolderName(folderName)
         }
         return true
     }
 
-    /// Whether `name` can name a folder beside the originals: not blank, no slash or colon,
-    /// and not a hidden folder.
+    /// Whether `name` can name a folder beside the originals, or be added to a file's name: not
+    /// blank, no slash or colon, and not hidden.
     static func isFolderName(_ name: String) -> Bool {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         return !name.isEmpty && !name.hasPrefix(".") && !name.contains("/") && !name.contains(":")
@@ -102,14 +106,27 @@ extension AppModel {
 
     /// Develops the photos the sheet was opened for with the workflow chosen in it.
     func developWithWorkflow() async {
-        guard !photosToExport.isEmpty, let workflow = chosenWorkflow, let recipe = recipe(of: workflow) else { return }
+        guard let workflow = chosenWorkflow else { return }
+        await develop(photosToExport, with: workflow)
+    }
+
+    /// Develops `photos` with `workflow` and writes its files. Beside the photos, a folder the
+    /// app may not write into yet is asked for first.
+    ///
+    /// - Parameter existing: what to do with the files of an earlier export; `nil` asks.
+    func develop(_ photos: [URL], with workflow: Workflow, existing: ExistingFilePolicy? = nil) async {
+        guard !photos.isEmpty, let recipe = recipe(of: workflow) else { return }
         let destination: ExportDestination
         switch workflow.destination {
-        case let .besideOriginals(folderName):
-            // Photos handed over by the Finder may be in a folder the app cannot write into yet.
-            let folders = await foldersNeedingPermission(for: photosToExport)
-            guard await askToWrite(into: folders, folderName: folderName) else { return }
-            destination = .subfolder(folderName)
+        case .sameFolder, .besideOriginals:
+            // Photos handed over may be in a folder the app cannot write into yet.
+            let folders = await foldersNeedingPermission(for: photos)
+            guard await askToWrite(into: folders) else { return }
+            if case let .besideOriginals(folderName) = workflow.destination {
+                destination = .subfolder(folderName)
+            } else {
+                destination = .sameFolder
+            }
         case let .folder(bookmark):
             guard let folder = bookmark.resolve(), Self.isFolder(folder) else {
                 alertMessage = String(
@@ -119,7 +136,10 @@ extension AppModel {
             }
             destination = .folder(folder)
         }
-        await export(photosToExport, to: destination, options: workflow.options, recipe: recipe)
+        await export(
+            photos, to: destination, options: workflow.options, workflow: WorkflowUse(workflow: workflow, recipe: recipe),
+            existing: existing,
+        )
     }
 
     /// Whether there is a folder at `url`. A folder that was taken away is not made again.
@@ -136,7 +156,7 @@ extension AppModel {
 
     // MARK: - Describing a workflow
 
-    /// What a workflow writes, in a line: "JPEG · 2048 px · in “Developed” beside the originals".
+    /// What a workflow writes, in a line: "JPEG · 2048 px · in “Developed” beside the photos".
     func summary(of workflow: Workflow) -> String {
         let format = switch workflow.options.format {
         case .jpeg: "JPEG"
@@ -147,7 +167,8 @@ extension AppModel {
         let size = workflow.options.longSide.map { String(localized: "\($0) px") }
             ?? String(localized: "Original size")
         let place = switch workflow.destination {
-        case let .besideOriginals(folderName): String(localized: "in “\(folderName)” beside the originals")
+        case .sameFolder: String(localized: "beside the photos")
+        case let .besideOriginals(folderName): String(localized: "in “\(folderName)” beside the photos")
         case let .folder(bookmark): String(localized: "in “\(bookmark.name)”")
         }
         return [format, size, place].joined(separator: " · ")

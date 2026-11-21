@@ -1,6 +1,6 @@
 # ADR-0011: Recipes that adapt to each photo, and the lens corrected by the RAW decoder
 
-- Status: Accepted
+- Status: Accepted; adapting moved from the recipe to the workflow by ADR-0014
 - Date: 2026-11-21
 
 ## Context

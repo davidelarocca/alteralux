@@ -147,6 +147,8 @@ public final class AppModel {
     /// Brings the main window back when it was closed, for photos handed over by the Finder.
     /// Set by the window when it first appears.
     @ObservationIgnored var openMainWindow: (() -> Void)?
+    /// Asks which workflow develops photos sent from the Finder: the list beside the pointer.
+    @ObservationIgnored var chooseWorkflow: @MainActor ([WorkflowChoice], Int) -> WorkflowChoice.ID? = WorkflowChoiceMenu.choose
     /// The start of the engine, once it is asked for: later callers wait for the same one.
     @ObservationIgnored private var starting: Task<Void, Never>?
     /// The adjustments copied from a photo, to paste on others.
@@ -205,10 +207,7 @@ public final class AppModel {
     /// window appears, and by the Shortcuts action, which can run with no window: whoever comes
     /// second waits for the first.
     func start() async {
-        if let starting {
-            return await starting.value
-        }
-        let task = Task { await startOnce() }
+        let task = starting ?? Task { await startOnce() }
         starting = task
         await task.value
     }
