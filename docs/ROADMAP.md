@@ -351,10 +351,16 @@ branch of its own. What was said, in the order to take it:
   is the reference the user likes; `FormSheet` follows it. The rest of the app is to be gone
   through the same way, screen by screen, shown to the user before it is built.
 - The controls the app adds to the engine's own, asked on 2026-11-21 ("rivedere i controlli extra
-  che abbiamo aggiunto rispetto a spektrafilm… organizzarli meglio"): the white balance and its
-  automatic switch, the lens correction, the crop and the others that are the app's and not the
-  engine's, gone through together and arranged better beside the engine's controls. A design task
-  for later, after step 10.
+  che abbiamo aggiunto rispetto a spektrafilm… organizzarli meglio"). Decided with the user on
+  2026-11-21 ([ADR 0016](adr/0016-develop-in-the-order-of-the-analog-process.md)): the inspector in the
+  order of the analog process, Shot (what is set before the film: exposure and metering, white
+  balance, lens, cropping), Film, Print, Scan. Done, the first part: the four sections, and an
+  exposure that brightens (the engine's lab compensated it at the print; now a switch of the print,
+  off for new photos, on for those saved before). Seen in the built app on the test card: +2 EV
+  brightens it. Next, the second part: every control spektrafilm offers and the app hides (diffusion
+  filter, DIR couplers, glare, preflash, print curves, halation and grain details, scanner levels,
+  metering method), the technical ones under "More adjustments"; then the third: highlight recovery
+  and noise reduction from Apple's RAW decoder in Shot. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

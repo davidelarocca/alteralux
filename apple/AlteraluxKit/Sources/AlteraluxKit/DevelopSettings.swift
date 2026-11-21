@@ -56,6 +56,12 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     public var magentaFilterShift: Double
     /// Pre-flash exposure of the paper, to hold highlight detail (0 = off).
     public var preflashExposure: Double
+    /// Whether the print undoes the camera's exposure compensation, as a lab printing a negative
+    /// to a normal density would: then ``exposureEV`` changes the negative's character, not the
+    /// photo's brightness. Off for new photos, so the exposure brightens and darkens; on, as the
+    /// engine has it, for adjustments saved before the app had the choice, so they stay as they
+    /// were.
+    public var printCompensatesExposure: Bool
 
     // MARK: Development
 
@@ -109,6 +115,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         yellowFilterShift: Double = 0,
         magentaFilterShift: Double = 0,
         preflashExposure: Double = 0,
+        printCompensatesExposure: Bool = false,
         filmDevelopmentTime: Double? = nil,
         printDevelopmentTime: Double? = nil,
         grainEnabled: Bool = true,
@@ -137,6 +144,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.yellowFilterShift = yellowFilterShift
         self.magentaFilterShift = magentaFilterShift
         self.preflashExposure = preflashExposure
+        self.printCompensatesExposure = printCompensatesExposure
         self.filmDevelopmentTime = filmDevelopmentTime
         self.printDevelopmentTime = printDevelopmentTime
         self.grainEnabled = grainEnabled
@@ -175,6 +183,8 @@ public extension DevelopSettings {
         yellowFilterShift = try values.decodeIfPresent(Double.self, forKey: .yellowFilterShift) ?? defaults.yellowFilterShift
         magentaFilterShift = try values.decodeIfPresent(Double.self, forKey: .magentaFilterShift) ?? defaults.magentaFilterShift
         preflashExposure = try values.decodeIfPresent(Double.self, forKey: .preflashExposure) ?? defaults.preflashExposure
+        // Saved before the choice: the engine's own behavior, which those photos were developed with.
+        printCompensatesExposure = try values.decodeIfPresent(Bool.self, forKey: .printCompensatesExposure) ?? true
         filmDevelopmentTime = try values.decodeIfPresent(Double.self, forKey: .filmDevelopmentTime)
         printDevelopmentTime = try values.decodeIfPresent(Double.self, forKey: .printDevelopmentTime)
         grainEnabled = try values.decodeIfPresent(Bool.self, forKey: .grainEnabled) ?? defaults.grainEnabled
@@ -220,6 +230,7 @@ extension DevelopSettings {
                 "y_filter_shift": yellowFilterShift,
                 "m_filter_shift": magentaFilterShift,
                 "preflash_exposure": preflashExposure,
+                "print_exposure_compensation": printCompensatesExposure,
             ],
             "film_render": [
                 "grain": [

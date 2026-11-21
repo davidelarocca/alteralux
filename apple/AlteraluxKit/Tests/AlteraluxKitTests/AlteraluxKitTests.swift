@@ -105,6 +105,40 @@ struct DevelopSettingsTests {
         #expect((scanner["unsharp_mask"] as? [Double])?.last == 0.25)
     }
 
+    /// The exposure brightens the photo, unless the lab is asked to print the negative to a
+    /// normal density, as the engine does on its own and as photos saved before the choice keep.
+    @Test func theExposureBrightensUnlessTheLabCompensates() async throws {
+        let url = try writeTestChart()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let loaded = try ImageLoader.load(url)
+        let renderer = try FilmRenderer(dataDirectory: dataDirectory, backend: .cpu)
+
+        func brightness(exposure: Double, compensated: Bool) async throws -> Double {
+            var settings = DevelopSettings()
+            settings.grainEnabled = false
+            settings.exposureEV = exposure
+            settings.printCompensatesExposure = compensated
+            let developed = try await renderer.render(loaded, settings: settings, quality: .full)
+            let bytes = try srgbBytes(of: developed.cgImage)
+            return Double(bytes.reduce(0) { $0 + Int($1) }) / Double(bytes.count)
+        }
+
+        let normal = try await brightness(exposure: 0, compensated: false)
+        let brighter = try await brightness(exposure: 2, compensated: false)
+        let darker = try await brightness(exposure: -2, compensated: false)
+        #expect(brighter > normal + 20 && darker < normal - 20, "\(darker) \(normal) \(brighter)")
+        let compensated = try await brightness(exposure: 2, compensated: true)
+        #expect(abs(compensated - normal) < 6, "\(compensated) \(normal)")
+
+        #expect(DevelopSettings().printCompensatesExposure == false)
+        let saved = try JSONDecoder().decode(DevelopSettings.self, from: Data(#"{"exposureEV": 1}"#.utf8))
+        #expect(saved.printCompensatesExposure)
+        let engine = try Engine(dataDir: dataDirectory.path, backend: .cpu)
+        let resolved = try engine.resolveParamsJson(paramsJson: DevelopSettings().enginePatchJSON())
+        let tree = try #require(try JSONSerialization.jsonObject(with: Data(resolved.utf8)) as? [String: Any])
+        #expect((tree["enlarger"] as? [String: Any])?["print_exposure_compensation"] as? Bool == false)
+    }
+
     /// The development times reach the engine for the film and the paper, and are left out,
     /// for the engine's own middle time, when none was chosen.
     @Test func developmentTimesReachTheEngine() throws {

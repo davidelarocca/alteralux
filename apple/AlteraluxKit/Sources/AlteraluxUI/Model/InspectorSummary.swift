@@ -36,22 +36,34 @@ struct InspectorSummary {
     /// In place of a parameter that is switched off.
     private static let switchedOff = "–"
 
-    /// - Parameters:
-    ///   - formatName: the film format as the reader's language names it.
-    ///   - whiteBalance: the temperature and tint the sliders show; `nil` when the photo's
-    ///     white balance cannot be chosen.
-    func camera(formatName: String, whiteBalance: WhiteBalance? = nil) -> String {
+    /// The shot: the white balance of a RAW, then the exposure.
+    ///
+    /// - Parameter whiteBalance: the temperature and tint the sliders show; `nil` when the
+    ///   photo's white balance cannot be chosen.
+    func shot(whiteBalance: WhiteBalance? = nil) -> String {
         var values: [String] = []
         if let whiteBalance {
             values.append(number(whiteBalance.temperature, fractionDigits: 0))
             values.append(number(whiteBalance.tint, fractionDigits: 0))
         }
         values.append(number(settings.exposureEV, fractionDigits: 1, showsSign: true))
-        values.append(formatName)
         return values.joined(separator: Self.separator)
     }
 
+    /// The film: its format, grain and halation.
+    ///
+    /// - Parameter formatName: the film format as the reader's language names it.
+    func film(formatName: String) -> String {
+        [
+            formatName,
+            settings.grainEnabled ? number(settings.grainParticleArea, fractionDigits: 2) : Self.switchedOff,
+            settings.halationEnabled ? number(settings.halationAmount, fractionDigits: 2) : Self.switchedOff,
+        ].joined(separator: Self.separator)
+    }
+
+    /// The print's exposure and filters, or that there is no print.
     var print: String {
+        guard !settings.scanFilm else { return String(localized: "Scanned directly", locale: locale) }
         guard !blackAndWhitePrint else {
             return number(settings.printExposure, fractionDigits: 2)
         }
@@ -59,13 +71,6 @@ struct InspectorSummary {
             number(settings.printExposure, fractionDigits: 2),
             number(settings.yellowFilterShift, fractionDigits: 0, showsSign: true),
             number(settings.magentaFilterShift, fractionDigits: 0, showsSign: true),
-        ].joined(separator: Self.separator)
-    }
-
-    var filmCharacter: String {
-        [
-            settings.grainEnabled ? number(settings.grainParticleArea, fractionDigits: 2) : Self.switchedOff,
-            settings.halationEnabled ? number(settings.halationAmount, fractionDigits: 2) : Self.switchedOff,
         ].joined(separator: Self.separator)
     }
 

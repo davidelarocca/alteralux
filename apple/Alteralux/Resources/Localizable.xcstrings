@@ -3864,6 +3864,116 @@
           }
         }
       }
+    },
+    "Shot" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scatto"
+          }
+        }
+      }
+    },
+    "Cropping" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritaglio"
+          }
+        }
+      }
+    },
+    "Crop…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritaglia…"
+          }
+        }
+      }
+    },
+    "Whole photo" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto intera"
+          }
+        }
+      }
+    },
+    "Cropped" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritagliata"
+          }
+        }
+      }
+    },
+    "Cropped and straightened" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ritagliata e raddrizzata"
+          }
+        }
+      }
+    },
+    "The lab compensates the exposure" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il laboratorio compensa l'esposizione"
+          }
+        }
+      }
+    },
+    "Scanned directly" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansione diretta"
+          }
+        }
+      }
+    },
+    "Brightens or darkens the photo before the film sees it, in stops." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schiarisce o scurisce la foto prima che la pellicola la veda, in stop."
+          }
+        }
+      }
+    },
+    "Meters the scene as a camera would, weighting its center; the exposure is added to it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misura la scena come una fotocamera, dando più peso al centro; l'esposizione si somma alla misura."
+          }
+        }
+      }
+    },
+    "Prints to a normal density, as a lab would: the exposure then changes the negative, not the brightness." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stampa a densità normale, come un laboratorio: l'esposizione cambia allora il negativo, non la luminosità."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -73,9 +73,13 @@ enum LensWarp {
             CIVector(x: extent.minX, y: extent.maxY, z: factor, w: 0),
             CIVector(x: CGFloat(tableCount), y: tableRadius, z: 0, w: 0),
         ]
+        // Each tile of the result needs only the part of the photo its pixels come from: the tile
+        // widened by the farthest the correction moves a pixel. Asking for the whole photo makes
+        // Core Image develop all of it again for every tile (see docs/PITFALLS.md).
+        let margin = (correction.largestShift() * factor).rounded(.up) + 4
         let corrected = cameraKernel.apply(
             extent: extent,
-            roiCallback: { index, _ in index == 0 ? image.extent : table.extent },
+            roiCallback: { index, rect in index == 0 ? rect.insetBy(dx: -margin, dy: -margin) : table.extent },
             arguments: arguments,
         )
         return corrected?.cropped(to: extent) ?? image
