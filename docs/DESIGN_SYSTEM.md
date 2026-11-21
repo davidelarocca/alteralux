@@ -42,7 +42,7 @@ Motion gets no animation, or a fade for a transition.
 | The one thing a pane is about | the film at the top of the inspector, which opens the list of films | `HeadingButton` |
 | Telling items of a list apart | the films in the list of films | `FilmEmblem` in a row of a `List` |
 | Switching something on or off | every other switch | `Toggle` in a `Form` |
-| Choosing among a few named options | paper, film format | `Picker` in a `Form` |
+| Choosing among a few named options | paper, film format, development times | `WindowPopUp` in a `Form`: the system's pop-up button, its menu kept inside the window |
 | A status over the photo | which rendering is on screen ("Original") | `StatusBadge` |
 | Picking among photos | the strip of open photos | `ThumbnailCell` inside a `Button` |
 | Actions on what is selected | the selected photos of the library | `FloatingBar`: it floats on glass over the content near its bottom edge while something is selected |

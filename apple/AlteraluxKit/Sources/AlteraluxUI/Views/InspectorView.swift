@@ -102,11 +102,10 @@ private struct MaterialsHeading: View {
                     Text("Paper")
                         .font(Typography.caption)
                         .foregroundStyle(.secondary)
-                    Picker("Paper", selection: Binding(get: { model.settings.paperID }, set: { model.choosePaper($0) })) {
-                        ForEach(model.papers, id: \.id) { paper in
-                            Text(paper.displayName).tag(paper.id)
-                        }
-                    }
+                    WindowPopUp(
+                        "Paper", selection: Binding(get: { model.settings.paperID }, set: { model.choosePaper($0) }),
+                        options: model.papers.map { WindowPopUpOption($0.id, title: $0.displayName) },
+                    )
                     .labelsHidden()
                     .fixedSize(horizontal: false, vertical: true)
                 }
@@ -173,11 +172,10 @@ private struct CameraControls: View {
             step: 0.1, fractionDigits: 1, showsSign: true,
         )
         Toggle("Automatic metering", isOn: $settings.autoExposure)
-        Picker("Film format", selection: $settings.filmFormatMM) {
-            ForEach(FilmFormat.allCases) { format in
-                Text(format.title).tag(format.rawValue)
-            }
-        }
+        WindowPopUp(
+            "Film format", selection: $settings.filmFormatMM,
+            options: FilmFormat.allCases.map { WindowPopUpOption($0.rawValue, title: String(localized: $0.title)) },
+        )
         .help("Smaller formats show more grain and wider halos.")
         if !developmentTimes.isEmpty {
             DevelopmentTimePicker("Development", time: $settings.filmDevelopmentTime, times: developmentTimes)
@@ -225,12 +223,15 @@ private struct DevelopmentTimePicker: View {
     }
 
     var body: some View {
-        Picker(title, selection: Binding(get: { time ?? times[(times.count - 1) / 2] }, set: { time = $0 })) {
-            ForEach(times, id: \.self) { minutes in
-                Text(Measurement(value: minutes, unit: UnitDuration.minutes).formatted(.measurement(width: .abbreviated)))
-                    .tag(minutes)
-            }
-        }
+        WindowPopUp(
+            title, selection: Binding(get: { time ?? times[(times.count - 1) / 2] }, set: { time = $0 }),
+            options: times.map { minutes in
+                WindowPopUpOption(
+                    minutes,
+                    title: Measurement(value: minutes, unit: UnitDuration.minutes).formatted(.measurement(width: .abbreviated)),
+                )
+            },
+        )
     }
 }
 

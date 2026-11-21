@@ -135,7 +135,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    over the photo's bottom trailing corner, and the library's selection bar is on glass too; the
    titles of the buttons on glass are white, dimmed only when disabled. The toolbar's Recipe
    button is its symbol alone; its menu opens inside the window and has no submenus: renaming
-   and deleting moved to a sheet, Manage Recipes…. Still open:
+   and deleting moved to a sheet, Manage Recipes…. The inspector's pop-up buttons (paper, film
+   format, development times) are `WindowPopUp`s: their menus stay inside the window near its
+   edges. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.

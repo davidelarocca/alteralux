@@ -45,8 +45,11 @@ stays inside the window's edges, at every size of its row. A system `Menu` or `P
 downward from its button's leading edge toward the trailing one: it is used only where there is room
 that way, on the leading side of the toolbar or at the top of a pane. On the trailing side of the
 toolbar a menu is a `WindowMenuButton`, the same system menu opened where it stays inside the window,
-and it has no submenus, which would open past the trailing edge. A control in a bar near the bottom
-edge uses `ChoiceListButton`, whose list opens above it inside the window. Every new drop-down gets a row in the table below, and is
+and it has no submenus, which would open past the trailing edge. A pop-up button in a form is a
+`WindowPopUp`: the system opens its menu with the chosen option over the button, so it hangs past the
+window's bottom or top edge when the button is near one; `WindowPopUp` moves it inside. A control in a
+bar near the bottom edge uses `ChoiceListButton`, whose list opens above it inside the window. Every
+new drop-down gets a row in the table below, and is
 opened in the built app at the window's Min before the change is done. Context menus (a secondary
 click) are the system's and open at the pointer: they are the one exception.
 
@@ -62,6 +65,7 @@ click) are the system's and open at the pointer: they are the one exception.
 | Deleting a recipe | `RecipeManager`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
+| Paper, film format, development times | Main window, the inspector's pop-up buttons (`WindowPopUp`) | system pop-up menu | system | over the button as the system opens it; moved inside the window where it would pass the bottom or top edge (measured at 900 pt, the paper's menu with its last paper chosen) |
 | `FilmPicker` | Main window, the film heading of the inspector | popover | 300 wide, 420 to 640 tall: the inspector's height less 130 | opens under the heading, inside the window |
 | Open panel | Main window, Open | system file importer | system | system |
 | Save panel | `ExportSheet`, Export | system save panel | system | separate window |
