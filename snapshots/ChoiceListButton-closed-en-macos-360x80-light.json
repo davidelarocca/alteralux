@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-20T18:09:00Z",
+  "captured": "2026-11-21T10:03:48Z",
   "contractSize": "360x80",
   "locale": "en",
   "os": "27.2",
@@ -11,7 +11,7 @@
   "size": "360x80",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ChoiceListButton.swift",
   "state": "closed",
-  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T18:12:11Z",
-  "approvedFrom": "missing"
+  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-21T10:07:33Z",
+  "approvedFrom": "failed"
 }

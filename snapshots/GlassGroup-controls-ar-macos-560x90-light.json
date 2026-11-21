@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-21T08:47:42Z",
+  "captured": "2026-11-21T10:03:55Z",
   "contractSize": "560x90",
   "locale": "ar",
   "os": "27.2",
@@ -12,6 +12,6 @@
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/GlassGroup.swift",
   "state": "controls",
   "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-21T08:56:14Z",
-  "approvedFrom": "missing"
+  "approved": "2026-11-21T10:07:33Z",
+  "approvedFrom": "failed"
 }
