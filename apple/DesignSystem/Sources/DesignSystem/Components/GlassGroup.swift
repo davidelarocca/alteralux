@@ -3,8 +3,9 @@ import SwiftUI
 /// A few related controls on one round-ended piece of the system's glass, the way the toolbar
 /// groups its buttons (undo and redo, crop and compare).
 ///
-/// It floats over what is under it. Its controls are the system's, drawn without their own border
-/// so the glass is their only background; a button that stands alone uses the system's
+/// It floats over what is under it. Its controls are the system's; its buttons are plain ones, the
+/// glass being their only background: their titles are white, and the system dims them when they
+/// are disabled and while they are pressed. A button that stands alone uses the system's
 /// `.glass` or `.glassProminent` button style instead. Put the groups of one bar in a
 /// `GlassEffectContainer`, so the glass of each is drawn as one material.
 public struct GlassGroup<Content: View>: View {
@@ -18,7 +19,8 @@ public struct GlassGroup<Content: View>: View {
         HStack(spacing: Spacing.s) {
             content
         }
-        .buttonStyle(.borderless)
+        // Not `.borderless`: it writes every title in gray, which on glass reads as disabled.
+        .buttonStyle(.plain)
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.xs)
         .frame(minHeight: Self.minimumHeight)

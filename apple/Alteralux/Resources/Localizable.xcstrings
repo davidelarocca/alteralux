@@ -411,6 +411,16 @@
         }
       }
     },
+    "A recipe is a look saved under a name: everything but the white balance." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una recipe è un aspetto salvato con un nome: tutto tranne il bilanciamento del bianco."
+          }
+        }
+      }
+    },
     "About alteralux" : {
       "localizations" : {
         "it" : {
@@ -921,6 +931,16 @@
         }
       }
     },
+    "Delete…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina…"
+          }
+        }
+      }
+    },
     "Descending" : {
       "localizations" : {
         "it" : {
@@ -1068,6 +1088,36 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lascia il ritaglio com'era"
+          }
+        }
+      }
+    },
+    "Manage Recipes…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gestisci recipe…"
+          }
+        }
+      }
+    },
+    "Recipes" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recipe"
+          }
+        }
+      }
+    },
+    "Rename…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rinomina…"
           }
         }
       }

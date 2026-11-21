@@ -47,7 +47,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Entity | Actions | Shared entry point |
 |---|---|---|
 | | Open, Rename, Delete, ... | the shared menu or command type, with its file |
-| Recipe | Give (to the photo on screen or to the selection), Save as New, Rename, Delete | `RecipeMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipeMenu.swift`) |
+| Recipe | Give (to the photo on screen or to the selection), Save as New, Rename, Delete | `RecipeMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipeMenu.swift`): give and save from the menu; rename and delete in its sheet, `RecipeManager`, opened with Manage Recipes… |
 | Photo | Develop, Show in Finder, give a Recipe, Export, Move to, Copy to, Tag, Copy and Paste Adjustments, Discard or Take Back; while developing, Crop and Straighten | `LibrarySelectionBar` and `LibraryPhotoMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/PhotoMenus.swift`) in the library, `DevelopPhotoMenu` while developing |
 
 ## User-managed collections

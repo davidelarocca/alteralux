@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// A bar of actions that floats over content, near its bottom edge: a round-ended panel of the
-/// system's material with a soft shadow, as wide as what it holds.
+/// A bar of actions that floats over content, near its bottom edge: a `GlassGroup`, one
+/// round-ended piece of the system's glass as wide as what it holds.
 ///
 /// It appears for what is selected and goes when nothing is: the content under it stays in
-/// sight around it. Its buttons and menus are the system's, drawn round like the bar.
+/// sight around it, and through it. Its buttons and menus are the system's.
 public struct FloatingBar<Content: View>: View {
     private let content: Content
 
@@ -13,38 +13,13 @@ public struct FloatingBar<Content: View>: View {
     }
 
     public var body: some View {
-        HStack(spacing: Spacing.s) {
-            content
+        GlassEffectContainer {
+            GlassGroup {
+                content
+            }
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .buttonStyle(.bordered)
-        .buttonBorderShape(.capsule)
-        .menuStyle(.button)
-        .fixedSize(horizontal: false, vertical: true)
-        .padding(.horizontal, Spacing.m)
-        .padding(.vertical, Spacing.s)
-        // The bar's own background, not a material: over a material the round buttons lose
-        // their fill and read as plain text.
-        .background(.bar, in: .capsule)
-        .overlay {
-            Capsule().strokeBorder(Color.DS.hairline, lineWidth: Self.lineWidth)
-        }
-        .shadow(color: .black.opacity(Self.shadowOpacity), radius: Self.shadowRadius, y: Self.shadowOffset)
-    }
-
-    private static var lineWidth: CGFloat {
-        1
-    }
-
-    private static var shadowOpacity: Double {
-        0.35
-    }
-
-    private static var shadowRadius: CGFloat {
-        14
-    }
-
-    private static var shadowOffset: CGFloat {
-        6
+        .controlSize(.large)
     }
 }
 
@@ -54,7 +29,7 @@ public struct FloatingBar<Content: View>: View {
             Text("3 photos")
                 .font(Typography.value)
             Divider()
-            Menu("Recipe") {}
+            ChoiceListButton(Text("Recipe"), choices: [], empty: Text("No recipes"))
             Button("Export…") {}
             Button("Discard") {}
         }

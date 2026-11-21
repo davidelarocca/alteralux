@@ -41,10 +41,12 @@ Popovers, sheets, menus, tooltips and secondary windows opened from these screen
 they must open inside the window, or on screen for a separate window.
 
 **A drop-down never leaves the window.** A menu, a pop-up button or a list that opens from a control
-stays inside the window's edges, at every size of its row. A system `Menu` or `Picker(.menu)` is
-used only where it opens downward with room below it: the toolbar, the top of a pane. A control in a
-bar near the bottom edge, or anywhere a menu would open past an edge, uses `ChoiceListButton`, whose
-list opens above it inside the window. Every new drop-down gets a row in the table below, and is
+stays inside the window's edges, at every size of its row. A system `Menu` or `Picker(.menu)` opens
+downward from its button's leading edge toward the trailing one: it is used only where there is room
+that way, on the leading side of the toolbar or at the top of a pane. On the trailing side of the
+toolbar a menu is a `WindowMenuButton`, the same system menu opened where it stays inside the window,
+and it has no submenus, which would open past the trailing edge. A control in a bar near the bottom
+edge uses `ChoiceListButton`, whose list opens above it inside the window. Every new drop-down gets a row in the table below, and is
 opened in the built app at the window's Min before the change is done. Context menus (a secondary
 click) are the system's and open at the pointer: they are the one exception.
 
@@ -52,11 +54,12 @@ click) are the system's and open at the pointer: they are the one exception.
 |---|---|---|---|---|
 | `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
 | Filter and Sort | Library, the trailing side of the toolbar | system menu | system | system |
-| `RecipeMenu` | Main window, the toolbar's Recipe button | system menu | system | system |
+| `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
+| `RecipeManager` | `RecipeMenu`, Manage Recipes… | sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
 | Lists of the selection's bar | Library, Recipe, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |
-| Name of a recipe | `RecipeMenu`, Save as New Recipe… and Rename | system alert with a text field | system | centered in the window |
-| Deleting a recipe | `RecipeMenu`, Delete | system confirmation dialog | system | centered in the window |
+| Name of a recipe | `RecipeMenu`, Save as New Recipe…; `RecipeManager`, Rename… | system alert with a text field | system | centered in the window |
+| Deleting a recipe | `RecipeManager`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
 | `FilmPicker` | Main window, the film heading of the inspector | popover | 300 wide, 420 to 640 tall: the inspector's height less 130 | opens under the heading, inside the window |
@@ -94,5 +97,7 @@ Deliberate departures from the rules above, with the reason.
   the inspector open), the straightening takes a row of its own above the rest. Seen in the built app
   at 900 pt with the inspector, and at the default size; no layout test measures the floating
   controls.
-- The zoom controls under the photo have a fixed width (about 400 pt). At the window's Min the photo
-  pane is 580 pt wide with the inspector at its ideal width, so they fit.
+- The zoom floats on glass over the bottom trailing corner of the photo, with the strip shown or hidden
+  (about 390 pt wide). At the window's Min the photo pane is 580 pt wide with the inspector at its ideal
+  width, so it fits; it covers a corner of the photo, as the user chose. Seen in the built app at
+  900 pt with the inspector.
