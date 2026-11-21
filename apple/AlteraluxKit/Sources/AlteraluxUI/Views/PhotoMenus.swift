@@ -1,5 +1,6 @@
 import AlteraluxKit
 import AppKit
+import DesignSystem
 import SwiftUI
 
 /// What a photo's menu asks before it acts: a name, with the system's alert.
@@ -93,6 +94,8 @@ struct LibraryPhotoMenu: View {
                         FinderTag(name: choice.name, color: choice.color).menuDot
                     }
                 }
+                // A toggle in a menu draws its title alone unless asked for the icon too.
+                .labelStyle(.titleAndIcon)
             }
             Divider()
             Button("New Tag…") { act { ask(.newTag) } }
@@ -168,8 +171,9 @@ private struct OpenWithMenu: View {
     }
 }
 
-/// The alerts a photo's menu asks its names with: a new tag for the selection, a new name for a
-/// photo. The field starts with the photo's name, its extension left out: it stays.
+/// What a photo's menu asks before it acts: a new tag for the selection, with its name and color,
+/// in a sheet; a new name for a photo, in the system's alert. The field starts with the photo's
+/// name, its extension left out: it stays.
 struct PhotoQuestionAlerts: ViewModifier {
     @Environment(AppModel.self) private var model
     @Binding var question: PhotoQuestion?
@@ -177,13 +181,9 @@ struct PhotoQuestionAlerts: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .alert("New Tag", isPresented: isAsking(.newTag)) {
-                TextField("Name", text: $name)
-                Button("Add") { model.addTag(named: name, color: nil) }
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Button("Cancel", role: .cancel) {}
-            } message: {
-                Text("The tag is put on the selected photos, as in the Finder.")
+            .sheet(isPresented: isAsking(.newTag)) {
+                NewTagSheet()
+                    .environment(model)
             }
             .alert("Rename Photo", isPresented: isRenaming) {
                 TextField("Name", text: $name)
@@ -244,6 +244,33 @@ struct DevelopPhotoMenu: View {
             .disabled(!model.canPresentExport)
         if let photo = model.selection?.url {
             Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([photo]) }
+        }
+    }
+}
+
+/// A new tag for the selected photos: its name, and its color as the Finder offers it. A name a
+/// tag already has puts that tag on, with its own color.
+private struct NewTagSheet: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var color: FinderTagColor?
+
+    var body: some View {
+        let isNamed = !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        FormSheet(
+            Text("New Tag"),
+            message: Text("The tag is put on the selected photos, as in the Finder."),
+            confirm: SheetAction(Text("Add"), isEnabled: isNamed) {
+                model.addTag(named: name, color: color)
+                dismiss()
+            },
+            cancel: SheetAction(Text("Cancel")) { dismiss() },
+        ) {
+            TextField("Name", text: $name)
+            LabeledContent("Color") {
+                TagColorPicker(color: $color)
+            }
         }
     }
 }
