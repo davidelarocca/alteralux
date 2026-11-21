@@ -8,11 +8,12 @@ import Foundation
 /// - `0x7035`, chromatic aberration: `2n`, then `n` values for red and `n` for blue, each a factor
 ///   `1 + c / 2^21` of the radius over green's.
 /// - `0x7032`, vignetting: `m`, then `m` values `v`, the light kept being
-///   `(2^(0.5 - 2^(v / 2^13 - 1)))^2`.
+///   `(2^(0.5 - 2^(0.7 v / 2^13 - 1)))^2`.
 ///
-/// Knot `i` of `n` lies at the radius `i / (n - 1)` of the half diagonal, as ART reads them. The
-/// vignetting is squared as darktable's first reading and ART have it: on a Sigma 56mm it follows
-/// lensfun's measurement of the lens, where the reading without the square gives half of it.
+/// All as ART reads them: knot `i` of `n` at the radius `i / (n - 1)` of the half diagonal, which
+/// matches Apple's own distortion correction of a Sony RX100 VII to a pixel, and the vignetting with
+/// ART's 0.7, which lands where darktable's current reading does (about -0.9 EV in the corners of a
+/// 56mm at f/1.4, against -1.7 without it).
 /// Older bodies keep the tags only in an enciphered block, which is not read.
 enum SonyLensData {
     private static let distortionTag: UInt16 = 0x7037
@@ -54,7 +55,7 @@ enum SonyLensData {
         var light: RadialCurve?
         if let vignetting, let count = vignetting.first, (2 ... 16).contains(count), vignetting.count > count {
             let kept = vignetting[1 ... count].map { value in
-                let fraction = pow(2, 0.5 - pow(2, Double(value) / 8192 - 1))
+                let fraction = pow(2, 0.5 - pow(2, 0.7 * Double(value) / 8192 - 1))
                 return fraction * fraction
             }
             light = RadialCurve(radii: knots(count), values: kept)

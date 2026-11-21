@@ -34,10 +34,10 @@ struct CameraLensDataTests {
         #expect(abs(geometry.green.value(at: 0.55) - (1 + 45.0 / 16384)) < 1e-12)
         #expect(abs(geometry.red.value(at: 0.3) - geometry.green.value(at: 0.3) * (1 - 256.0 / 2_097_152)) < 1e-15)
         let light = try #require(data.vignetting)
-        let kept = pow(2, 0.5 - pow(2, 12288.0 / 8192 - 1))
+        let kept = pow(2, 0.5 - pow(2, 0.7 * 12288.0 / 8192 - 1))
         #expect(abs(light.value(at: 1) - kept * kept) < 1e-12)
-        // About -1.8 EV at the corner.
-        #expect(abs(log2(light.value(at: 1)) + 1.83) < 0.01)
+        // About -1.1 EV at the corner.
+        #expect(abs(log2(light.value(at: 1)) + 1.07) < 0.01)
     }
 
     @Test func sonyReadsTheSameInEitherByteOrderAndFromAnySubdirectory() {

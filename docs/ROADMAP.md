@@ -263,7 +263,7 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    All 920 of the user's Sony RAWs carry them; the Viltrox 56mm and 25mm on the ZV-E10, which nobody
    corrected, now are. Not read: older Sony bodies' enciphered block; Canon records nothing readable;
    DNG opcodes are Apple's decoder's. To be judged by the user's eye: Sony's vignetting, on a plain
-   sky or wall at full aperture (the least certain reading). Still open: how well lensfun covers the user's own lenses, and the look of the correction on
+   sky or wall at full aperture (the least certain reading; ART's, about -1 EV in the corners at f/1.4). Still open: how well lensfun covers the user's own lenses, and the look of the correction on
    real photos; photos that are not RAW are not corrected (their camera may have done it already).
 10. **Recipes and workflows, from the app and the Finder.** Decided with the user on 2026-11-21: a
    workflow is a recipe and what to do with it (format, size, where to save, such as a folder beside the

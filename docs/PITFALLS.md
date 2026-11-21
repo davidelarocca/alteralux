@@ -139,3 +139,7 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **lensfun picks "Ricoh GR III & compatibles + GW-4" for a GR III sample** (raw.pixls.us, 2026-11-21),
   the profile with the wide converter, which the photo may not have had. Not looked into yet
   (`LensFuzzyMatch`).
+- **A lens can report another maker's name.** The user's Viltrox 56mm F1.4 on a ZV-E10M2 writes
+  "56mm F1.4 DC DN | Contemporary 018", Sigma's name, so lensfun matched the Sigma's profile to it
+  until the camera's own corrections came first (2026-11-21). A lensfun profile chosen by name is a
+  guess for third-party lenses.

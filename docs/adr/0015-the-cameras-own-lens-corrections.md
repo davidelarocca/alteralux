@@ -27,12 +27,14 @@ samples from raw.pixls.us for Fujifilm, Nikon Z, Olympus, Panasonic, Sony, Canon
 
 The numbers' meaning is not documented by the makers. darktable and ART (GPLv3, as this app) read
 them, from reverse engineering. For Sony they disagree: darktable places the knots at
-`(i + 0.5) / (n - 1)` and squares the vignetting in its first version, not in its second; ART places
-them at `i / (n - 1)`, squares it, and scales it by 0.7 "empirically determined on my lenses". On the
-user's Sigma 56mm at f/1.4, lensfun's own measurement of the lens gives the corners -0.54, -1.03, -1.65
-and -2.12 EV at radii 0.5, 0.7, 0.9 and 1; ART's knots squared give -0.50, -0.90, -1.44 and -1.73,
-darktable's -0.42, -0.79, -1.30 and -1.58, without the square half of those. On a Sony RX100 VII,
-Apple's own distortion correction matches ART's knots to a pixel.
+`(i + 0.5) / (n - 1)` and squares the vignetting in its first version, not in its current one; ART
+places them at `i / (n - 1)`, squares it, and scales it by 0.7 "empirically determined on my lenses".
+On a Sony RX100 VII, Apple's own distortion correction matches ART's knots to a pixel. For the
+vignetting there is no reference: Apple's decoder does not lift Sony's. On the user's 56mm at f/1.4 the
+two current readings give the corners -0.8 (darktable) and -1.0 EV (ART), the first darktable one -1.6.
+A comparison with lensfun's profile of the Sigma 56mm, whose name that lens reports, was first taken
+as a reference; the user then said the lens is a Viltrox, which reports a Sigma's name, so lensfun's
+profile was of another lens and the comparison says nothing.
 
 ## Decision
 
@@ -40,8 +42,8 @@ Apple's own distortion correction matches ART's knots to a pixel.
   tags of the raw directory (`SonyLensData`), Fujifilm's tables in the RAF's own directory
   (`FujifilmLensData`), Nikon Z's blob in tag `0xC7D5` (`NikonLensData`), Olympus and OM System's
   ImageProcessing tags (`OlympusLensData`), Panasonic's `0x0119` (`PanasonicLensData`). Each reading
-  is documented in its file, after darktable and ART; for Sony, ART's knots and the square, without
-  the 0.7.
+  is documented in its file, after darktable and ART; for Sony, ART's reading as it is (its knots,
+  the square and the 0.7), the one both current readings agree with.
 - Every reading becomes radial curves (`CameraLensData`): for each channel the factor from the
   corrected radius to the shot one, and the light kept by the shot radius.
 - The order (`CameraLensCorrection.combining`): the geometry by Apple's decoder where it knows the
@@ -61,8 +63,8 @@ Apple's own distortion correction matches ART's knots to a pixel.
 | Option | Why not |
 |---|---|
 | Fitting the curves into lensfun's polynomials, to reuse its kernel | Measured on the user's files: up to 8.5 pixels off on a Viltrox 25mm |
-| darktable's second reading of Sony's vignetting, not squared | Half of what lensfun measured on the same lens |
-| ART's 0.7 on Sony's vignetting | Tuned on its author's lenses; a third of lensfun's measurement on the user's |
+| darktable's first reading of Sony's vignetting (squared, no 0.7) | Twice what both current readings give; it was dropped by darktable as too strong |
+| darktable's current reading (not squared) | Close to ART's (-0.8 against -1.0 EV); ART's knots are the ones Apple's correction confirms |
 | Reading DNG opcodes ourselves | Apple's decoder applies them: they would be applied twice |
 | Adding lensfun's vignetting where Apple's decoder corrects the geometry | Whether it lifts the vignetting itself was measured only for Sony, Fujifilm and Nikon |
 | Reading the tags with exiv2 or LibRaw | A C++ dependency for a few tags of a TIFF |
@@ -75,3 +77,5 @@ Apple's own distortion correction matches ART's knots to a pixel.
 - Older Sony bodies keep the numbers in an enciphered block, not read. Canon stays with lensfun.
 - The readings are reverse engineering: if a photo looks wrong, the reader of its maker is where to
   look. Sony's vignetting is the least certain: to be judged by eye on a plain sky or wall.
+- A lens may report another maker's name (some Viltrox lenses report Sigma's): lensfun then matches
+  the wrong profile. The camera's own numbers, which come from the lens itself, avoid it.
