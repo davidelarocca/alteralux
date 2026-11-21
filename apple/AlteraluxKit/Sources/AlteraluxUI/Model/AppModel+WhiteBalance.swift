@@ -38,6 +38,12 @@ extension AppModel {
         return min(Self.temperatureRange.lowerBound, neutral) ... max(Self.temperatureRange.upperBound, neutral)
     }
 
+    /// Whether the camera chose the selected photo's white balance itself: the automatic white
+    /// balance then keeps it.
+    var cameraChoseWhiteBalance: Bool {
+        sources?.decoder.cameraChoseWhiteBalance ?? false
+    }
+
     /// Whether the white balance of the selected photo is chosen from the light measured in it.
     /// Turned on, it lets go of a white balance chosen by hand; turned off, the photo goes back
     /// to the camera's.

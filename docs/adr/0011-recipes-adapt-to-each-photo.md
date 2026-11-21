@@ -33,6 +33,12 @@ each photo had what the decoder chose on its own.
   clipped nor very dark, the decoder's neutral moved by the color found, twice. The camera's white
   balance is kept unless the one found is more than 25 mired or 15 of tint away; then the photo moves
   60% of the way. Fewer than 20% of usable pixels keeps the camera's. Files that are not RAW have none.
+- Amended on 2026-11-21, after measuring 126 of the user's RAWs (numbers only): the estimate would have
+  moved three photos in four, mostly warmer and greener, all taken in daylight with the camera's white
+  balance on automatic. When the EXIF says the camera chose the white balance itself, the automatic
+  white balance keeps it, and the inspector says so: the camera saw the scene, the photo shows less of
+  it. The estimate is for white balances set by hand on the camera (a preset left on under other
+  light), and for photos that do not say.
 - **Lens correction** is a photo's setting too (`DevelopSettings.lensCorrection`), on for new photos,
   applied through `CIRAWFilter` where it is supported. Adjustments saved before it existed read as
   "not chosen" (`nil`) and keep what the decoder did on its own, so a photo already developed does not
@@ -53,6 +59,6 @@ each photo had what the decoder chose on its own.
 
 - A workflow can give each photo its own starting exposure and white balance, then the recipe's look.
 - The thresholds (25 mired, 15 tint, 60%) are a starting point measured on test RAWs only: they are to
-  be judged on real photos.
+  be judged on real photos whose white balance was set by hand on the camera (none yet).
 - The lens correction covers what Apple's decoder knows. Lenses it does not know need profiles of our
   own: lensfun's database, shipped unmodified as a separate file (the next step of the roadmap).

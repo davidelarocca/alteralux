@@ -2289,7 +2289,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recipe"
+            "value" : "Ricetta"
           }
         }
       }
@@ -2761,6 +2761,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Temperatura"
+          }
+        }
+      }
+    },
+    "The camera chose this white balance itself, from the scene: it is kept." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fotocamera ha scelto da sola questo bianco, guardando la scena: viene tenuto."
           }
         }
       }
