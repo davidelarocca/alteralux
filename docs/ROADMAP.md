@@ -287,9 +287,12 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    in, the files written out. Checked in the built app on test pictures: the entry registered with its
    Italian title, one workflow developing at once, the list with two, the permission asked once and
    kept, the files beside the photos and in a folder beside them, the app that sent them back in front.
-   Still to be seen by the user: the entry in the Finder's own menu, and the action in the Shortcuts
-   editor. Later, with a developer team: each workflow as an entry of the Finder's menu, through an
-   extension.
+   Then, at the user's request, invisible: a workflow can leave its format, size, file names and
+   destination open, asked each time; from the Finder, a workflow that settles everything develops
+   with no window and no Dock icon, and the app quits after; otherwise a small panel at the center of
+   the screen asks only what is open (or makes the first workflow). Still to be seen by the user: the
+   action in the Shortcuts editor. Later, with a developer team: each workflow as an entry of the
+   Finder's menu, through an extension.
 11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;

@@ -1,5 +1,4 @@
 import AlteraluxUI
-import AppIntents
 import AppKit
 import SwiftUI
 
@@ -7,37 +6,36 @@ import SwiftUI
 /// the app model so they can be built and tested as a package.
 @main
 struct AlteraluxApp: App {
-    /// Takes the files opened from the Finder, the Dock or `open`.
-    @NSApplicationDelegateAdaptor(OpenFilesDelegate.self) private var openFiles
-    @State private var model: AppModel
+    /// Takes what the system hands to the app, and holds the app's model from launch: the Finder
+    /// can start the app to develop photos without any window.
+    @NSApplicationDelegateAdaptor(OpenFilesDelegate.self) private var app
 
     init() {
-        let model = AppModel()
-        _model = State(initialValue: model)
-        // The Shortcuts action develops photos with the same model as the window.
-        AppDependencyManager.shared.add(dependency: model)
         // Always dark, like a darkroom: colors are judged against a neutral
         // dark interface, whatever the system appearance.
         NSApplication.shared.appearance = NSAppearance(named: .darkAqua)
     }
 
     var body: some Scene {
+        // Opened by the app delegate when the app is opened, not when the Finder starts it.
         Window("alteralux", id: MainWindow.id) {
             MainWindow()
-                .environment(model)
-                .onAppear { openFiles.attach(model) }
+                .environment(app.model)
         }
         .defaultSize(MainWindow.defaultSize)
         .windowResizability(.contentMinSize)
+        .defaultLaunchBehavior(.suppressed)
         .commands {
-            AlteraluxCommands(model: model)
+            AlteraluxCommands(model: app.model)
         }
 
         Window("Recipes and Workflows", id: RecipesWindow.id) {
             RecipesWindow()
-                .environment(model)
+                .environment(app.model)
         }
         .defaultSize(RecipesWindow.defaultSize)
         .windowResizability(.contentMinSize)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
     }
 }

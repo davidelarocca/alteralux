@@ -28,7 +28,6 @@ struct MainScreen: View {
     @Environment(AppModel.self) private var model
     /// The window's undo manager: the one the Edit menu acts on.
     @Environment(\.undoManager) private var undoManager
-    @Environment(\.openWindow) private var openWindow
 
     var body: some View {
         @Bindable var model = model
@@ -58,21 +57,12 @@ struct MainScreen: View {
         .onChange(of: model.settings) { model.settingsDidChange() }
         .onChange(of: undoManager, initial: true) { model.history.undoManager = undoManager }
         .sheet(isPresented: $model.isExportPresented) { ExportSheet() }
-        // Photos sent from the Finder with no workflow yet.
-        .alert("Develop \(model.photosToExport.count) Photos", isPresented: $model.isWorkflowNeeded) {
-            Button("Recipes and Workflows…") { openWindow(id: RecipesWindow.id) }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("There is no workflow yet. Make one in Recipes and Workflows: a recipe and the files it writes.")
-        }
         .alert("Something went wrong", isPresented: isAlertPresented) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(model.alertMessage ?? "")
         }
         .task { await model.start() }
-        // Photos sent from the Finder bring the window back when it was closed.
-        .onAppear { model.openMainWindow = { [openWindow] in openWindow(id: MainWindow.id) } }
     }
 
     private var isAlertPresented: Binding<Bool> {

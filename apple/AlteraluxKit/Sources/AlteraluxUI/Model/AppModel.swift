@@ -81,9 +81,6 @@ public final class AppModel {
     /// Whether the export sheet develops the photos with a workflow, and not with their own
     /// adjustments and the options it shows.
     var exportsWithWorkflow = false
-    /// Set when photos are sent from the Finder and there is no workflow yet: an alert leads to
-    /// Recipes and Workflows.
-    var isWorkflowNeeded = false
     /// The workflow chosen in the export sheet, kept for the next time.
     var exportWorkflow: Workflow.ID?
     /// An export that found files of an earlier one, and waits to be told what to do with them.
@@ -144,11 +141,12 @@ public final class AppModel {
     /// The folders outside the library the user let the app write into, for workflows that
     /// write beside the originals of photos handed over by the Finder. Kept between launches.
     let writableFolders: LibraryFolders
-    /// Brings the main window back when it was closed, for photos handed over by the Finder.
-    /// Set by the window when it first appears.
+    /// Opens the main window, with the app's Dock icon, in front: set by the menu commands, which
+    /// are there from launch.
     @ObservationIgnored var openMainWindow: (() -> Void)?
-    /// Asks which workflow develops photos sent from the Finder: the list beside the pointer.
-    @ObservationIgnored var chooseWorkflow: @MainActor ([WorkflowChoice], Int) -> WorkflowChoice.ID? = WorkflowChoiceMenu.choose
+    /// Asks, in a small panel at the center of the screen, what to do with photos sent from the
+    /// Finder when the workflows do not say it alone.
+    @ObservationIgnored var askAboutFinderPhotos: @MainActor (FinderQuestion) async -> FinderAnswer = FinderPanel.ask
     /// The start of the engine, once it is asked for: later callers wait for the same one.
     @ObservationIgnored private var starting: Task<Void, Never>?
     /// The adjustments copied from a photo, to paste on others.

@@ -104,10 +104,21 @@ extension AppModel {
         workflows.first { $0.id == exportWorkflow }
     }
 
-    /// Develops the photos the sheet was opened for with the workflow chosen in it.
-    func developWithWorkflow() async {
-        guard let workflow = chosenWorkflow else { return }
+    /// Develops the photos the sheet was opened for with the workflow chosen in it: `run`, with
+    /// the answers to what it asks, kept to be offered next time.
+    func developWithWorkflow(_ run: Workflow? = nil) async {
+        guard let workflow = run ?? chosenWorkflow else { return }
+        await remember(workflow)
         await develop(photosToExport, with: workflow)
+    }
+
+    /// Keeps the answers a workflow was given to what it asks, to offer them next time, and
+    /// remembers it as the one chosen last.
+    func remember(_ run: Workflow) async {
+        exportWorkflow = run.id
+        if let kept = workflows.first(where: { $0.id == run.id }), kept != run {
+            await save(run)
+        }
     }
 
     /// Develops `photos` with `workflow` and writes its files. Beside the photos, a folder the
@@ -156,8 +167,22 @@ extension AppModel {
 
     // MARK: - Describing a workflow
 
-    /// What a workflow writes, in a line: "JPEG · 2048 px · in “Developed” beside the photos".
+    /// What a workflow writes, in a line: "JPEG · 2048 px · in “Developed” beside the photos",
+    /// and whether it asks the rest each time.
     func summary(of workflow: Workflow) -> String {
+        Self.summary(of: workflow)
+    }
+
+    /// What a workflow writes, in a line, and whether it asks the rest each time.
+    static func summary(of workflow: Workflow) -> String {
+        let settled = settledSettings(of: workflow)
+        guard !workflow.asks.isEmpty else { return settled }
+        let asked = String(localized: "the rest asked each time")
+        return settled.isEmpty ? asked : "\(settled) · \(asked)"
+    }
+
+    /// What a workflow has settled of the files it writes, in a line, leaving out what it asks.
+    static func settledSettings(of workflow: Workflow) -> String {
         let format = switch workflow.options.format {
         case .jpeg: "JPEG"
         case .heic: "HEIC"
@@ -171,7 +196,11 @@ extension AppModel {
         case let .besideOriginals(folderName): String(localized: "in “\(folderName)” beside the photos")
         case let .folder(bookmark): String(localized: "in “\(bookmark.name)”")
         }
-        return [format, size, place].joined(separator: " · ")
+        return [
+            workflow.asks.contains(.format) ? nil : format,
+            workflow.asks.contains(.size) ? nil : size,
+            workflow.asks.contains(.destination) ? nil : place,
+        ].compactMap(\.self).joined(separator: " · ")
     }
 }
 
@@ -179,17 +208,25 @@ extension AppModel {
     /// Asks for the folder a workflow writes to, and remembers it so the app can write there
     /// again without asking. `nil` when none is chosen.
     func chooseWorkflowFolder() async -> FolderBookmark? {
+        do {
+            return try await Self.askForFolder()
+        } catch {
+            alertMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    /// The system's panel for choosing a folder to write into, as Save As would: the folder
+    /// chosen, remembered as a bookmark. `nil` when none is chosen.
+    static func askForFolder() async throws -> FolderBookmark? {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
         panel.prompt = String(localized: "Choose")
+        // From the Finder's panel the app may be out of sight: the system's panel needs it in front.
+        NSApplication.shared.activate()
         guard await panel.begin() == .OK, let folder = panel.url else { return nil }
-        do {
-            return try FolderBookmark(for: folder)
-        } catch {
-            alertMessage = error.localizedDescription
-            return nil
-        }
+        return try FolderBookmark(for: folder)
     }
 }
