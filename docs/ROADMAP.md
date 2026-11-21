@@ -125,7 +125,12 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    with the window: 13 films in view at the default size instead of 8. The zoomed photo's
    scroll bars are the thin ones that show while scrolling, even with a mouse connected; the
    panels keep the system's, which are wide with a mouse unless System Settings shows them
-   only while scrolling. Still open:
+   only while scrolling. The crop's controls float over the bottom of the photo on the system's
+   glass (`GlassGroup`): the shape of the frame, which opens its list upward inside the window,
+   upright or lying down, turn, mirror, the straightening in degrees on one row and Reset, with
+   Cancel and Done round beside them; on a narrow window the straightening takes a row of its
+   own. Controls in the toolbar were tried and turned down. The zoom bar and the library's
+   selection bar keep their earlier look for now: to bring to the same glass. Still open:
    - The toolbar's other items of the vision arrive with their steps: the way back to the folder
      (step 6), undo and redo (step 5), crop (step 8), Recipe (step 7). Until the library exists, Open
      stands where the way back will be.
