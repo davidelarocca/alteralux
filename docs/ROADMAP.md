@@ -267,6 +267,14 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    the first time in a folder outside the library the app asks for access to it, once (the sandbox
    denies a folder beside the originals otherwise). Shortcuts gets a "Develop Photos" action with the
    same workflows.
+   Done, the first part ([ADR 0013](adr/0013-workflows-are-recipes-with-their-files.md)): the Recipes and
+   Workflows window (the Recipe menu and the Window menu), with the recipes in a list and, for the one
+   chosen, its film and paper, whether it adapts to each photo, Rename and Delete, and its workflows, each
+   made and changed in a sheet with the export's own options and a destination (a folder of a given name
+   beside the originals, or one folder chosen once); in the library, the selected photos are developed
+   with a workflow from the selection's bar or a photo's menu, through the export sheet and its progress.
+   A workflow only writes files: the photos keep their adjustments. Next, the second part: the Finder's
+   Services entry and the Shortcuts action.
 11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;

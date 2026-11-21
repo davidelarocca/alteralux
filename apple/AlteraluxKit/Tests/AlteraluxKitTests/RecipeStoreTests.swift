@@ -181,3 +181,32 @@ struct RecipeStoreTests {
         #expect(recipe.applied(to: DevelopSettings(lensCorrection: nil)).lensCorrection == nil)
     }
 }
+
+/// Keeping workflows between launches, in the same way as recipes.
+struct WorkflowStoreTests {
+    @Test func aWorkflowIsReadBackAndItsFileNamesWhatItHolds() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-tests-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let output = folder.appendingPathComponent("Output")
+        try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
+        let store = WorkflowStore(directory: folder.appendingPathComponent("workflows"))
+        let beside = Workflow(name: "Web", recipeID: UUID(), destination: .besideOriginals(folderName: "Web"))
+        let chosen = try Workflow(
+            name: "Print", recipeID: UUID(), options: ExportOptions(format: .tiff, longSide: 4096),
+            destination: .folder(FolderBookmark(for: output)),
+        )
+        try await store.save(beside)
+        try await store.save(chosen)
+        #expect(await WorkflowStore(directory: folder.appendingPathComponent("workflows")).all() == [chosen, beside])
+
+        let file = folder.appendingPathComponent("workflows/\(beside.id.uuidString).json")
+        let stored = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        #expect(stored["version"] as? Int == 1 && stored["workflow"] != nil)
+
+        // The bookmark finds the folder again.
+        if case let .folder(bookmark) = chosen.destination {
+            #expect(bookmark.resolve()?.standardizedFileURL.path == output.standardizedFileURL.path)
+            #expect(bookmark.name == "Output")
+        }
+    }
+}

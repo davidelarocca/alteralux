@@ -199,18 +199,8 @@ public actor LibraryFolders {
     }
 
     private func makeBookmark(for url: URL) throws -> (data: Data, isSecurityScoped: Bool) {
-        do {
-            let data = try url.bookmarkData(
-                options: .withSecurityScope,
-                includingResourceValuesForKeys: nil,
-                relativeTo: nil,
-            )
-            return (data, true)
-        } catch {
-            // Tests run outside the sandbox, where plain bookmarks still remember reachable folders.
-            let data = try url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
-            return (data, false)
-        }
+        let bookmark = try FolderBookmark(for: url)
+        return (bookmark.data, bookmark.isSecurityScoped)
     }
 
     private func stopAccessingAllFolders() {

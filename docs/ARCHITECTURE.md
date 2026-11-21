@@ -35,7 +35,9 @@ A photo's adjustments are kept in the photo itself, as an extended attribute, an
 opened again. Undo and redo are the window's own.
 
 A recipe is a look saved under a name: every adjustment but the white balance. Recipes are kept by the
-app, one file each; a photo that receives one keeps only the adjustments.
+app, one file each; a photo that receives one keeps only the adjustments. A workflow is a recipe, named
+by id, and the files it writes (format, size, a folder beside the originals or one chosen folder); it
+only writes files, and is kept beside the recipes.
 
 The library shows the folders the user adds as they are on disk: it reads them, remembers them with
 security-scoped bookmarks and reads them again when they change. It keeps no catalogue.
@@ -81,3 +83,4 @@ defaults, and unknown keys are errors.
 | [0010](adr/0010-crop-before-the-engine.md) | Crop and straighten before the engine | Accepted |
 | [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted |
 | [0012](adr/0012-lens-profiles-from-lensfun.md) | Lens profiles from lensfun's database, applied before the engine | Accepted |
+| [0013](adr/0013-workflows-are-recipes-with-their-files.md) | A workflow is a recipe and the files it writes, kept beside the recipes | Accepted |

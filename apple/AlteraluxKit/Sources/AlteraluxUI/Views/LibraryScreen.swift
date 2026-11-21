@@ -3,17 +3,17 @@ import DesignSystem
 import SwiftUI
 import UniformTypeIdentifiers
 
+/// The widths of a sidebar: the library's folders, the recipes.
+enum SidebarWidth {
+    static let minimum: CGFloat = 180
+    static let ideal: CGFloat = 220
+    static let maximum: CGFloat = 320
+}
+
 /// The library: the folders the user added on the left, as they are on disk, and the photos of
 /// the one chosen in a grid. A double-click on a photo develops it.
 struct LibraryScreen: View {
     @Environment(AppModel.self) private var model
-
-    /// Width of the list of folders, in points.
-    private enum SidebarWidth {
-        static let minimum: CGFloat = 180
-        static let ideal: CGFloat = 220
-        static let maximum: CGFloat = 320
-    }
 
     /// Under the folder's name: how many photos it has, or how many of them the filters show.
     private var subtitle: Text {

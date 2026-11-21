@@ -7,7 +7,9 @@ import Foundation
 /// photo leaves them alone on the others (ADR 0009, ADR 0010).
 /// A photo that receives a recipe keeps only the adjustments: it does not remember the recipe,
 /// and a recipe changed later changes no photo. See ADR 0009.
-public struct Recipe: Codable, Equatable, Sendable, Identifiable {
+public struct Recipe: NamedItem, Equatable {
+    public static let storageKey = "recipe"
+
     public let id: UUID
     public var name: String
     /// The look. Its temperature, tint and crop are always `nil`.
