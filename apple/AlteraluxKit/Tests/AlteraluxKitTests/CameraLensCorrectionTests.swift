@@ -194,8 +194,8 @@ struct CameraLensWarpTests {
             let value = pixel(of: corrected, at: point)
             #expect(abs(Double(value.z) - expected) < 0.002, "at \(point): \(value.z), expected \(expected)")
             // The pixels stay where they are: red, lifted by the same gain, still says so.
-            let x = Double(value.x) / correction.vignettingGain(at: here) * Double(width) - 0.5
-            #expect(abs(x - here.x) < 0.05, "at \(point): x \(x)")
+            let column = Double(value.x) / correction.vignettingGain(at: here) * Double(width) - 0.5
+            #expect(abs(column - here.x) < 0.05, "at \(point): x \(column)")
         }
     }
 
