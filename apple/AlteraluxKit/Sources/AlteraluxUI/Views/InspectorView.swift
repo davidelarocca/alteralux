@@ -169,8 +169,9 @@ private struct WhiteBalanceControls: View {
     }
 }
 
-/// Whether the lens is corrected, where the RAW decoder knows this camera's lens: otherwise a
-/// line says there is nothing to correct with.
+/// Whether the lens is corrected, where the RAW decoder, the camera's own data or a lens profile
+/// know this camera's lens, with a line that says which of the last two does; otherwise a line
+/// says there is nothing to correct with.
 private struct LensCorrectionToggle: View {
     @Environment(AppModel.self) private var model
 
@@ -183,11 +184,37 @@ private struct LensCorrectionToggle: View {
             Text("No correction is known for this photo's lens.")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
+        } else if let correction = model.cameraLensCorrection {
+            CameraCorrectionLine(correction: correction)
         } else if let lens = model.lensProfileName {
             Text("Lensfun profile: \(lens)")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
         }
+    }
+}
+
+/// Who corrects the lens when the camera recorded some of it: the camera alone, or with lensfun,
+/// or only the vignetting after Apple's decoder.
+private struct CameraCorrectionLine: View {
+    let correction: CameraLensCorrection
+
+    var body: some View {
+        let lens = correction.lensName
+        Group {
+            switch (correction.geometrySource, correction.vignettingSource) {
+            case (.apple, _):
+                Text("Vignetting corrected with the camera's data")
+            case (.lensfun, _):
+                Text("Lensfun profile, vignetting from the camera: \(lens)")
+            case (_, .lensfun):
+                Text("Camera's own correction, vignetting from lensfun: \(lens)")
+            default:
+                Text("Camera's own correction: \(lens)")
+            }
+        }
+        .font(Typography.caption)
+        .foregroundStyle(.secondary)
     }
 }
 

@@ -3824,6 +3824,46 @@
           }
         }
       }
+    },
+    "Camera's own correction: %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correzione della fotocamera: %@"
+          }
+        }
+      }
+    },
+    "Vignetting corrected with the camera's data" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vignettatura corretta con i dati della fotocamera"
+          }
+        }
+      }
+    },
+    "Lensfun profile, vignetting from the camera: %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Profilo lensfun, vignettatura dalla fotocamera: %@"
+          }
+        }
+      }
+    },
+    "Camera's own correction, vignetting from lensfun: %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correzione della fotocamera, vignettatura da lensfun: %@"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

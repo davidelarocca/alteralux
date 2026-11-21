@@ -22,8 +22,9 @@ adjustments with a live preview, white balance for RAW files, undo and redo,
 adjustments that stay with each photo between launches, a library that shows
 the folders you add as they are on disk, where photos are moved, copied,
 tagged with the Finder's tags and discarded, zoom, comparison with the original,
-crop and straighten, lens corrections (Apple's RAW decoder, or lensfun's
-profiles), recipes (looks saved under a name), workflows that develop photos
+crop and straighten, lens corrections (Apple's RAW decoder, the corrections
+Sony, Fujifilm, Nikon Z, Olympus and Panasonic cameras record in the RAW, vignetting
+included, or lensfun's profiles), recipes (looks saved under a name), workflows that develop photos
 with a recipe, adapted to each photo, into files beside them or in a folder,
 from the library, from the Finder's right-click menu or from Shortcuts, and
 export to JPEG, 10-bit HEIC, 16-bit TIFF or PNG with an embedded sRGB or

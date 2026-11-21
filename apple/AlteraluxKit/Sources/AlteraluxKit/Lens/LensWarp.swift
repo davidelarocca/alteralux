@@ -1,7 +1,7 @@
 import CoreImage
 import Foundation
 
-/// Applies a lens profile to a photo with Core Image: distortion, chromatic aberration and
+/// Applies a lens profile, or the corrections the camera recorded, to a photo with Core Image: distortion, chromatic aberration and
 /// vignetting, on the scene-linear pixels out of the decoder, before the frame and before the engine
 /// (ADR 0002, ADR 0010).
 ///
@@ -11,15 +11,14 @@ import Foundation
 /// `LensCorrection.vignettingGain(at:)`, which the tests compare it with; the parameters are the
 /// correction's, in its pixels (the first pixel's center at the origin).
 enum LensWarp {
-    /// The kernel, compiled once.
-    private static let kernel: CIKernel? = {
-        let kernels = try? CIKernel.kernels(withMetalString: source)
-        return kernels?.first { $0.name == "lensCorrect" }
-    }()
+    /// The kernels, compiled once: one for lens profiles, one for the camera's own curves.
+    private static let kernels = (try? CIKernel.kernels(withMetalString: source)) ?? []
+    private static let kernel = kernels.first { $0.name == "lensCorrect" }
+    private static let cameraKernel = kernels.first { $0.name == "lensCorrectByTable" }
 
     /// Whether the kernel compiled on this Mac. Without it photos are left uncorrected.
     static var isAvailable: Bool {
-        kernel != nil
+        kernel != nil && cameraKernel != nil
     }
 
     /// `image`, the whole photo or a reduced copy of it, corrected for its lens.
@@ -49,6 +48,56 @@ enum LensWarp {
         ]
         let corrected = kernel.apply(extent: extent, roiCallback: { _, _ in image.extent }, arguments: arguments)
         return corrected?.cropped(to: extent) ?? image
+    }
+
+    /// The number of entries of the table the camera kernel reads its curves from, and the
+    /// radius, in half diagonals, of the last one.
+    static let tableCount = 1024
+    static let tableRadius = 1.6
+
+    /// `image`, the whole photo or a reduced copy of it, corrected with the curves of `correction`.
+    /// The math is `CameraLensCorrection.sourcePoint(ofCorrected:channel:)` and
+    /// `CameraLensCorrection.vignettingGain(at:)`; the curves reach the kernel as a table of
+    /// `tableCount` radii, read with straight lines between them.
+    ///
+    /// - Parameter fullSize: the size of the whole photo `correction` was made for, in pixels.
+    static func apply(_ correction: CameraLensCorrection, to image: CIImage, fullSize: CGSize) -> CIImage {
+        guard let cameraKernel, fullSize.width > 0 else { return image }
+        let extent = image.extent
+        let factor = extent.width / fullSize.width
+        let table = table(of: correction)
+        let arguments: [Any] = [
+            image.clampedToExtent(),
+            table,
+            CIVector(x: correction.center.x, y: correction.center.y, z: correction.unit, w: correction.scale),
+            CIVector(x: extent.minX, y: extent.maxY, z: factor, w: 0),
+            CIVector(x: CGFloat(tableCount), y: tableRadius, z: 0, w: 0),
+        ]
+        let corrected = cameraKernel.apply(
+            extent: extent,
+            roiCallback: { index, _ in index == 0 ? image.extent : table.extent },
+            arguments: arguments,
+        )
+        return corrected?.cropped(to: extent) ?? image
+    }
+
+    /// The curves of `correction` as one row of float pixels: red, green and blue hold the factor
+    /// of the radius less one, so that small corrections keep their precision; alpha holds the light
+    /// kept.
+    static func table(of correction: CameraLensCorrection) -> CIImage {
+        var values = [Float](repeating: 0, count: tableCount * 4)
+        for index in 0 ..< tableCount {
+            let radius = tableRadius * Double(index) / Double(tableCount - 1)
+            values[index * 4] = Float(correction.red.value(at: radius) - 1)
+            values[index * 4 + 1] = Float(correction.green.value(at: radius) - 1)
+            values[index * 4 + 2] = Float(correction.blue.value(at: radius) - 1)
+            values[index * 4 + 3] = Float(correction.light.value(at: radius))
+        }
+        let data = values.withUnsafeBytes { Data($0) }
+        return CIImage(
+            bitmapData: data, bytesPerRow: tableCount * 16, size: CGSize(width: tableCount, height: 1),
+            format: .RGBAf, colorSpace: nil,
+        )
     }
 
     /// The distortion of `correction` as one polynomial, `f(r) = 1 + d1 r + d2 r^2 + d3 r^3 +
@@ -103,6 +152,41 @@ enum LensWarp {
             float gain = 1.0 / (1.0 + r2 * (vignetting.x + r2 * (vignetting.y + r2 * vignetting.z)));
             float2 sampled = float2((shot.x + 0.5) * factor + frame.x, frame.y - (shot.y + 0.5) * factor);
             color[channel] = photo.sample(photo.transform(sampled))[channel] * gain;
+        }
+        return float4(color, 1.0);
+    }
+
+    // The table at `radius`, in half diagonals: `info` holds its number of entries and the radius
+    // of the last. Two entries read at their centers and mixed, for the full precision of floats.
+    static float4 tableAt(coreimage::sampler table, float radius, float4 info) {
+        float position = clamp(radius / info.y, 0.0, 1.0) * (info.x - 1.0);
+        float index = floor(position);
+        float next = min(index + 1.0, info.x - 1.0);
+        float4 low = table.sample(table.transform(float2(index + 0.5, 0.5)));
+        float4 high = table.sample(table.transform(float2(next + 0.5, 0.5)));
+        return mix(low, high, position - index);
+    }
+
+    // table: the curves (see `LensWarp.table(of:)`). geometry: center x, y, half diagonal in
+    // pixels, scale. frame: as above. info: the table's number of entries and last radius.
+    [[stitchable]] float4 lensCorrectByTable(
+        coreimage::sampler photo, coreimage::sampler table, float4 geometry, float4 frame, float4 info,
+        coreimage::destination dest
+    ) {
+        float factor = frame.z;
+        float2 here = dest.coord();
+        float2 point = float2(here.x - frame.x, frame.y - here.y) / factor - 0.5;
+        float2 center = geometry.xy;
+        float unit = geometry.z;
+
+        float2 offset = (point - center) / geometry.w;
+        float4 curves = tableAt(table, length(offset) / unit, info);
+        float3 color;
+        for (int channel = 0; channel < 3; channel++) {
+            float2 shot = center + offset * (1.0 + curves[channel]);
+            float light = tableAt(table, length(shot - center) / unit, info).w;
+            float2 sampled = float2((shot.x + 0.5) * factor + frame.x, frame.y - (shot.y + 0.5) * factor);
+            color[channel] = photo.sample(photo.transform(sampled))[channel] / max(light, 1e-4);
         }
         return float4(color, 1.0);
     }

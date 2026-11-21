@@ -24,8 +24,12 @@ public actor PhotoDecoder {
     /// Whether this photo's lens can be corrected: its distortion, its darker corners and its
     /// colored fringes, by the RAW decoder from what the camera recorded, or with a lens profile.
     public nonisolated let correctsLens: Bool
-    /// The lens profile that corrects this photo, where the RAW decoder does not know the lens:
-    /// `nil` when the decoder does, or when no profile fits.
+    /// The correction made with what the camera recorded in the RAW: all of it where the RAW
+    /// decoder does not know the lens, the vignetting alone where it does and leaves it (ADR 0015).
+    /// `nil` when the file carries nothing that applies.
+    public nonisolated let cameraLensCorrection: CameraLensCorrection?
+    /// The lens profile that corrects this photo alone, where neither the RAW decoder nor the
+    /// camera's own corrections do: `nil` when one of them does, or when no profile fits.
     public nonisolated let lensProfile: LensCorrection?
     /// Whether the RAW decoder corrects this photo's lens when it is not told: what adjustments
     /// saved without the choice get.
@@ -67,13 +71,20 @@ public actor PhotoDecoder {
         }
         width = Int(extent.width)
         height = Int(extent.height)
+        // The geometry by Apple's decoder, then by the camera, then by lensfun; the vignetting by the
+        // camera, then by lensfun (ADR 0015).
         let decoderCorrects = rawFilter?.isLensCorrectionSupported ?? false
-        lensProfile = decoderCorrects || !isRaw ? nil : lenses.flatMap { lenses in
-            PhotoLensInfo.read(from: url).flatMap { info in
-                lenses.lens(for: info)?.correction(for: info, imageWidth: Int(extent.width), imageHeight: Int(extent.height))
-            }
+        let info = isRaw ? PhotoLensInfo.read(from: url) : nil
+        let profile = decoderCorrects ? nil : info.flatMap { info in
+            lenses?.lens(for: info)?.correction(for: info, imageWidth: Int(extent.width), imageHeight: Int(extent.height))
         }
-        correctsLens = decoderCorrects || lensProfile != nil
+        cameraLensCorrection = CameraLensCorrection.combining(
+            camera: isRaw ? CameraLensData.read(from: url) : nil, lensfun: profile, appleCorrects: decoderCorrects,
+            lensName: info.map { $0.lensModel.isEmpty ? $0.cameraModel : $0.lensModel } ?? "",
+            size: SIMD2(Int(extent.width), Int(extent.height)),
+        )
+        lensProfile = cameraLensCorrection == nil ? profile : nil
+        correctsLens = decoderCorrects || cameraLensCorrection != nil || lensProfile != nil
     }
 
     /// The size of the whole photo, in pixels.
@@ -164,7 +175,10 @@ public actor PhotoDecoder {
                 from: rawFilter, url: url, maxDimension: maxDimension,
                 whiteBalance: whiteBalance ?? asShotWhiteBalance, lensCorrection: correctsLens,
             )
-            .applyingLensProfile(correctsLens ? lensProfile : nil, fullSize: size)
+            .applyingLensCorrection(
+                camera: correctsLens ? cameraLensCorrection : nil, profile: correctsLens ? lensProfile : nil,
+                fullSize: size,
+            )
         } else if let standardImage {
             image = ImageLoader.scaled(standardImage, maxDimension: maxDimension)
         } else {
@@ -189,8 +203,11 @@ extension PhotoDecoder {
 }
 
 private extension CIImage {
-    /// This image corrected with `profile`, or as it is for `nil`.
-    func applyingLensProfile(_ profile: LensCorrection?, fullSize: CGSize) -> CIImage {
-        profile.map { LensWarp.apply($0, to: self, fullSize: fullSize) } ?? self
+    /// This image corrected with the camera's curves or with `profile`, or as it is for `nil`.
+    func applyingLensCorrection(camera: CameraLensCorrection?, profile: LensCorrection?, fullSize: CGSize) -> CIImage {
+        if let camera {
+            return LensWarp.apply(camera, to: self, fullSize: fullSize)
+        }
+        return profile.map { LensWarp.apply($0, to: self, fullSize: fullSize) } ?? self
     }
 }

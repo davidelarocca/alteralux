@@ -28,8 +28,10 @@ main actor (`PhotoDecoder`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
 
 The selected photo is decoded for each preview at the size of that preview, and whole for the 100% view
 and for export. White balance is chosen in the RAW decoder, before the engine sees the photo, and so is
-the lens corrected: by Apple's decoder where it knows the lens, otherwise with lensfun's profiles and a
-Core Image kernel (`Lens/` in AlteraluxKit), before the frame.
+the lens corrected: by Apple's decoder where it knows the lens, otherwise with the corrections the camera
+recorded in the RAW (Sony, Fujifilm, Nikon Z, Olympus, Panasonic) or with lensfun's profiles, and the
+vignetting from the camera where Apple's decoder leaves it, by Core Image kernels (`Lens/` in
+AlteraluxKit), before the frame.
 
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
@@ -88,3 +90,4 @@ defaults, and unknown keys are errors.
 | [0012](adr/0012-lens-profiles-from-lensfun.md) | Lens profiles from lensfun's database, applied before the engine | Accepted |
 | [0013](adr/0013-workflows-are-recipes-with-their-files.md) | A workflow is a recipe and the files it writes, kept beside the recipes | Accepted |
 | [0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md) | A workflow is how a recipe is used, run from the Finder's right-click menu and from Shortcuts | Accepted |
+| [0015](adr/0015-the-cameras-own-lens-corrections.md) | The corrections cameras record, combined with Apple's decoder and lensfun | Accepted |
