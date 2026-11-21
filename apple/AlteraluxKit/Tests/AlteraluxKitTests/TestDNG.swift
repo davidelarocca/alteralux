@@ -39,11 +39,14 @@ enum TestDNG {
     /// The bytes of a DNG of a scene that is gray all over, in steps from dark to bright, whose
     /// camera recorded `asShotNeutral` (red, green, blue) as the color of white: equal parts
     /// is the true light, anything else a white balance the camera got wrong.
-    static func grayScene(asShotNeutral: [Double], width: Int = 240, height: Int = 160) -> Data {
+    /// `cameraChose` says, in the EXIF, that the camera chose its white balance itself.
+    static func grayScene(
+        asShotNeutral: [Double], cameraChose: Bool? = nil, width: Int = 240, height: Int = 160,
+    ) -> Data {
         dng(
             width: width, height: height,
             asShotNeutral: asShotNeutral.map { (Int(($0 * 10000).rounded()), 10000) },
-            pixels: grays(width: width, height: height),
+            pixels: grays(width: width, height: height), whiteBalanceMode: cameraChose.map { $0 ? 0 : 1 },
         )
     }
 
@@ -62,15 +65,16 @@ enum TestDNG {
 
     /// Writes ``grayScene(asShotNeutral:width:height:)`` to a new temporary file. The caller
     /// removes it.
-    static func writeGrayScene(asShotNeutral: [Double]) throws -> URL {
+    static func writeGrayScene(asShotNeutral: [Double], cameraChose: Bool? = nil) throws -> URL {
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("alteralux-test-\(UUID().uuidString).dng")
-        try grayScene(asShotNeutral: asShotNeutral).write(to: url)
+        try grayScene(asShotNeutral: asShotNeutral, cameraChose: cameraChose).write(to: url)
         return url
     }
 
     private static func dng(
         width: Int, height: Int, asShotNeutral: [(Int, Int)], pixels: Data, lens: PhotoLensInfo? = nil,
+        whiteBalanceMode: Int? = nil,
     ) -> Data {
         let stripBytes = width * height * 6
         var entries = [
@@ -111,6 +115,21 @@ enum TestDNG {
             entries[entries.firstIndex { $0.tag == 272 } ?? 0] = Entry(
                 tag: 272, type: FieldType.ascii, count: lens.cameraModel.utf8.count + 1, payload: ascii(lens.cameraModel),
             )
+        }
+        var exifEntries: [Entry] = []
+        if let lens {
+            exifEntries += [
+                Entry(tag: 33437, type: FieldType.rational, count: 1, payload: rational(lens.aperture)), // FNumber
+                Entry(tag: 37386, type: FieldType.rational, count: 1, payload: rational(lens.focalLength)),
+                Entry(tag: 42036, type: FieldType.ascii, count: lens.lensModel.utf8.count + 1, payload: ascii(lens.lensModel)),
+            ]
+        }
+        if let whiteBalanceMode {
+            // WhiteBalance: 0 the camera chose it, 1 set by hand.
+            exifEntries.append(Entry(tag: 41987, type: FieldType.short, count: 1, payload: short(whiteBalanceMode)))
+        }
+        exifEntries.sort { $0.tag < $1.tag }
+        if !exifEntries.isEmpty {
             // ExifIFD, after PlanarConfiguration in the order of the tags; its offset is set below.
             let index = (entries.firstIndex { $0.tag == 284 } ?? 0) + 1
             entries.insert(Entry(tag: 34665, type: FieldType.long, count: 1, payload: long(0)), at: index)
@@ -120,16 +139,12 @@ enum TestDNG {
         let directoryOffset = 8
         let mainSize = directory(entries, at: directoryOffset).count
         var exif = Data()
-        if let lens {
+        if !exifEntries.isEmpty {
             let exifOffset = directoryOffset + mainSize
             entries[entries.firstIndex { $0.tag == 34665 } ?? 0] = Entry(
                 tag: 34665, type: FieldType.long, count: 1, payload: long(exifOffset),
             )
-            exif = directory([
-                Entry(tag: 33437, type: FieldType.rational, count: 1, payload: rational(lens.aperture)), // FNumber
-                Entry(tag: 37386, type: FieldType.rational, count: 1, payload: rational(lens.focalLength)),
-                Entry(tag: 42036, type: FieldType.ascii, count: lens.lensModel.utf8.count + 1, payload: ascii(lens.lensModel)),
-            ], at: exifOffset)
+            exif = directory(exifEntries, at: exifOffset)
         }
         let stripIndex = entries.firstIndex { $0.tag == 273 } ?? 0
         entries[stripIndex] = Entry(

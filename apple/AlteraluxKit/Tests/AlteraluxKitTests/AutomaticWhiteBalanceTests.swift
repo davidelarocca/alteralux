@@ -48,6 +48,23 @@ struct AutomaticWhiteBalanceTests {
         #expect(await decoder.automaticWhiteBalance() == automatic)
     }
 
+    @Test func aWhiteBalanceTheCameraChoseItselfIsKept() async throws {
+        // The same wrong light, but the camera says it chose it from the scene: it saw more.
+        let url = try TestDNG.writeGrayScene(asShotNeutral: [1, 1, 0.6], cameraChose: true)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = try PhotoDecoder(url: url)
+        #expect(decoder.cameraChoseWhiteBalance)
+        #expect(await decoder.automaticWhiteBalance() == decoder.asShotWhiteBalance)
+    }
+
+    @Test func aWhiteBalanceSetByHandOnTheCameraIsMeasured() async throws {
+        let url = try TestDNG.writeGrayScene(asShotNeutral: [1, 1, 0.6], cameraChose: false)
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = try PhotoDecoder(url: url)
+        #expect(!decoder.cameraChoseWhiteBalance)
+        #expect(await decoder.automaticWhiteBalance() != decoder.asShotWhiteBalance)
+    }
+
     @Test func theDecoderIsLeftWithTheCamerasWhiteBalance() async throws {
         let url = try TestDNG.writeGrayScene(asShotNeutral: [1, 1, 0.6])
         defer { try? FileManager.default.removeItem(at: url) }

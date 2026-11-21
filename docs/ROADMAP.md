@@ -215,8 +215,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      recipe can adapt to each photo (a switch in the recipe sheet): given to a photo, it turns the meter
      on and the white balance to automatic, unless the photo's was chosen by hand. A "Automatic white
      balance" switch in the Camera section measures the photo's light and keeps the camera's white
-     balance unless it is far off. Seen in the built app on the test RAW. Still to judge on real photos:
-     the thresholds.
+     balance unless it is far off. Seen in the built app on the test RAW. Changed the same day after
+     measuring 126 of the user's RAWs: a white balance the camera chose itself is kept (ADR 0011).
+     Still to judge on real photos whose white balance was set by hand: the thresholds.
    - Recipes are in the order of their names, and deleting one asks first but is not a step of undo.
      Recipe files cannot be imported or handed to someone else yet.
    - The export's progress is the system's bar, not the print coming up in the developer of the
@@ -248,7 +249,13 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    focal length, aperture and distance, and applied by a Core Image kernel (distortion with the
    picture enlarged to fill the frame, colored fringes, vignetting) before the frame; the inspector
    names the profile. Seen in the built app on a test RAW that names a Sony A7 III and the FE 24-70mm
-   GM. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
+   GM. Measured on 2026-11-21 on 126 of the user's RAWs (numbers only): a Sony ZV-E10 with a Viltrox
+   56mm F1.7 E, which neither Apple's decoder nor lensfun knows.
+   Next, the third part: the corrections the camera writes in the RAW itself (Sony, Fujifilm,
+   OM/Olympus, Panasonic, Nikon Z, Canon RF record the mounted lens's distortion, vignetting and
+   fringes), for the cameras Apple's decoder does not cover. For recent mirrorless lenses it is the best
+   source there is; darktable (GPLv3) reads it for several makers and shows how. Asked by the user on
+   2026-11-21. Still open: how well lensfun covers the user's own lenses, and the look of the correction on
    real photos; photos that are not RAW are not corrected (their camera may have done it already).
 10. **Recipes and workflows, from the app and the Finder.** Decided with the user on 2026-11-21: a
    workflow is a recipe and what to do with it (format, size, where to save, such as a folder beside the

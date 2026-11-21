@@ -1,5 +1,6 @@
 import CoreImage
 import Foundation
+import ImageIO
 
 /// Decodes one photo as many times as the app needs it: at the size of each preview, at its
 /// own size for the 100% view and for export, and for a RAW with the white balance chosen.
@@ -17,6 +18,9 @@ public actor PhotoDecoder {
     /// The white balance the camera recorded. `nil` for a file that is not a RAW: its white
     /// balance is in its pixels and cannot be chosen again.
     public nonisolated let asShotWhiteBalance: WhiteBalance?
+    /// Whether the camera chose the white balance itself, from the scene (EXIF "auto"): the
+    /// automatic white balance then keeps it, since the camera saw more than the photo shows.
+    public nonisolated let cameraChoseWhiteBalance: Bool
     /// Whether this photo's lens can be corrected: its distortion, its darker corners and its
     /// colored fringes, by the RAW decoder from what the camera recorded, or with a lens profile.
     public nonisolated let correctsLens: Bool
@@ -44,6 +48,7 @@ public actor PhotoDecoder {
             asShotWhiteBalance = WhiteBalance(
                 temperature: Double(filter.neutralTemperature), tint: Double(filter.neutralTint),
             )
+            cameraChoseWhiteBalance = Self.cameraChoseWhiteBalance(of: url)
             correctsLensByDefault = filter.isLensCorrectionEnabled
             whole = try ImageLoader.rawImage(from: filter, url: url, maxDimension: nil, whiteBalance: nil)
             rawFilter = filter
@@ -51,6 +56,7 @@ public actor PhotoDecoder {
         } else {
             whole = try ImageLoader.standardImage(for: url)
             asShotWhiteBalance = nil
+            cameraChoseWhiteBalance = false
             correctsLensByDefault = false
             rawFilter = nil
             standardImage = whole
@@ -82,11 +88,13 @@ public actor PhotoDecoder {
         return max(1, Int(max(framed.width, framed.height).rounded()))
     }
 
-    /// The white balance an automatic choice gives this RAW: the camera's, unless the light
-    /// measured in the photo is far from it (see `AutomaticWhiteBalance`). Measured once, at the
-    /// first call. `nil` for a file that is not a RAW.
+    /// The white balance an automatic choice gives this RAW: the camera's when the camera chose
+    /// it itself, or when the light measured in the photo is close to it (see
+    /// `AutomaticWhiteBalance`). Measured once, at the first call. `nil` for a file that is not a
+    /// RAW.
     public func automaticWhiteBalance() -> WhiteBalance? {
         guard let rawFilter, let asShotWhiteBalance else { return nil }
+        guard !cameraChoseWhiteBalance else { return asShotWhiteBalance }
         if let measuredWhiteBalance {
             return measuredWhiteBalance ?? asShotWhiteBalance
         }
@@ -163,6 +171,20 @@ public actor PhotoDecoder {
             throw AlteraluxError.unreadableImage(url)
         }
         return try ImageLoader.pixels(of: crop.map { ImageLoader.framed(image, by: $0) } ?? image, url: url)
+    }
+}
+
+extension PhotoDecoder {
+    /// Whether the EXIF of `url` says the camera chose the white balance itself. A photo that does
+    /// not say counts as one whose white balance was set by hand.
+    static func cameraChoseWhiteBalance(of url: URL) -> Bool {
+        guard
+            let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+            let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+            let exif = properties[kCGImagePropertyExifDictionary] as? [CFString: Any],
+            let mode = exif[kCGImagePropertyExifWhiteBalance] as? NSNumber
+        else { return false }
+        return mode.intValue == 0
     }
 }
 

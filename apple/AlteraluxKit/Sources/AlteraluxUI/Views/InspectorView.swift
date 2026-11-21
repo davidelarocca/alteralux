@@ -149,6 +149,11 @@ private struct WhiteBalanceControls: View {
             Group {
                 Toggle("Automatic white balance", isOn: $model.isWhiteBalanceAutomatic)
                     .help("Start from the light measured in the photo where the camera's white balance is far from it.")
+                if model.isWhiteBalanceAutomatic, model.cameraChoseWhiteBalance {
+                    Text("The camera chose this white balance itself, from the scene: it is kept.")
+                        .font(Typography.caption)
+                        .foregroundStyle(.secondary)
+                }
                 ParameterSlider(
                     "Temperature", value: $model.temperature, in: model.temperatureRange,
                     step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
