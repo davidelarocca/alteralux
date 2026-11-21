@@ -52,6 +52,9 @@ struct FilmstripView: View {
                 .padding(.vertical, Spacing.s)
             }
             .scrollIndicators(.hidden)
+            // The thumbnails end where the strip does: drawn past it, they would run on under
+            // the adjustments, whose glass shows them.
+            .clipped()
             .onChange(of: model.selectedID) { _, selected in
                 guard let selected else { return }
                 // Scrolling moves content: no animation under Reduce Motion.
