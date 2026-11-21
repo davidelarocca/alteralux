@@ -1203,12 +1203,62 @@
         }
       }
     },
+    "Move %lld photos to the Trash?" : {
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Move %lld photo to the Trash?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Move %lld photos to the Trash?"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Spostare %lld foto nel Cestino?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Spostare %lld foto nel Cestino?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Move %lld Photos to Trash" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sposta %lld foto nel Cestino"
+          }
+        }
+      }
+    },
+    "Move “%@” to the Trash?" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spostare “%@” nel Cestino?"
           }
         }
       }
@@ -2891,6 +2941,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Filtro giallo"
+          }
+        }
+      }
+    },
+    "You can put it back from the Trash in the Finder." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi recuperarla dal Cestino del Finder."
+          }
+        }
+      }
+    },
+    "You can put them back from the Trash in the Finder." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi recuperarle dal Cestino del Finder."
           }
         }
       }

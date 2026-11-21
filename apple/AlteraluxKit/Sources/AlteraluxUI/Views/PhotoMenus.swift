@@ -9,6 +9,8 @@ enum PhotoQuestion: Equatable {
     case newTag
     /// A new name for this photo.
     case rename(URL)
+    /// Whether to move the selected photos to the Trash: one click must not empty a folder.
+    case trash
 }
 
 /// The menu of a photo of the library's grid, opened with a secondary click: what the bar of
@@ -72,7 +74,7 @@ struct LibraryPhotoMenu: View {
         Button("Rotate Right") { act { model.turnSelection(clockwise: true) } }
         Divider()
         discardButton(count: count)
-        Button { act { Task { await model.trashSelection() } } } label: {
+        Button { act { ask(.trash) } } label: {
             count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
         }
     }
@@ -172,7 +174,8 @@ private struct OpenWithMenu: View {
 }
 
 /// What a photo's menu asks before it acts: a new tag for the selection, with its name and color,
-/// in a sheet; a new name for a photo, in the system's alert. The field starts with the photo's
+/// in a sheet; a new name for a photo, in the system's alert; whether to move the selected photos
+/// to the Trash, in the system's confirmation. The field starts with the photo's
 /// name, its extension left out: it stays.
 struct PhotoQuestionAlerts: ViewModifier {
     @Environment(AppModel.self) private var model
@@ -200,6 +203,17 @@ struct PhotoQuestionAlerts: ViewModifier {
                     Text("The photo keeps its kind: “.\(photo.pathExtension)” stays at the end of its name.")
                 }
             }
+            .confirmationDialog(trashQuestion, isPresented: isAsking(.trash)) {
+                Button("Move to Trash", role: .destructive) {
+                    Task { await model.trashSelection() }
+                }
+            } message: {
+                if model.selectedPhotos.count == 1 {
+                    Text("You can put it back from the Trash in the Finder.")
+                } else {
+                    Text("You can put them back from the Trash in the Finder.")
+                }
+            }
             .onChange(of: question) { _, asked in
                 if case let .rename(photo) = asked {
                     name = photo.deletingPathExtension().lastPathComponent
@@ -207,6 +221,15 @@ struct PhotoQuestionAlerts: ViewModifier {
                     name = ""
                 }
             }
+    }
+
+    /// The question before the Trash: the photo by its name, or how many.
+    private var trashQuestion: Text {
+        let photos = model.selectedPhotos
+        if photos.count == 1, let photo = photos.first {
+            return Text("Move “\(photo.lastPathComponent)” to the Trash?")
+        }
+        return Text("Move \(photos.count) photos to the Trash?")
     }
 
     private func isAsking(_ asked: PhotoQuestion) -> Binding<Bool> {
