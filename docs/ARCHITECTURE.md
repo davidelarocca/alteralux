@@ -27,7 +27,9 @@ Views read it and send intents; they hold no business logic. Decoding, rendering
 main actor (`PhotoDecoder`, `FilmRenderer`, `ImageExporter` in AlteraluxKit).
 
 The selected photo is decoded for each preview at the size of that preview, and whole for the 100% view
-and for export. White balance is chosen in the RAW decoder, before the engine sees the photo.
+and for export. White balance is chosen in the RAW decoder, before the engine sees the photo, and so is
+the lens corrected: by Apple's decoder where it knows the lens, otherwise with lensfun's profiles and a
+Core Image kernel (`Lens/` in AlteraluxKit), before the frame.
 
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
@@ -78,3 +80,4 @@ defaults, and unknown keys are errors.
 | [0009](adr/0009-recipes-are-looks-kept-by-the-app.md) | A recipe is a look without white balance, kept by the app | Accepted |
 | [0010](adr/0010-crop-before-the-engine.md) | Crop and straighten before the engine | Accepted |
 | [0011](adr/0011-recipes-adapt-to-each-photo.md) | Recipes that adapt to each photo, and the lens corrected by the RAW decoder | Accepted |
+| [0012](adr/0012-lens-profiles-from-lensfun.md) | Lens profiles from lensfun's database, applied before the engine | Accepted |

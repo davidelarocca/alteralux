@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!DOCTYPE lensdatabase SYSTEM "lensfun-database.dtd">
+<!-- A few entries in lensfun's format, written for the tests. The numbers follow real ones. -->
+<lensdatabase version="2">
+
+    <mount>
+        <name>Sony E</name>
+        <compat>M42</compat>
+    </mount>
+
+    <camera>
+        <maker>Sony</maker>
+        <model>ILCE-7M3</model>
+        <model lang="en">Alpha 7 III</model>
+        <mount>Sony E</mount>
+        <cropfactor>1.0</cropfactor>
+    </camera>
+
+    <camera>
+        <maker>Sony</maker>
+        <model>NEX-5N</model>
+        <mount>Sony E</mount>
+        <cropfactor>1.534</cropfactor>
+    </camera>
+
+    <camera>
+        <maker>Sony</maker>
+        <model>DSC-RX100</model>
+        <model lang="en">RX100</model>
+        <mount>sonyRX100</mount>
+        <cropfactor>2.73</cropfactor>
+    </camera>
+
+    <lens>
+        <maker>Sony</maker>
+        <model>FE 24-70mm f/2.8 GM</model>
+        <mount>Sony E</mount>
+        <cropfactor>1</cropfactor>
+        <focal min="24" max="70"/>
+        <aperture min="2.8" max="22"/>
+        <calibration>
+            <distortion model="ptlens" focal="24" a="0.02824" b="-0.07818" c="0.03129"/>
+            <distortion model="ptlens" focal="35" a="0.01259" b="-0.01412" c="-0.00168"/>
+            <distortion model="ptlens" focal="50" a="0.00279" b="0.01446" c="-0.01735"/>
+            <distortion model="ptlens" focal="70" a="0.00719" b="-0.01275" c="0.0241"/>
+            <tca model="poly3" focal="24" vr="1.0001797" vb="1.0001569"/>
+            <tca model="poly3" focal="70" vr="0.9998908" vb="0.9998780" cr="0.0001" cb="-0.0001" br="-0.0002" bb="0.0002"/>
+            <vignetting model="pa" focal="24" aperture="2.8" distance="1000" k1="-0.5106" k2="-0.3627" k3="0.1448"/>
+            <vignetting model="pa" focal="24" aperture="2.8" distance="10" k1="-0.5106" k2="-0.3627" k3="0.1448"/>
+            <vignetting model="pa" focal="24" aperture="4" distance="1000" k1="-0.4000" k2="-0.2000" k3="0.0500"/>
+            <vignetting model="pa" focal="24" aperture="4" distance="10" k1="-0.4000" k2="-0.2000" k3="0.0500"/>
+            <vignetting model="pa" focal="70" aperture="2.8" distance="1000" k1="-0.6241" k2="0.8333" k3="-0.7866"/>
+            <vignetting model="pa" focal="70" aperture="2.8" distance="10" k1="-0.6241" k2="0.8333" k3="-0.7866"/>
+        </calibration>
+    </lens>
+
+    <lens>
+        <maker>Sony</maker>
+        <model>FE 24-70mm f/2.8 GM II</model>
+        <mount>Sony E</mount>
+        <cropfactor>1.0</cropfactor>
+        <focal min="24" max="70"/>
+        <calibration>
+            <distortion model="ptlens" focal="24" a="0.0169920" b="-0.0493064" c="0.0160732"/>
+            <distortion model="ptlens" focal="70" a="-0.0008176" b="0.0113116" c="-0.0043728"/>
+        </calibration>
+    </lens>
+
+    <lens>
+        <maker>Sony</maker>
+        <model>FE 24-70mm f/4 ZA OSS</model>
+        <mount>Sony E</mount>
+        <cropfactor>1.0</cropfactor>
+        <focal min="24" max="70"/>
+        <calibration>
+            <distortion model="ptlens" focal="24" a="0.0321" b="-0.0990" c="0.0510"/>
+            <distortion model="ptlens" focal="70" a="0.0050" b="-0.0100" c="0.0100"/>
+        </calibration>
+    </lens>
+
+    <lens>
+        <maker>Sony</maker>
+        <model>E 18-55mm f/3.5-5.6 OSS</model>
+        <focal min="18" max="55"/>
+        <mount>Sony E</mount>
+        <cropfactor>1.534</cropfactor>
+        <aspect-ratio>3:2</aspect-ratio>
+        <calibration>
+            <distortion model="poly3" focal="18" k1="-0.0295"/>
+            <distortion model="poly3" focal="55" k1="0.0005"/>
+        </calibration>
+    </lens>
+
+    <lens>
+        <maker>Helios</maker>
+        <model>Helios 44-2 58mm f/2</model>
+        <mount>M42</mount>
+        <cropfactor>1.0</cropfactor>
+        <calibration>
+            <distortion model="poly3" focal="58" k1="0.0100"/>
+        </calibration>
+    </lens>
+
+    <lens>
+        <maker>Carl Zeiss</maker>
+        <model>DSC-RX100 &amp; compatibles (Standard)</model>
+        <model lang="en">fixed lens</model>
+        <mount>sonyRX100</mount>
+        <cropfactor>2.73</cropfactor>
+        <aspect-ratio>3:2</aspect-ratio>
+        <calibration>
+            <distortion model="ptlens" focal="10.4" a="0.0" b="-0.0300" c="0.0"/>
+            <distortion model="ptlens" focal="37.1" a="0.0" b="0.0050" c="0.0"/>
+        </calibration>
+    </lens>
+
+</lensdatabase>

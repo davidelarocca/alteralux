@@ -173,9 +173,13 @@ private struct LensCorrectionToggle: View {
         @Bindable var model = model
         Toggle("Lens correction", isOn: $model.isLensCorrected)
             .disabled(!model.correctsLens)
-            .help("Straightens the lens's curved lines and brightens its darker corners, as the camera recorded.")
+            .help("Straightens the lens's curved lines, brightens its darker corners and takes away its colored fringes.")
         if model.hasPhoto, !model.correctsLens {
             Text("No correction is known for this photo's lens.")
+                .font(Typography.caption)
+                .foregroundStyle(.secondary)
+        } else if let lens = model.lensProfileName {
+            Text("Lensfun profile: \(lens)")
                 .font(Typography.caption)
                 .foregroundStyle(.secondary)
         }

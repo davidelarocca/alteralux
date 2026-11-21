@@ -138,7 +138,8 @@ extension AppModel {
             }
         }
         let policy = existing ?? .keepBoth
-        let exporter = discardExport.map { BatchExporter(renderer: renderer, discard: $0) } ?? BatchExporter(renderer: renderer)
+        let exporter = discardExport.map { BatchExporter(renderer: renderer, lenses: lenses, discard: $0) }
+            ?? BatchExporter(renderer: renderer, lenses: lenses)
         isExporting = true
         batchExport = BatchExportProgress(position: 1, total: jobs.count, name: jobs[0].photo.lastPathComponent)
         let task = Task {

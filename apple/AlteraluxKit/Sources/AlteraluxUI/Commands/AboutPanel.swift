@@ -15,6 +15,7 @@ enum AboutPanel {
             localized: """
             Film modeling powered by [spektrafilm](https://github.com/andreavolpato/spektrafilm) by Andrea Volpato. \
             Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs) by turbasvin. \
+            Lens profiles: the [lensfun](https://lensfun.github.io) database, CC BY-SA 3.0. \
             Free software under the GNU GPL v3.
             """,
         )

@@ -124,6 +124,7 @@ apple/project.yml                Xcode project definition (XcodeGen)
 engine/crates/alteralux-ffi/   Rust bridge (UniFFI) and its tests
 engine/crates/uniffi-bindgen/    binding generator (build tool)
 engine/vendor/spektrafilm-rs/    upstream engine (git submodule, pinned)
+third_party/lensfun/             lensfun's lens database, unmodified (CC BY-SA 3.0)
 scripts/                         setup, build and verification scripts
 snapshots/                       approved images of the components and screens, compared by the tests
 docs/                            vision, roadmap, architecture, design system, decisions
@@ -138,6 +139,9 @@ later** (see [LICENSE](LICENSE)), as required by the projects it builds on.
   © Andrea Volpato, GPLv3. Profiles are licensed CC BY-SA 4.0.
 - Rust engine: [spektrafilm-rs](https://github.com/turbasvin/spektrafilm-rs)
   © turbasvin, GPLv3.
+- Lens profiles: the [lensfun](https://lensfun.github.io) database © the lensfun
+  contributors, CC BY-SA 3.0, shipped unmodified as separate files
+  (see [third_party/lensfun](third_party/lensfun/README.md)).
 
 If you use spektrafilm in academic work, please cite it as described in its
 [CITATION.cff](https://github.com/andreavolpato/spektrafilm/blob/main/CITATION.cff).

@@ -106,3 +106,8 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   (`StepThroughPhotosKeys`, `LibraryGridKeys`). An arrow's `KeyPress` always carries `.numericPad` in
   its modifiers: test for Command, Option, Control and Shift, not for none. Caught by
   `StepThroughPhotosKeysTests`.
+- **A Core Image kernel compiled from source at run time needs `[[stitchable]]`.**
+  `CIKernel.kernels(withMetalString:)` rejected a kernel declared `extern "C"` with "Cannot find a valid
+  stitchable Metal function in the source", and `LensWarp` silently left photos uncorrected. Declare the
+  kernel `[[stitchable]] float4 name(coreimage::sampler …, coreimage::destination dest)`. Caught by
+  `LensWarpTests.theKernelCompiles`.

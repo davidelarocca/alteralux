@@ -1,4 +1,5 @@
 import Foundation
+@testable import AlteraluxKit
 
 /// Writes a small camera RAW for the tests, so no camera file has to be kept in the repository.
 ///
@@ -46,6 +47,19 @@ enum TestDNG {
         )
     }
 
+    /// Writes ``grayCard(width:height:)`` taken by the camera and lens of `lens` (maker, model,
+    /// lens, focal length and aperture, in its EXIF) to a new temporary file. The caller removes it.
+    static func writeGrayCard(takenWith lens: PhotoLensInfo) throws -> URL {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("alteralux-test-\(UUID().uuidString).dng")
+        let data = dng(
+            width: 240, height: 160, asShotNeutral: [(1, 1), (1, 1), (1, 1)], pixels: pixels(width: 240, height: 160),
+            lens: lens,
+        )
+        try data.write(to: url)
+        return url
+    }
+
     /// Writes ``grayScene(asShotNeutral:width:height:)`` to a new temporary file. The caller
     /// removes it.
     static func writeGrayScene(asShotNeutral: [Double]) throws -> URL {
@@ -55,7 +69,9 @@ enum TestDNG {
         return url
     }
 
-    private static func dng(width: Int, height: Int, asShotNeutral: [(Int, Int)], pixels: Data) -> Data {
+    private static func dng(
+        width: Int, height: Int, asShotNeutral: [(Int, Int)], pixels: Data, lens: PhotoLensInfo? = nil,
+    ) -> Data {
         let stripBytes = width * height * 6
         var entries = [
             Entry(tag: 254, type: FieldType.long, count: 1, payload: long(0)), // NewSubFileType
@@ -88,37 +104,63 @@ enum TestDNG {
             Entry(tag: 50778, type: FieldType.short, count: 1, payload: short(21)), // CalibrationIlluminant1: D65
         ]
 
-        // Header, directory, the values too long for the directory, then the pixels.
+        if let lens {
+            entries[entries.firstIndex { $0.tag == 271 } ?? 0] = Entry(
+                tag: 271, type: FieldType.ascii, count: lens.cameraMaker.utf8.count + 1, payload: ascii(lens.cameraMaker),
+            )
+            entries[entries.firstIndex { $0.tag == 272 } ?? 0] = Entry(
+                tag: 272, type: FieldType.ascii, count: lens.cameraModel.utf8.count + 1, payload: ascii(lens.cameraModel),
+            )
+            // ExifIFD, after PlanarConfiguration in the order of the tags; its offset is set below.
+            let index = (entries.firstIndex { $0.tag == 284 } ?? 0) + 1
+            entries.insert(Entry(tag: 34665, type: FieldType.long, count: 1, payload: long(0)), at: index)
+        }
+
+        // Header, directory and the values too long for it, the EXIF directory, then the pixels.
         let directoryOffset = 8
-        let valuesOffset = directoryOffset + 2 + entries.count * 12 + 4
-        var values = Data()
-        var offsets: [Int: Int] = [:]
-        for (index, entry) in entries.enumerated() where entry.payload.count > 4 {
-            offsets[index] = valuesOffset + values.count
-            values += entry.payload
-            if values.count % 2 == 1 {
-                values += Data([0])
-            }
+        let mainSize = directory(entries, at: directoryOffset).count
+        var exif = Data()
+        if let lens {
+            let exifOffset = directoryOffset + mainSize
+            entries[entries.firstIndex { $0.tag == 34665 } ?? 0] = Entry(
+                tag: 34665, type: FieldType.long, count: 1, payload: long(exifOffset),
+            )
+            exif = directory([
+                Entry(tag: 33437, type: FieldType.rational, count: 1, payload: rational(lens.aperture)), // FNumber
+                Entry(tag: 37386, type: FieldType.rational, count: 1, payload: rational(lens.focalLength)),
+                Entry(tag: 42036, type: FieldType.ascii, count: lens.lensModel.utf8.count + 1, payload: ascii(lens.lensModel)),
+            ], at: exifOffset)
         }
         let stripIndex = entries.firstIndex { $0.tag == 273 } ?? 0
         entries[stripIndex] = Entry(
-            tag: 273, type: FieldType.long, count: 1, payload: long(valuesOffset + values.count),
+            tag: 273, type: FieldType.long, count: 1, payload: long(directoryOffset + mainSize + exif.count),
         )
+        return Data([0x49, 0x49]) + short(42) + long(directoryOffset)
+            + directory(entries, at: directoryOffset) + exif + pixels
+    }
 
-        var data = Data([0x49, 0x49]) + short(42) + long(directoryOffset)
-        data += short(entries.count)
-        for (index, entry) in entries.enumerated() {
+    /// An image file directory at `offset`: its entries, then the values too long to fit in them.
+    private static func directory(_ entries: [Entry], at offset: Int) -> Data {
+        let valuesOffset = offset + 2 + entries.count * 12 + 4
+        var values = Data()
+        var data = short(entries.count)
+        for entry in entries {
             data += short(entry.tag) + short(entry.type) + long(entry.count)
-            if let offset = offsets[index] {
-                data += long(offset)
+            if entry.payload.count > 4 {
+                data += long(valuesOffset + values.count)
+                values += entry.payload
+                if values.count % 2 == 1 {
+                    values += Data([0])
+                }
             } else {
                 data += entry.payload + Data(count: 4 - entry.payload.count)
             }
         }
-        data += long(0)
-        data += values
-        data += pixels
-        return data
+        return data + long(0) + values
+    }
+
+    private static func rational(_ value: Double) -> Data {
+        long(Int((value * 1000).rounded())) + long(1000)
     }
 
     /// Writes ``grayCard(width:height:)`` to a new temporary file. The caller removes it.
