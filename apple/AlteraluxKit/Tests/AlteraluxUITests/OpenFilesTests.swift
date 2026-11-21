@@ -34,7 +34,8 @@ struct OpenFilesTests {
         // the app opens shows them.
         delegate.application(NSApplication.shared, open: files)
 
-        #expect(model.photos.map(\.url) == files && windows == 1)
+        #expect(model.photos.map(\.url) == files)
+        #expect(windows == 1)
     }
 
     @Test func aSecondRequestAddsToTheStrip() throws {
