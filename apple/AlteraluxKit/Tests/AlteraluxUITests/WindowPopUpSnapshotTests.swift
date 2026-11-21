@@ -10,7 +10,7 @@ extension WindowedTests {
     struct WindowPopUpSnapshots {
         private let source = "apple/DesignSystem/Sources/DesignSystem/Components/WindowPopUp.swift"
         /// The inspector's minimum width.
-        private let sizes = ["280x200"]
+        private let sizes = ["280x260"]
 
         /// The inspector's rows: a long title beside a short option, whose longest option is
         /// longer, and a time; the paper alone under its caption, cut where it is too long.

@@ -1,0 +1,17 @@
+{
+  "appearance": "light",
+  "captured": "2026-11-21T12:04:57Z",
+  "contractSize": "280x260",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "WindowPopUp",
+  "size": "280x260",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/WindowPopUp.swift",
+  "state": "rows",
+  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/WindowPopUpSnapshotTests.swift",
+  "approved": "2026-11-21T12:05:23Z",
+  "approvedFrom": "missing"
+}
