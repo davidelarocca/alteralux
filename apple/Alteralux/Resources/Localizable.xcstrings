@@ -371,16 +371,6 @@
         }
       }
     },
-    "%lld px" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld px"
-          }
-        }
-      }
-    },
     "%lld px on the long side" : {
       "localizations" : {
         "it" : {
@@ -4791,6 +4781,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ricostruisce i colori delle alte luci dove il sensore è saturato."
+          }
+        }
+      }
+    },
+    "%@ px" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ px"
           }
         }
       }

@@ -189,7 +189,8 @@ extension AppModel {
         case .tiff: "TIFF"
         case .png: "PNG"
         }
-        let size = workflow.options.longSide.map { String(localized: "\($0) px") }
+        // A size in pixels is read as one number: "2048 px", not "2,048 px".
+        let size = workflow.options.longSide.map { String(localized: "\(String($0)) px") }
             ?? String(localized: "Original size")
         let place = switch workflow.destination {
         case .sameFolder: String(localized: "beside the photos")
