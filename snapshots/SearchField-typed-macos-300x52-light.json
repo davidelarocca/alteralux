@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-20T22:46:20Z",
+  "captured": "2026-11-22T22:00:22Z",
   "contractSize": "300x52",
   "locale": "",
   "os": "27.2",
@@ -11,7 +11,7 @@
   "size": "300x52",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/SearchField.swift",
   "state": "typed",
-  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T23:01:45Z",
-  "approvedFrom": "missing"
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-22T22:08:35Z",
+  "approvedFrom": "failed"
 }

@@ -1,6 +1,6 @@
 {
   "appearance": "dark",
-  "captured": "2026-11-20T17:13:18Z",
+  "captured": "2026-11-22T22:00:08Z",
   "contractSize": "320x140",
   "locale": "en",
   "os": "27.2",
@@ -12,6 +12,6 @@
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/SelectionMarquee.swift",
   "state": "over-thumbnails",
   "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T18:07:21Z",
-  "approvedFrom": "missing"
+  "approved": "2026-11-22T22:08:35Z",
+  "approvedFrom": "failed"
 }

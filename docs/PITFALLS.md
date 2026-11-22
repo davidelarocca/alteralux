@@ -149,3 +149,7 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   tests used small pictures, rendered in one piece). Ask for the tile widened by the farthest the
   kernel moves a pixel (`CameraLensCorrection.largestShift()`); test a kernel on a camera-sized picture
   rendered in bands.
+- **A `DisclosureGroup` inside a collapsible `Section` of a `Form` does not open on macOS.** Neither a
+  click nor an accessibility press reaches it, and its binding is never set (seen on 2026-11-22 with
+  "More adjustments" in the inspector). Use another collapsible section right under it
+  (`MoreAdjustments`, an `InspectorSection`).

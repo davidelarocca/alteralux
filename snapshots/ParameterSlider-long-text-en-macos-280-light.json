@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-20T08:59:27Z",
+  "captured": "2026-11-22T21:59:44Z",
   "contractSize": "280",
   "locale": "en",
   "os": "27.2",
@@ -12,6 +12,6 @@
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift",
   "state": "long-text",
   "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T09:01:00Z",
+  "approved": "2026-11-22T22:08:35Z",
   "approvedFrom": "failed"
 }

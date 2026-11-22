@@ -357,10 +357,14 @@ branch of its own. What was said, in the order to take it:
   balance, lens, cropping), Film, Print, Scan. Done, the first part: the four sections, and an
   exposure that brightens (the engine's lab compensated it at the print; now a switch of the print,
   off for new photos, on for those saved before). Seen in the built app on the test card: +2 EV
-  brightens it. Next, the second part: every control spektrafilm offers and the app hides (diffusion
-  filter, DIR couplers, glare, preflash, print curves, halation and grain details, scanner levels,
-  metering method), the technical ones under "More adjustments"; then the third: highlight recovery
-  and noise reduction from Apple's RAW decoder in Shot. Retouches after the scan: later.
+  brightens it. Done, the second part: every control of spektrafilm's own interface is in
+  the inspector, starting from the engine's defaults (a test compares every parameter the app sends
+  with them). In view: the diffusion filter in Shot, the DIR couplers in Film, the pre-flash in Print;
+  in a collapsible "More … adjustments" section under each: metering method, lens softness and the
+  filter's details; grain softness and layers, halation and scatter, couplers' spread; pre-flash
+  filters, glare, the paper's curves rebuilt; sharpening radius, scanner softness, white and black
+  points, gamut compression, CAT16, spectral upsampling. Next, the third: highlight recovery and noise
+  reduction from Apple's RAW decoder in Shot. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

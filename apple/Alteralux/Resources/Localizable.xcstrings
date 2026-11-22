@@ -3974,6 +3974,746 @@
           }
         }
       }
+    },
+    "Metering" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misura dell'esposimetro"
+          }
+        }
+      }
+    },
+    "How the automatic metering weighs the scene." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come l'esposimetro automatico pesa la scena."
+          }
+        }
+      }
+    },
+    "Lens softness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morbidezza dell'obiettivo"
+          }
+        }
+      }
+    },
+    "Blurs the image on the film, in micrometres, as a soft lens would." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfoca l'immagine sulla pellicola, in micrometri, come un obiettivo morbido."
+          }
+        }
+      }
+    },
+    "Kind of filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tipo di filtro"
+          }
+        }
+      }
+    },
+    "Filter scale" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scala del filtro"
+          }
+        }
+      }
+    },
+    "Glow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bagliore"
+          }
+        }
+      }
+    },
+    "Glow size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampiezza del bagliore"
+          }
+        }
+      }
+    },
+    "Glow warmth" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Calore del bagliore"
+          }
+        }
+      }
+    },
+    "Core" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nucleo"
+          }
+        }
+      }
+    },
+    "Core size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampiezza del nucleo"
+          }
+        }
+      }
+    },
+    "Bloom" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velo luminoso"
+          }
+        }
+      }
+    },
+    "Bloom size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampiezza del velo"
+          }
+        }
+      }
+    },
+    "Grain softness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morbidezza della grana"
+          }
+        }
+      }
+    },
+    "Grain layers" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strati della grana"
+          }
+        }
+      }
+    },
+    "Couplers' reach" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raggio degli accoppiatori"
+          }
+        }
+      }
+    },
+    "Couplers' tail" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coda degli accoppiatori"
+          }
+        }
+      }
+    },
+    "Tail weight" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso della coda"
+          }
+        }
+      }
+    },
+    "Halation size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampiezza dell'alone"
+          }
+        }
+      }
+    },
+    "Scatter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diffusione nell'emulsione"
+          }
+        }
+      }
+    },
+    "Light spreading inside the emulsion, which softens fine detail." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La luce che si diffonde nell'emulsione e ammorbidisce i dettagli fini."
+          }
+        }
+      }
+    },
+    "Scatter size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampiezza della diffusione"
+          }
+        }
+      }
+    },
+    "Bounces" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimbalzi"
+          }
+        }
+      }
+    },
+    "How many times light bounces off the back of the film." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quante volte la luce rimbalza sul retro della pellicola."
+          }
+        }
+      }
+    },
+    "Bounce decay" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attenuazione dei rimbalzi"
+          }
+        }
+      }
+    },
+    "Keep the halation's light" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserva la luce dell'alone"
+          }
+        }
+      }
+    },
+    "The light the halo spreads is taken from the light that made it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La luce che l'alone diffonde è tolta a quella che lo ha generato."
+          }
+        }
+      }
+    },
+    "Pre-flash yellow" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Giallo della preesposizione"
+          }
+        }
+      }
+    },
+    "Pre-flash magenta" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magenta della preesposizione"
+          }
+        }
+      }
+    },
+    "Glare" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riflessi"
+          }
+        }
+      }
+    },
+    "Stray light in the enlarger and on the paper, which veils the shadows." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Luce parassita nell'ingranditore e sulla carta, che vela le ombre."
+          }
+        }
+      }
+    },
+    "Glare roughness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruvidità dei riflessi"
+          }
+        }
+      }
+    },
+    "Glare softness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morbidezza dei riflessi"
+          }
+        }
+      }
+    },
+    "Rebuild the paper's curves" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricostruisci le curve della carta"
+          }
+        }
+      }
+    },
+    "Rebuilds the paper's response from its model, so its contrast can be changed." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricostruisce la risposta della carta dal suo modello, così se ne può cambiare il contrasto."
+          }
+        }
+      }
+    },
+    "Contrast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto"
+          }
+        }
+      }
+    },
+    "Contrast of the fast layer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto dello strato rapido"
+          }
+        }
+      }
+    },
+    "Contrast of the slow layer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto dello strato lento"
+          }
+        }
+      }
+    },
+    "Red contrast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto del rosso"
+          }
+        }
+      }
+    },
+    "Green contrast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto del verde"
+          }
+        }
+      }
+    },
+    "Blue contrast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto del blu"
+          }
+        }
+      }
+    },
+    "Exhausted developer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo esausto"
+          }
+        }
+      }
+    },
+    "Sharpening radius" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raggio della nitidezza"
+          }
+        }
+      }
+    },
+    "Scanner softness" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morbidezza dello scanner"
+          }
+        }
+      }
+    },
+    "Correct the white" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correggi il bianco"
+          }
+        }
+      }
+    },
+    "White level" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Livello del bianco"
+          }
+        }
+      }
+    },
+    "Correct the black" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Correggi il nero"
+          }
+        }
+      }
+    },
+    "Black level" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Livello del nero"
+          }
+        }
+      }
+    },
+    "Gamut compression" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressione del gamut"
+          }
+        }
+      }
+    },
+    "How colors the screen cannot show are brought inside it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come i colori che lo schermo non sa mostrare vengono riportati al suo interno."
+          }
+        }
+      }
+    },
+    "Input gamut compression" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compressione del gamut in ingresso"
+          }
+        }
+      }
+    },
+    "CAT16 adaptation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adattamento CAT16"
+          }
+        }
+      }
+    },
+    "Adapts the photo's colors to the film's light with CAT16 rather than CAT02." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adatta i colori della foto alla luce della pellicola con CAT16 invece di CAT02."
+          }
+        }
+      }
+    },
+    "Spectral upsampling" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricostruzione spettrale"
+          }
+        }
+      }
+    },
+    "How the photo's colors become the light that reaches the film's layers." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come i colori della foto diventano la luce che arriva agli strati della pellicola."
+          }
+        }
+      }
+    },
+    "Average" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media"
+          }
+        }
+      }
+    },
+    "Median" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mediana"
+          }
+        }
+      }
+    },
+    "Center-weighted" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pesata al centro"
+          }
+        }
+      }
+    },
+    "Partial" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parziale"
+          }
+        }
+      }
+    },
+    "Matrix" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Matrice"
+          }
+        }
+      }
+    },
+    "Multi-zone" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Multizona"
+          }
+        }
+      }
+    },
+    "Highlight-weighted" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sulle alte luci"
+          }
+        }
+      }
+    },
+    "Off" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna"
+          }
+        }
+      }
+    },
+    "Toward the spectral locus" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verso il luogo spettrale"
+          }
+        }
+      }
+    },
+    "Diffusion filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtro di diffusione"
+          }
+        }
+      }
+    },
+    "A filter in front of the lens that makes the lights glow, as a Pro-Mist does." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un filtro davanti all'obiettivo che fa brillare le luci, come un Pro-Mist."
+          }
+        }
+      }
+    },
+    "DIR couplers" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accoppiatori DIR"
+          }
+        }
+      }
+    },
+    "Development inhibitors passing between the film's layers: purer colors and crisper edges." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inibitori di sviluppo che passano tra gli strati della pellicola: colori più puri e contorni più netti."
+          }
+        }
+      }
+    },
+    "Pre-flash" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preesposizione"
+          }
+        }
+      }
+    },
+    "A faint even exposure of the paper before the print, which holds detail in the highlights." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una leggera esposizione uniforme della carta prima della stampa, che trattiene i dettagli nelle alte luci."
+          }
+        }
+      }
+    },
+    "More shot adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre regolazioni dello scatto"
+          }
+        }
+      }
+    },
+    "More film adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre regolazioni della pellicola"
+          }
+        }
+      }
+    },
+    "More print adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre regolazioni della stampa"
+          }
+        }
+      }
+    },
+    "More scan adjustments" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Altre regolazioni della scansione"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

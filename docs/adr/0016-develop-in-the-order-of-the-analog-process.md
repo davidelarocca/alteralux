@@ -29,8 +29,12 @@ and 199. The engine's exposure is applied to the scene before the film, after it
   adjustments saved before, so they look as they did.
 - What comes next, in this order (the user's choice): every control spektrafilm offers and the app
   hides, with the technical ones under "More adjustments" in each section; then new tools of the shot
-  from Apple's RAW decoder (highlight recovery, noise reduction). Contrast and saturation never go
-  before the film, which makes them; retouches after the scan are left for later.
+  from Apple's RAW decoder (highlight recovery, noise reduction).
+- Every control of spektrafilm's own interface is offered, starting from the engine's defaults, the
+  technical ones in a collapsible "More … adjustments" section under each section (a disclosure group
+  inside a section does not open on macOS).
+- Contrast and saturation never go before the film, which makes them; retouches after the scan are
+  left for later.
 
 ## Alternatives considered
 

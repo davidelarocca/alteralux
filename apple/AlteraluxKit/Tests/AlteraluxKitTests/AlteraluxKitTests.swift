@@ -139,6 +139,80 @@ struct DevelopSettingsTests {
         #expect((tree["enlarger"] as? [String: Any])?["print_exposure_compensation"] as? Bool == false)
     }
 
+    /// The app's defaults are the engine's own, for every parameter the app sends, but the lab's
+    /// compensation of the exposure, which new photos leave off (ADR 0016): a photo nobody adjusted
+    /// is developed as spektrafilm would develop it.
+    @Test func theDefaultSettingsAreTheEnginesDefaults() throws {
+        let engine = try Engine(dataDir: dataDirectory.path, backend: .cpu)
+        func tree(_ json: String) throws -> [String: Any] {
+            try #require(try JSONSerialization.jsonObject(with: Data(engine.resolveParamsJson(paramsJson: json).utf8)) as? [String: Any])
+        }
+        var app = try tree(DevelopSettings().enginePatchJSON())
+        let engineDefaults = try tree("{}")
+        var enlarger = try #require(app["enlarger"] as? [String: Any])
+        #expect(enlarger["print_exposure_compensation"] as? Bool == false)
+        enlarger["print_exposure_compensation"] = true
+        app["enlarger"] = enlarger
+        var differences: [String] = []
+        func compare(_ lhs: Any?, _ rhs: Any?, path: String) {
+            switch (lhs, rhs) {
+            case let (left as [String: Any], right as [String: Any]):
+                for key in Set(left.keys).union(right.keys) {
+                    compare(left[key], right[key], path: path + "." + key)
+                }
+            case let (left as [Any], right as [Any]) where left.count == right.count:
+                for (index, pair) in zip(left, right).enumerated() {
+                    compare(pair.0, pair.1, path: path + "[\(index)]")
+                }
+            case let (left as NSNumber, right as NSNumber):
+                if abs(left.doubleValue - right.doubleValue) > 1e-6 { differences.append(path) }
+            case let (left as String, right as String):
+                if left != right { differences.append(path) }
+            case (nil, nil), (is NSNull, is NSNull):
+                break
+            default:
+                differences.append(path)
+            }
+        }
+        compare(app, engineDefaults, path: "")
+        #expect(differences.isEmpty, "\(differences.sorted())")
+    }
+
+    /// Every detail the inspector offers reaches the engine, in the engine's terms.
+    @Test func theDetailsReachTheEngine() throws {
+        let engine = try Engine(dataDir: dataDirectory.path, backend: .cpu)
+        var settings = DevelopSettings()
+        settings.meteringMethod = .highlightWeighted
+        settings.diffusionFilter.enabled = true
+        settings.diffusionFilter.family = .cinebloom
+        settings.grainDetail.subLayers = 3
+        settings.halationDetail.bounces = 5
+        settings.printGlare.percent = 0.1
+        settings.printCurves.gammaRed = 1.4
+        settings.scanner.correctsBlack = true
+        settings.color.outputGamut = .oklch
+        settings.color.upsampling = .mallett2019
+        let resolved = try engine.resolveParamsJson(paramsJson: settings.enginePatchJSON())
+        let tree = try #require(try JSONSerialization.jsonObject(with: Data(resolved.utf8)) as? [String: Any])
+        func value(_ path: String...) -> Any? {
+            path.dropLast().reduce(tree as Any?) { ($0 as? [String: Any])?[$1] }.flatMap { ($0 as? [String: Any])?[path.last!] }
+        }
+        #expect(value("camera", "auto_exposure_method") as? String == "highlight_weighted")
+        #expect(value("camera", "diffusion_filter", "active") as? Bool == true)
+        #expect(value("camera", "diffusion_filter", "filter_family") as? String == "cinebloom")
+        #expect(value("film_render", "grain", "n_sub_layers") as? Int == 3)
+        #expect(value("film_render", "halation", "halation_n_bounces") as? Int == 5)
+        #expect(abs((value("print_render", "glare", "percent") as? Double ?? 0) - 0.1) < 1e-6)
+        #expect(abs((value("print_render", "density_curves_morph", "gamma_factor_red") as? Double ?? 0) - 1.4) < 1e-6)
+        #expect(value("scanner", "black_correction") as? Bool == true)
+        #expect(value("io", "output_gamut_compress", "algorithm") as? String == "oklch")
+        #expect(value("settings", "rgb_to_raw_method") as? String == "mallett2019")
+        // Settings saved before the details existed read the engine's defaults.
+        let saved = try JSONDecoder().decode(DevelopSettings.self, from: Data(#"{"diffusionFilter": {"enabled": true}}"#.utf8))
+        #expect(saved.diffusionFilter.enabled && saved.diffusionFilter.strength == 0.5)
+        #expect(saved.printGlare == GlareSettings() && saved.color == ColorSettings())
+    }
+
     /// The development times reach the engine for the film and the paper, and are left out,
     /// for the engine's own middle time, when none was chosen.
     @Test func developmentTimesReachTheEngine() throws {

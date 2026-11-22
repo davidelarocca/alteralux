@@ -37,9 +37,20 @@ struct InspectorView: View {
                 WhiteBalanceControls()
                 LensCorrectionToggle()
                 CropRow()
+                ParameterSlider(
+                    "Diffusion filter", value: $model.settings.diffusionFilter.strength, in: 0 ... 2,
+                    defaultValue: 0.5, isOn: $model.settings.diffusionFilter.enabled,
+                )
+                .help("A filter in front of the lens that makes the lights glow, as a Pro-Mist does.")
+            }
+            if showsShot {
+                MoreAdjustments("shot", title: "More shot adjustments") { ShotDetails(settings: $model.settings) }
             }
             InspectorSection("Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName)) {
                 FilmControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
+            }
+            if showsFilm {
+                MoreAdjustments("film", title: "More film adjustments") { FilmDetails(settings: $model.settings) }
             }
             InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
                 PrintControls(
@@ -47,11 +58,17 @@ struct InspectorView: View {
                     developmentTimes: model.printDevelopmentTimes,
                 )
             }
+            if showsPrint, !model.settings.scanFilm {
+                MoreAdjustments("print", title: "More print adjustments") { PrintDetails(settings: $model.settings) }
+            }
             InspectorSection("Scan", isExpanded: $showsScan, summary: summary.scan) {
                 ParameterSlider(
                     "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
                     step: 0.05, defaultValue: 0.7,
                 )
+            }
+            if showsScan {
+                MoreAdjustments("scan", title: "More scan adjustments") { ScanDetails(settings: $model.settings) }
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
@@ -256,6 +273,11 @@ private struct FilmControls: View {
             step: 0.05, defaultValue: 1, isOn: $settings.halationEnabled,
         )
         .help("The red glow around bright lights.")
+        ParameterSlider(
+            "DIR couplers", value: $settings.couplersAmount, in: 0 ... 2,
+            defaultValue: 1, isOn: $settings.couplersEnabled,
+        )
+        .help("Development inhibitors passing between the film's layers: purer colors and crisper edges.")
     }
 }
 
@@ -299,6 +321,8 @@ private struct PrintControls: View {
             if !developmentTimes.isEmpty {
                 DevelopmentTimePicker("Paper development", time: $settings.printDevelopmentTime, times: developmentTimes)
             }
+            ParameterSlider("Pre-flash", value: $settings.preflashExposure, in: 0 ... 0.5, step: 0.005, fractionDigits: 3)
+                .help("A faint even exposure of the paper before the print, which holds detail in the highlights.")
             Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
                 .help("Prints to a normal density, as a lab would: the exposure then changes the negative, not the brightness.")
         }
