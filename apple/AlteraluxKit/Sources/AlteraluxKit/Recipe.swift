@@ -53,8 +53,8 @@ public struct Recipe: NamedItem, Equatable {
 
 public extension DevelopSettings {
     /// These adjustments with the look of `other`: everything of `other` but the white balance,
-    /// the lens correction and the crop, which belong to this photo's light, lens and picture
-    /// and stay as they are here. What a recipe gives a photo, and what pasting the adjustments
+    /// the lens correction, the crop and the RAW decoder's noise reduction and highlight recovery,
+    /// which belong to this photo's light, lens, picture and sensor and stay as they are here. What a recipe gives a photo, and what pasting the adjustments
     /// of another photo does.
     func takingLook(of other: DevelopSettings) -> DevelopSettings {
         var result = other
@@ -63,6 +63,7 @@ public extension DevelopSettings {
         result.autoWhiteBalance = autoWhiteBalance
         result.lensCorrection = lensCorrection
         result.crop = crop
+        result.rawDecoding = rawDecoding
         return result
     }
 }

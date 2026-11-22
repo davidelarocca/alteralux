@@ -31,6 +31,9 @@ public actor PhotoDecoder {
     /// The lens profile that corrects this photo alone, where neither the RAW decoder nor the
     /// camera's own corrections do: `nil` when one of them does, or when no profile fits.
     public nonisolated let lensProfile: LensCorrection?
+    /// What the RAW decoder offers this photo beyond white balance and lens (highlight recovery,
+    /// noise reduction) and does when not told; `nil` for a file that is not a RAW.
+    public nonisolated let rawDefaults: RawDecodingDefaults?
     /// Whether the RAW decoder corrects this photo's lens when it is not told: what adjustments
     /// saved without the choice get.
     public nonisolated let correctsLensByDefault: Bool
@@ -54,6 +57,7 @@ public actor PhotoDecoder {
             )
             cameraChoseWhiteBalance = Self.cameraChoseWhiteBalance(of: url)
             correctsLensByDefault = filter.isLensCorrectionEnabled
+            rawDefaults = RawDecodingDefaults(filter: filter)
             whole = try ImageLoader.rawImage(from: filter, url: url, maxDimension: nil, whiteBalance: nil)
             rawFilter = filter
             standardImage = nil
@@ -62,6 +66,7 @@ public actor PhotoDecoder {
             asShotWhiteBalance = nil
             cameraChoseWhiteBalance = false
             correctsLensByDefault = false
+            rawDefaults = nil
             rawFilter = nil
             standardImage = whole
         }
@@ -130,7 +135,7 @@ public actor PhotoDecoder {
         let whiteBalance = whiteBalance(for: settings)
         return try await decode(
             maxDimension: maxDimension, whiteBalance: whiteBalance, lensCorrection: settings.lensCorrection,
-            crop: settings.crop,
+            crop: settings.crop, rawDecoding: settings.rawDecoding,
         )
     }
 
@@ -144,13 +149,16 @@ public actor PhotoDecoder {
     ///     for what the decoder does on its own.
     ///   - crop: how to straighten and cut the photo; `nil` for the whole of it. `maxDimension`
     ///     is then the long side of the framed picture.
+    ///   - rawDecoding: the RAW decoder's highlight recovery and noise reduction. Ignored for other
+    ///     files.
     public nonisolated func decode(
         maxDimension: Int? = nil, whiteBalance: WhiteBalance? = nil, lensCorrection: Bool? = nil,
-        crop: PhotoCrop? = nil,
+        crop: PhotoCrop? = nil, rawDecoding: RawDecodingOptions = .init(),
     ) async throws -> LoadedImage {
         let limit = maxDimension.flatMap { $0 > 0 ? $0 : nil }
         let pixels = try await pixels(
             maxDimension: limit, whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop,
+            rawDecoding: rawDecoding,
         )
         // Handing the pixels to the engine copies them: not while holding the decoder.
         return try pixels.loaded(from: url, isRaw: isRaw)
@@ -159,6 +167,7 @@ public actor PhotoDecoder {
     /// The pixels out of Core Image, before they are handed to the engine.
     func pixels(
         maxDimension: Int?, whiteBalance: WhiteBalance?, lensCorrection: Bool? = nil, crop: PhotoCrop? = nil,
+        rawDecoding: RawDecodingOptions = .init(),
     ) throws -> DecodedPixels {
         let crop = crop.flatMap { $0.isWhole ? nil : $0 }
         // The whole photo is decoded at the size that gives the framed picture the size asked.
@@ -170,6 +179,7 @@ public actor PhotoDecoder {
         }
         let image: CIImage
         if let rawFilter {
+            rawDefaults?.apply(rawDecoding, to: rawFilter)
             let correctsLens = lensCorrection ?? correctsLensByDefault
             image = try ImageLoader.rawImage(
                 from: rawFilter, url: url, maxDimension: maxDimension,

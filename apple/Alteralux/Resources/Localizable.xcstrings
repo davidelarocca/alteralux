@@ -4714,6 +4714,86 @@
           }
         }
       }
+    },
+    "Noise reduction" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduzione del rumore"
+          }
+        }
+      }
+    },
+    "Smooths the digital noise of the sensor before the film adds its own grain." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attenua il rumore digitale del sensore prima che la pellicola aggiunga la sua grana."
+          }
+        }
+      }
+    },
+    "Color noise" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rumore di colore"
+          }
+        }
+      }
+    },
+    "Takes away the colored speckles of the sensor's noise." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toglie i puntini colorati del rumore del sensore."
+          }
+        }
+      }
+    },
+    "Moiré reduction" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduzione del moiré"
+          }
+        }
+      }
+    },
+    "Takes away the colored ripples that fine patterns make on the sensor." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toglie le increspature colorate che le trame fini creano sul sensore."
+          }
+        }
+      }
+    },
+    "Highlight recovery" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recupero delle alte luci"
+          }
+        }
+      }
+    },
+    "Rebuilds the colors of the highlights where the sensor clipped." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricostruisce i colori delle alte luci dove il sensore è saturato."
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

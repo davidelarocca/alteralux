@@ -33,6 +33,9 @@ and 199. The engine's exposure is applied to the scene before the film, after it
 - Every control of spektrafilm's own interface is offered, starting from the engine's defaults, the
   technical ones in a collapsible "More … adjustments" section under each section (a disclosure group
   inside a section does not open on macOS).
+- From Apple's RAW decoder, in Shot: noise reduction (luminance, color), moiré reduction and highlight
+  recovery, each starting from the decoder's own choice for the photo's camera (`nil` until changed),
+  kept with the photo by a recipe as the white balance is.
 - Contrast and saturation never go before the film, which makes them; retouches after the scan are
   left for later.
 

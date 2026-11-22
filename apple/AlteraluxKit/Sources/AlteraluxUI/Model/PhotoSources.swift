@@ -23,6 +23,7 @@ final class PhotoSources {
         var whiteBalance: WhiteBalance?
         var lensCorrection: Bool?
         var crop: PhotoCrop?
+        var rawDecoding = RawDecodingOptions()
     }
 
     /// The white balance, the lens correction and the frame of what is kept. A change of any
@@ -54,7 +55,7 @@ final class PhotoSources {
     private func kind(for settings: DevelopSettings) -> Decoding {
         Decoding(
             whiteBalance: whiteBalance(for: settings), lensCorrection: settings.lensCorrection,
-            crop: settings.crop.flatMap { $0.isWhole ? nil : $0 },
+            crop: settings.crop.flatMap { $0.isWhole ? nil : $0 }, rawDecoding: settings.rawDecoding,
         )
     }
 
@@ -103,7 +104,7 @@ final class PhotoSources {
         let task = Task {
             try await decoder.decode(
                 maxDimension: dimension, whiteBalance: wanted.whiteBalance, lensCorrection: wanted.lensCorrection,
-                crop: wanted.crop,
+                crop: wanted.crop, rawDecoding: wanted.rawDecoding,
             )
         }
         decoding[dimension] = task

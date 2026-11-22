@@ -35,6 +35,7 @@ struct InspectorView: View {
             ) {
                 ExposureControls(settings: $model.settings)
                 WhiteBalanceControls()
+                NoiseReductionControls()
                 LensCorrectionToggle()
                 CropRow()
                 ParameterSlider(
@@ -44,7 +45,10 @@ struct InspectorView: View {
                 .help("A filter in front of the lens that makes the lights glow, as a Pro-Mist does.")
             }
             if showsShot {
-                MoreAdjustments("shot", title: "More shot adjustments") { ShotDetails(settings: $model.settings) }
+                MoreAdjustments("shot", title: "More shot adjustments") {
+                    RawDecodingDetails()
+                    ShotDetails(settings: $model.settings)
+                }
             }
             InspectorSection("Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName)) {
                 FilmControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
