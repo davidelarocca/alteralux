@@ -35,6 +35,9 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     /// How the photo is straightened and cut, before the engine sees it (ADR 0010). `nil` keeps
     /// the whole photo. It is never sent to the engine.
     public var crop: PhotoCrop?
+    /// The RAW decoder's highlight recovery and noise reduction; each `nil` leaves the decoder's
+    /// own choice for the photo's camera.
+    public var rawDecoding: RawDecodingOptions
 
     // MARK: Camera
 
@@ -128,6 +131,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         autoWhiteBalance: Bool = false,
         lensCorrection: Bool? = true,
         crop: PhotoCrop? = nil,
+        rawDecoding: RawDecodingOptions = .init(),
         exposureEV: Double = 0,
         autoExposure: Bool = true,
         filmFormatMM: Double = 35,
@@ -169,6 +173,7 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.autoWhiteBalance = autoWhiteBalance
         self.lensCorrection = lensCorrection
         self.crop = crop
+        self.rawDecoding = rawDecoding
         self.exposureEV = exposureEV
         self.autoExposure = autoExposure
         self.filmFormatMM = filmFormatMM
@@ -220,6 +225,7 @@ public extension DevelopSettings {
         autoWhiteBalance = try values.decodeIfPresent(Bool.self, forKey: .autoWhiteBalance) ?? defaults.autoWhiteBalance
         lensCorrection = try values.decodeIfPresent(Bool.self, forKey: .lensCorrection)
         crop = try values.decodeIfPresent(PhotoCrop.self, forKey: .crop)
+        rawDecoding = try values.value(.rawDecoding, or: defaults.rawDecoding)
         exposureEV = try values.decodeIfPresent(Double.self, forKey: .exposureEV) ?? defaults.exposureEV
         autoExposure = try values.decodeIfPresent(Bool.self, forKey: .autoExposure) ?? defaults.autoExposure
         filmFormatMM = try values.decodeIfPresent(Double.self, forKey: .filmFormatMM) ?? defaults.filmFormatMM

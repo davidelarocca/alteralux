@@ -32,6 +32,45 @@ private func whole(_ value: Binding<Int>) -> Binding<Double> {
     Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue = Int($0.rounded()) })
 }
 
+/// The RAW decoder's noise reduction, where it offers it for the photo's camera, starting from
+/// its own choice.
+struct NoiseReductionControls: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        if let defaults = model.rawDefaults {
+            if let luminance = defaults.luminanceNoiseReduction {
+                ParameterSlider("Noise reduction", value: $model.luminanceNoiseReduction, in: 0 ... 1, defaultValue: luminance)
+                    .help("Smooths the digital noise of the sensor before the film adds its own grain.")
+            }
+            if let color = defaults.colorNoiseReduction {
+                ParameterSlider("Color noise", value: $model.colorNoiseReduction, in: 0 ... 1, defaultValue: color)
+                    .help("Takes away the colored speckles of the sensor's noise.")
+            }
+        }
+    }
+}
+
+/// The RAW decoder's moiré reduction and highlight recovery, where it offers them.
+struct RawDecodingDetails: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        if let defaults = model.rawDefaults {
+            if let moire = defaults.moireReduction {
+                ParameterSlider("Moiré reduction", value: $model.moireReduction, in: 0 ... 1, defaultValue: moire)
+                    .help("Takes away the colored ripples that fine patterns make on the sensor.")
+            }
+            if defaults.highlightRecovery != nil {
+                Toggle("Highlight recovery", isOn: $model.highlightRecovery)
+                    .help("Rebuilds the colors of the highlights where the sensor clipped.")
+            }
+        }
+    }
+}
+
 /// The shot's details: how the scene is metered, the lens's softness and the diffusion filter.
 struct ShotDetails: View {
     @Binding var settings: DevelopSettings

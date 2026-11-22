@@ -36,7 +36,8 @@ AlteraluxKit), before the frame.
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
 
-A recipe is a look saved under a name: every adjustment but the white balance. Recipes are kept by the
+A recipe is a look saved under a name: every adjustment but the white balance, the lens correction, the
+frame and the RAW decoder's noise reduction, which belong to the photo. Recipes are kept by the
 app, one file each; a photo that receives one keeps only the adjustments. A workflow is how a recipe is
 used: the recipe, named by id, whether it adapts to each photo, and the files it writes (format, size,
 name, beside the photos, in a folder beside them or in one folder); it only writes files, and is kept

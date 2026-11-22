@@ -163,7 +163,11 @@ struct PhotoInfoTests {
         resourceValues.tagNames = ["Red"]
         try file.setResourceValues(resourceValues)
 
-        #expect(PhotoInfoReader.tags(of: file) == [FinderTag(name: "Red")])
+        // The color is the system's for a tag of that name: red on a Mac whose Finder knows the
+        // tag "Red" with its color, none on one that does not (a CI runner).
+        let tags = PhotoInfoReader.tags(of: file)
+        #expect(tags.map(\.name) == ["Red"])
+        #expect(tags.first?.color == nil || tags.first?.color == .red)
     }
 
     @Test func readsFinderTagColorsAndOrderFromTheAttribute() throws {

@@ -363,8 +363,12 @@ branch of its own. What was said, in the order to take it:
   in a collapsible "More … adjustments" section under each: metering method, lens softness and the
   filter's details; grain softness and layers, halation and scatter, couplers' spread; pre-flash
   filters, glare, the paper's curves rebuilt; sharpening radius, scanner softness, white and black
-  points, gamut compression, CAT16, spectral upsampling. Next, the third: highlight recovery and noise
-  reduction from Apple's RAW decoder in Shot. Retouches after the scan: later.
+  points, gamut compression, CAT16, spectral upsampling. Done, the third: from Apple's RAW decoder, noise
+  reduction (luminance and color) in Shot, moiré reduction and highlight recovery under "More shot
+  adjustments", each starting from the decoder's own choice for the photo's camera, shown only where
+  it offers them, and left as the photo has them by a recipe (noise belongs to the sensor). Measured
+  on the user's RAWs at ISO 640: the noise reduction changes the photo by 4 to 5%; the decoder's
+  output was already not clipped at white, and its highlight recovery is on by default. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

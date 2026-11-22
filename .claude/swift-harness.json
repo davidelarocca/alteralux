@@ -6,8 +6,13 @@
     "enabled": true,
     "command": "scripts/verify.sh fast",
     "maxAttempts": 3,
-    "inputs": ["scripts/bootstrap.sh", "scripts/build-engine.sh"],
-    "watch": ["engine/"]
+    "inputs": [
+      "scripts/bootstrap.sh",
+      "scripts/build-engine.sh"
+    ],
+    "watch": [
+      "engine/"
+    ]
   },
   "protectedPaths": [
     "apple/Alteralux/Alteralux.entitlements",
@@ -15,11 +20,17 @@
     "apple/Alteralux/Signing.xcconfig"
   ],
   "registry": {
-    "sources": ["apple/DesignSystem/Sources"]
+    "sources": [
+      "apple/DesignSystem/Sources"
+    ]
   },
   "guardPbxproj": true,
   "snapshots": {
     "approveNew": true,
-    "pending": "collect"
+    "pending": "collect",
+    "tolerance": 0.01
+  },
+  "porting": {
+    "direction": "ios-planned"
   }
 }
