@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-20T21:18:50Z",
+  "captured": "2026-11-22T22:00:10Z",
   "contractSize": "380x260",
   "locale": "en",
   "os": "27.2",
@@ -11,7 +11,7 @@
   "size": "380x260",
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/CropFrame.swift",
   "state": "whole",
-  "test": "/Users/fidelio/orca/workspaces/spektrafilm-macos/https-github.com-davidelarocca-spektrafilm-macos-2/apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T21:24:46Z",
-  "approvedFrom": "missing"
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-22T22:08:35Z",
+  "approvedFrom": "failed"
 }

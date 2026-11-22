@@ -1,6 +1,6 @@
 {
   "appearance": "dark",
-  "captured": "2026-11-20T08:59:35Z",
+  "captured": "2026-11-22T21:59:54Z",
   "contractSize": "280x72",
   "locale": "ar",
   "os": "27.2",
@@ -12,6 +12,6 @@
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/HeadingButton.swift",
   "state": "short",
   "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-20T09:01:00Z",
-  "approvedFrom": "missing"
+  "approved": "2026-11-22T22:08:35Z",
+  "approvedFrom": "failed"
 }

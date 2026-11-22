@@ -1,6 +1,6 @@
 {
   "appearance": "light",
-  "captured": "2026-11-19T20:34:43Z",
+  "captured": "2026-11-22T21:59:58Z",
   "contractSize": "116x88",
   "locale": "",
   "os": "27.2",
@@ -12,6 +12,6 @@
   "source": "apple/DesignSystem/Sources/DesignSystem/Components/ThumbnailCell.swift",
   "state": "placeholder",
   "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
-  "approved": "2026-11-19T21:09:31Z",
-  "approvedFrom": "missing"
+  "approved": "2026-11-22T22:08:35Z",
+  "approvedFrom": "failed"
 }
