@@ -17,5 +17,9 @@
   "registry": {
     "sources": ["apple/DesignSystem/Sources"]
   },
-  "guardPbxproj": true
+  "guardPbxproj": true,
+  "snapshots": {
+    "approveNew": true,
+    "pending": "collect"
+  }
 }
