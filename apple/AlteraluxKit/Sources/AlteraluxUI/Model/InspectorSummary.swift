@@ -36,17 +36,29 @@ struct InspectorSummary {
     /// In place of a parameter that is switched off.
     private static let switchedOff = "–"
 
-    /// The shot: the white balance of a RAW, then the exposure.
+    /// The white balance the shot section shows, and whether the automatic one chose it.
+    struct ShownWhiteBalance {
+        let value: WhiteBalance
+        let isAutomatic: Bool
+    }
+
+    /// The shot: the white balance of a RAW ("Auto" when the automatic one chose it, otherwise
+    /// its temperature and tint), then the exposure, "Auto" first when the meter is on.
     ///
-    /// - Parameter whiteBalance: the temperature and tint the sliders show; `nil` when the
-    ///   photo's white balance cannot be chosen.
-    func shot(whiteBalance: WhiteBalance? = nil) -> String {
+    /// - Parameter whiteBalance: what the white balance controls show; `nil` when the photo's
+    ///   white balance cannot be chosen.
+    func shot(whiteBalance: ShownWhiteBalance? = nil) -> String {
         var values: [String] = []
         if let whiteBalance {
-            values.append(number(whiteBalance.temperature, fractionDigits: 0))
-            values.append(number(whiteBalance.tint, fractionDigits: 0))
+            if whiteBalance.isAutomatic {
+                values.append(String(localized: "Auto WB", locale: locale))
+            } else {
+                values.append(number(whiteBalance.value.temperature, fractionDigits: 0) + " K")
+                values.append(number(whiteBalance.value.tint, fractionDigits: 0))
+            }
         }
-        values.append(number(settings.exposureEV, fractionDigits: 1, showsSign: true))
+        let exposure = number(settings.exposureEV, fractionDigits: 1, showsSign: true) + " EV"
+        values.append(settings.autoExposure ? String(localized: "Auto \(exposure)", locale: locale) : exposure)
         return values.joined(separator: Self.separator)
     }
 
@@ -64,11 +76,10 @@ struct InspectorSummary {
     /// The print's exposure and filters, or that there is no print.
     var print: String {
         guard !settings.scanFilm else { return String(localized: "Scanned directly", locale: locale) }
-        guard !blackAndWhitePrint else {
-            return number(settings.printExposure, fractionDigits: 2)
-        }
+        let exposure = number(log2(max(settings.printExposure, 0.01)), fractionDigits: 1, showsSign: true) + " stop"
+        guard !blackAndWhitePrint else { return exposure }
         return [
-            number(settings.printExposure, fractionDigits: 2),
+            exposure,
             number(settings.yellowFilterShift, fractionDigits: 0, showsSign: true),
             number(settings.magentaFilterShift, fractionDigits: 0, showsSign: true),
         ].joined(separator: Self.separator)
