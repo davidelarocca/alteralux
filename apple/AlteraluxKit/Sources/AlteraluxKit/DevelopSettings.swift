@@ -93,6 +93,26 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
     public var sharpenRadius: Double
     public var sharpenAmount: Double
 
+    // MARK: Details
+
+    // Every other control spektrafilm offers (ADR 0016), each starting from the engine's default.
+
+    /// How the scene is metered when ``autoExposure`` is on.
+    public var meteringMethod: MeteringMethod
+    /// The camera lens's softness, in µm on the film (0 = sharp).
+    public var lensBlur: Double
+    public var diffusionFilter: DiffusionFilterSettings
+    public var grainDetail: GrainDetail
+    public var halationDetail: HalationDetail
+    public var couplersDetail: CouplersDetail
+    /// The pre-flash's own yellow and magenta filters, from the neutral setting.
+    public var preflashYellowShift: Double
+    public var preflashMagentaShift: Double
+    public var printGlare: GlareSettings
+    public var printCurves: PrintCurvesSettings
+    public var scanner: ScannerDetail
+    public var color: ColorSettings
+
     // MARK: Advanced
 
     /// Optional raw engine parameter JSON, merged over everything above.
@@ -127,6 +147,18 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         couplersAmount: Double = 1,
         sharpenRadius: Double = 0.7,
         sharpenAmount: Double = 0.7,
+        meteringMethod: MeteringMethod = .centerWeighted,
+        lensBlur: Double = 0,
+        diffusionFilter: DiffusionFilterSettings = .init(),
+        grainDetail: GrainDetail = .init(),
+        halationDetail: HalationDetail = .init(),
+        couplersDetail: CouplersDetail = .init(),
+        preflashYellowShift: Double = 0,
+        preflashMagentaShift: Double = 0,
+        printGlare: GlareSettings = .init(),
+        printCurves: PrintCurvesSettings = .init(),
+        scanner: ScannerDetail = .init(),
+        color: ColorSettings = .init(),
         advancedJSON: String? = nil,
     ) {
         self.filmID = filmID
@@ -156,6 +188,18 @@ public struct DevelopSettings: Codable, Equatable, Sendable {
         self.couplersAmount = couplersAmount
         self.sharpenRadius = sharpenRadius
         self.sharpenAmount = sharpenAmount
+        self.meteringMethod = meteringMethod
+        self.lensBlur = lensBlur
+        self.diffusionFilter = diffusionFilter
+        self.grainDetail = grainDetail
+        self.halationDetail = halationDetail
+        self.couplersDetail = couplersDetail
+        self.preflashYellowShift = preflashYellowShift
+        self.preflashMagentaShift = preflashMagentaShift
+        self.printGlare = printGlare
+        self.printCurves = printCurves
+        self.scanner = scanner
+        self.color = color
         self.advancedJSON = advancedJSON
     }
 }
@@ -196,6 +240,18 @@ public extension DevelopSettings {
         couplersAmount = try values.decodeIfPresent(Double.self, forKey: .couplersAmount) ?? defaults.couplersAmount
         sharpenRadius = try values.decodeIfPresent(Double.self, forKey: .sharpenRadius) ?? defaults.sharpenRadius
         sharpenAmount = try values.decodeIfPresent(Double.self, forKey: .sharpenAmount) ?? defaults.sharpenAmount
+        meteringMethod = try values.value(.meteringMethod, or: defaults.meteringMethod)
+        lensBlur = try values.value(.lensBlur, or: defaults.lensBlur)
+        diffusionFilter = try values.value(.diffusionFilter, or: defaults.diffusionFilter)
+        grainDetail = try values.value(.grainDetail, or: defaults.grainDetail)
+        halationDetail = try values.value(.halationDetail, or: defaults.halationDetail)
+        couplersDetail = try values.value(.couplersDetail, or: defaults.couplersDetail)
+        preflashYellowShift = try values.value(.preflashYellowShift, or: defaults.preflashYellowShift)
+        preflashMagentaShift = try values.value(.preflashMagentaShift, or: defaults.preflashMagentaShift)
+        printGlare = try values.value(.printGlare, or: defaults.printGlare)
+        printCurves = try values.value(.printCurves, or: defaults.printCurves)
+        scanner = try values.value(.scanner, or: defaults.scanner)
+        color = try values.value(.color, or: defaults.color)
         advancedJSON = try values.decodeIfPresent(String.self, forKey: .advancedJSON)
     }
 }
@@ -261,6 +317,7 @@ extension DevelopSettings {
         if let printDevelopmentTime {
             patch["print_render"] = ["development_time": printDevelopmentTime]
         }
+        patch = Self.deepMerge(patch, detailsPatch)
         if let advancedJSON, !advancedJSON.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             guard
                 let advanced = try JSONSerialization.jsonObject(with: Data(advancedJSON.utf8)) as? [String: Any]
@@ -274,6 +331,55 @@ extension DevelopSettings {
             throw AlteraluxError.invalidAdvancedParameters
         }
         return json
+    }
+
+    /// The details (see `DevelopDetails.swift`), in the engine's terms.
+    private var detailsPatch: [String: Any] {
+        [
+            "camera": [
+                "auto_exposure_method": meteringMethod.rawValue,
+                "lens_blur_um": lensBlur,
+                "diffusion_filter": diffusionFilter.enginePatch,
+            ],
+            "film_render": [
+                "grain": ["blur": grainDetail.blur, "n_sub_layers": grainDetail.subLayers],
+                "halation": [
+                    "halation_spatial_scale": halationDetail.halationScale,
+                    "scatter_spatial_scale": halationDetail.scatterScale,
+                    "halation_n_bounces": halationDetail.bounces,
+                    "halation_bounce_decay": halationDetail.bounceDecay,
+                    "halation_renormalize": halationDetail.renormalize,
+                ],
+                "dir_couplers": [
+                    "diffusion_size_um": couplersDetail.diffusionSize,
+                    "diffusion_tail_um": couplersDetail.diffusionTail,
+                    "diffusion_tail_weight": couplersDetail.tailWeight,
+                ],
+            ],
+            "enlarger": [
+                "preflash_y_filter_shift": preflashYellowShift,
+                "preflash_m_filter_shift": preflashMagentaShift,
+            ],
+            "print_render": [
+                "glare": printGlare.enginePatch,
+                "density_curves_morph": printCurves.enginePatch,
+            ],
+            "scanner": [
+                "lens_blur": scanner.lensBlur,
+                "white_correction": scanner.correctsWhite,
+                "white_level": scanner.whiteLevel,
+                "black_correction": scanner.correctsBlack,
+                "black_level": scanner.blackLevel,
+            ],
+            "io": [
+                "output_gamut_compress": ["algorithm": color.outputGamut.rawValue],
+                "input_gamut_compress": ["algorithm": color.inputGamut.rawValue],
+            ],
+            "settings": [
+                "use_cat16": color.cat16,
+                "rgb_to_raw_method": color.upsampling.rawValue,
+            ],
+        ]
     }
 
     private static func deepMerge(_ base: [String: Any], _ overlay: [String: Any]) -> [String: Any] {
