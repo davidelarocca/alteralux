@@ -30,6 +30,7 @@ public struct WindowPopUp<Value: Hashable>: View {
     private let options: [WindowPopUpOption<Value>]
 
     @Environment(\.labelsVisibility) private var labelsVisibility
+    @Environment(\.governedReason) private var governedReason
 
     public init(_ title: LocalizedStringKey, selection: Binding<Value>, options: [WindowPopUpOption<Value>]) {
         self.title = title
@@ -51,7 +52,9 @@ public struct WindowPopUp<Value: Hashable>: View {
             selectedIndex: options.firstIndex { $0.value == selection },
             choose: { index in selection = options[index].value },
         )
-        .accessibilityLabel(Text(title))
+        // Disabled by `governed(_:reason:)`, it says why after its title (a caller's `.help`
+        // takes a hint's place).
+        .accessibilityLabel(governedReason.map { Text("\(Text(title)), \(Text($0))") } ?? Text(title))
     }
 }
 

@@ -369,6 +369,35 @@ branch of its own. What was said, in the order to take it:
   it offers them, and left as the photo has them by a recipe (noise belongs to the sensor). Measured
   on the user's RAWs at ISO 640: the noise reduction changes the photo by 4 to 5%; the decoder's
   output was already not clipped at white, and its highlight recovery is on by default. Retouches after the scan: later.
+  Done, the fourth, on the user's direction of 2026-11-22
+  ([ADR 0017](adr/0017-in-view-what-a-photographer-uses.md)): in view only what a photographer uses,
+  the rest under "More … adjustments" below a subheading with the name of the control it belongs to;
+  the modes first in every section; a governed control disabled in view with a line that says why;
+  names a photographer uses, a help and a unit on every control; a reset and a mark of change for each
+  section, and summaries that name the modes. In view now: the meter, its method and the exposure,
+  the white balance, highlight recovery and noise reduction, the lens correction, the diffusion filter
+  and its kind (Shot); format, development, grain, halation, color separation (Film); scan directly,
+  the lab's compensation, paper, print exposure, filters, paper development, pre-flash (Print);
+  sharpening (Scan). Seen in the built app in Italian on a Sony sample.
+  Candidates to remove or to merge, for the user to decide (none was removed):
+  - The diffusion filter's eight details (scale; glow, core and bloom, each with its size; warmth): the
+    kind of filter and its strength already choose a real filter. Perhaps only the scale and the warmth.
+  - "Long reach" and "Weight of the long reach" of the color separation: with "Reach" they describe
+    one spread; one slider.
+  - "Grain layers": hard to say what it changes.
+  - "Reflections off the film base", "Fading of each reflection" and "Take the halo's light from the
+    highlights": three shapes of the one halo "Halation size" already sets.
+  - Glare roughness and softness: the glare is a veil, and its unevenness is hard to see.
+  - The paper's curves but "Paper contrast" (fast and slow layer, red, green, blue, exhausted
+    developer): six sliders behind a switch; the contrast of the paper could come in view in their
+    place, as a paper grade.
+  - The pre-flash's own yellow and magenta filters: for few.
+  - "Scanner blur": the opposite of the sharpening beside it; "Lens blur" already softens.
+  - "Colors outside the film", "Modern color adaptation (CAT16)" and "From colors to light": color
+    science with no sentence for a photographer; the engine's defaults could stay with no control.
+  - "The lab compensates the exposure": kept for photos developed before; in view it reads as a
+    second exposure. Under "More print adjustments", perhaps.
+  - The seven metering methods: to measure which give a different photo, and keep those.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

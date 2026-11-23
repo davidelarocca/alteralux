@@ -32,8 +32,8 @@ private func whole(_ value: Binding<Int>) -> Binding<Double> {
     Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue = Int($0.rounded()) })
 }
 
-/// The shot's details: the lens's softness, the diffusion filter's shape, and the moiré reduction
-/// of the RAW decoder where it offers it.
+/// The shot's details: the lens's softness, the diffusion filter's shape, and the color noise and
+/// moiré reductions of the RAW decoder where it offers them.
 struct ShotDetails: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
@@ -44,13 +44,22 @@ struct ShotDetails: View {
         ParameterSlider("Lens blur", value: $settings.lensBlur, in: 0 ... 100, step: 1, fractionDigits: 0, unit: "µm")
             .help("Blurs the image on the film, as a soft or vintage lens would. 0 is a sharp lens.")
         DiffusionDetails(filter: $settings.diffusionFilter)
-        if let moire = model.rawDefaults?.moireReduction {
+        if let defaults = model.rawDefaults, RawDevelopmentControls.offersMoreControls(defaults) {
             InspectorSubheading("RAW development")
-            ParameterSlider(
-                "Moiré reduction", value: percent($model.moireReduction), in: 0 ... 100,
-                step: 1, defaultValue: moire * 100, fractionDigits: 0, unit: "%",
-            )
-            .help("Takes away the colored ripples that fine patterns make on the sensor.")
+            if let color = defaults.colorNoiseReduction {
+                ParameterSlider(
+                    "Color noise", value: percent($model.colorNoiseReduction), in: 0 ... 100,
+                    step: 1, defaultValue: color * 100, fractionDigits: 0, unit: "%",
+                )
+                .help("Takes away the colored speckles of the sensor's noise.")
+            }
+            if let moire = defaults.moireReduction {
+                ParameterSlider(
+                    "Moiré reduction", value: percent($model.moireReduction), in: 0 ... 100,
+                    step: 1, defaultValue: moire * 100, fractionDigits: 0, unit: "%",
+                )
+                .help("Takes away the colored ripples that fine patterns make on the sensor.")
+            }
         }
     }
 }
@@ -59,9 +68,8 @@ private struct DiffusionDetails: View {
     @Binding var filter: DiffusionFilterSettings
 
     var body: some View {
-        InspectorSubheading(
-            "Diffusion filter", note: filter.enabled ? nil : "Off: switch the diffusion filter on in Shot to shape it.",
-        )
+        let off: LocalizedStringKey = "Off: switch the diffusion filter on in Shot to shape it."
+        InspectorSubheading("Diffusion filter", note: filter.enabled ? nil : off)
         Group {
             ParameterSlider("Filter scale", value: $filter.spatialScale, in: 0.1 ... 3, defaultValue: 1, unit: "×")
                 .help("How far the whole glow reaches, as the filter would on a larger or smaller frame.")
@@ -83,7 +91,7 @@ private struct DiffusionDetails: View {
             ParameterSlider("Bloom size", value: $filter.bloomSize, in: 0.1 ... 3, defaultValue: 1, unit: "×")
                 .help("How far that veil spreads.")
         }
-        .disabled(!filter.enabled)
+        .governed(!filter.enabled, reason: off)
     }
 }
 
@@ -93,7 +101,8 @@ struct FilmDetails: View {
     @Binding var settings: DevelopSettings
 
     var body: some View {
-        InspectorSubheading("Grain", note: settings.grainEnabled ? nil : "Off: switch Grain on in Film to shape it.")
+        let grainOff: LocalizedStringKey = "Off: switch Grain on in Film to shape it."
+        InspectorSubheading("Grain", note: settings.grainEnabled ? nil : grainOff)
         Group {
             ParameterSlider("Grain softness", value: $settings.grainDetail.blur, in: 0 ... 3, defaultValue: 0.65, unit: "px")
                 .help("Softens the grain: 0 is crisp, higher is smoother.")
@@ -103,11 +112,10 @@ struct FilmDetails: View {
             )
             .help("In how many layers the grain forms: more layers make it finer and less regular.")
         }
-        .disabled(!settings.grainEnabled)
+        .governed(!settings.grainEnabled, reason: grainOff)
         HalationDetails(settings: $settings)
-        InspectorSubheading(
-            "Color separation", note: settings.couplersEnabled ? nil : "Off: switch Color separation on in Film to shape it.",
-        )
+        let separationOff: LocalizedStringKey = "Off: switch Color separation on in Film to shape it."
+        InspectorSubheading("Color separation", note: settings.couplersEnabled ? nil : separationOff)
         Group {
             ParameterSlider(
                 "Reach", value: $settings.couplersDetail.diffusionSize, in: 0 ... 100,
@@ -122,7 +130,7 @@ struct FilmDetails: View {
             ParameterSlider("Weight of the long reach", value: $settings.couplersDetail.tailWeight, in: 0 ... 1, defaultValue: 0.06)
                 .help("How much the far part counts against the near one.")
         }
-        .disabled(!settings.couplersEnabled)
+        .governed(!settings.couplersEnabled, reason: separationOff)
     }
 }
 
@@ -131,11 +139,8 @@ private struct HalationDetails: View {
 
     var body: some View {
         // The engine applies the scatter inside the halation: one switch turns both off.
-        InspectorSubheading(
-            "Halation and scatter",
-            note: settings.halationEnabled
-                ? nil : "Off with Halation: the film spreads light in one go, so the scatter stops too.",
-        )
+        let off: LocalizedStringKey = "Off with Halation: the film spreads light in one go, so the scatter stops too."
+        InspectorSubheading("Halation and scatter", note: settings.halationEnabled ? nil : off)
         Group {
             ParameterSlider(
                 "Halation size", value: $settings.halationDetail.halationScale, in: 0.1 ... 5, defaultValue: 1, unit: "×",
@@ -157,16 +162,31 @@ private struct HalationDetails: View {
             Toggle("Take the halo's light from the highlights", isOn: $settings.halationDetail.renormalize)
                 .help("The light the halo spreads is taken from the light that made it, so the highlights do not grow brighter.")
         }
-        .disabled(!settings.halationEnabled)
+        .governed(!settings.halationEnabled, reason: off)
     }
 }
 
-/// The print's details: the pre-flash's color, the glare and the paper's curves rebuilt.
+/// The print's details: the glare, the pre-flash's color and the paper's curves rebuilt.
 struct PrintDetails: View {
     @Binding var settings: DevelopSettings
 
     var body: some View {
-        InspectorSubheading("Pre-flash", note: settings.preflashExposure == 0 ? "Off: raise Pre-flash in Print to color it." : nil)
+        // The glare has its switch here, on its own slider: it leads the section with no subheading,
+        // which would only repeat its name.
+        ParameterSlider(
+            "Glare", value: percent($settings.printGlare.percent), in: 0 ... 20, step: 0.5,
+            defaultValue: 3, fractionDigits: 1, isOn: $settings.printGlare.enabled, unit: "%",
+        )
+        .help("Stray light in the enlarger and on the paper, which veils the shadows.")
+        Group {
+            ParameterSlider("Glare roughness", value: $settings.printGlare.roughness, in: 0 ... 2, defaultValue: 0.7)
+                .help("How unevenly the stray light falls: higher is blotchier.")
+            ParameterSlider("Glare softness", value: $settings.printGlare.blur, in: 0 ... 5, defaultValue: 0.5, unit: "px")
+                .help("How soft the stray light's edges are.")
+        }
+        .governed(!settings.printGlare.enabled, reason: "Off: switch Glare on to shape it.")
+        let preflashOff: LocalizedStringKey = "Off: raise Pre-flash in Print to color it."
+        InspectorSubheading("Pre-flash", note: settings.preflashExposure == 0 ? preflashOff : nil)
         Group {
             ParameterSlider(
                 "Pre-flash yellow filter", value: $settings.preflashYellowShift, in: -50 ... 50,
@@ -179,20 +199,7 @@ struct PrintDetails: View {
             )
             .help("The magenta filter of the pre-flash alone.")
         }
-        .disabled(settings.preflashExposure == 0)
-        InspectorSubheading("Glare")
-        ParameterSlider(
-            "Glare", value: percent($settings.printGlare.percent), in: 0 ... 20, step: 0.5,
-            defaultValue: 3, fractionDigits: 1, isOn: $settings.printGlare.enabled, unit: "%",
-        )
-        .help("Stray light in the enlarger and on the paper, which veils the shadows.")
-        Group {
-            ParameterSlider("Glare roughness", value: $settings.printGlare.roughness, in: 0 ... 2, defaultValue: 0.7)
-                .help("How unevenly the stray light falls: higher is blotchier.")
-            ParameterSlider("Glare softness", value: $settings.printGlare.blur, in: 0 ... 5, defaultValue: 0.5, unit: "px")
-                .help("How soft the stray light's edges are.")
-        }
-        .disabled(!settings.printGlare.enabled)
+        .governed(settings.preflashExposure == 0, reason: preflashOff)
         PrintCurvesDetails(curves: $settings.printCurves)
     }
 }
@@ -201,7 +208,8 @@ private struct PrintCurvesDetails: View {
     @Binding var curves: PrintCurvesSettings
 
     var body: some View {
-        InspectorSubheading("Paper curves")
+        let off: LocalizedStringKey = "Off: switch on Rebuild the paper's curves to change them."
+        InspectorSubheading("Paper curves", note: curves.enabled ? nil : off)
         Toggle("Rebuild the paper's curves", isOn: $curves.enabled)
             .help("Rebuilds the paper's response from its model, so its contrast can be changed below.")
         Group {
@@ -220,11 +228,10 @@ private struct PrintCurvesDetails: View {
             ParameterSlider(
                 "Exhausted developer", value: percent($curves.developerExhaustion), in: 0 ... 100,
                 step: 1, fractionDigits: 0, unit: "%",
-                note: curves.enabled ? nil : "Off: switch on Rebuild the paper's curves to change them.",
             )
             .help("A tired developer: it flattens the deepest blacks of the print.")
         }
-        .disabled(!curves.enabled)
+        .governed(!curves.enabled, reason: off)
     }
 }
 
@@ -240,22 +247,17 @@ struct ScanDetails: View {
         InspectorSubheading("Scanner")
         ParameterSlider("Scanner blur", value: $settings.scanner.lensBlur, in: 0 ... 5, unit: "px")
             .help("Softens the scan, as a scanner's own lens would. 0 is sharp.")
-        Toggle("Set the white point", isOn: $settings.scanner.correctsWhite)
-            .help("Makes the brightest tone of the scan pure white.")
+        // Each point has its switch on its own slider, as the grain and the halation have.
         ParameterSlider(
             "White point", value: percent($settings.scanner.whiteLevel), in: 50 ... 100,
-            step: 0.5, defaultValue: 98, fractionDigits: 1, unit: "%",
+            step: 0.5, defaultValue: 98, fractionDigits: 1, isOn: $settings.scanner.correctsWhite, unit: "%",
         )
-        .disabled(!settings.scanner.correctsWhite)
-        .help("Which level of the scan becomes white: lower brightens the scan.")
-        Toggle("Set the black point", isOn: $settings.scanner.correctsBlack)
-            .help("Makes the deepest tone of the scan pure black.")
+        .help("Makes the brightest tones of the scan pure white, from this level up: lower brightens the scan.")
         ParameterSlider(
             "Black point", value: percent($settings.scanner.blackLevel), in: 0 ... 50,
-            step: 0.5, defaultValue: 1, fractionDigits: 1, unit: "%",
+            step: 0.5, defaultValue: 1, fractionDigits: 1, isOn: $settings.scanner.correctsBlack, unit: "%",
         )
-        .disabled(!settings.scanner.correctsBlack)
-        .help("Which level of the scan becomes black: higher deepens the shadows.")
+        .help("Makes the deepest tones of the scan pure black, from this level down: higher deepens the shadows.")
         ColorDetails(color: $settings.color)
     }
 }
@@ -281,7 +283,7 @@ private struct ColorDetails: View {
             "From colors to light", selection: $color.upsampling,
             options: SpectralUpsampling.allCases.map { WindowPopUpOption($0, title: String(localized: $0.title)) },
         )
-        .help("How the photo's colors become the spectrum of light that reaches the film's layers (spectral upsampling).")
+        .help("How the photo's colors become the spectrum of light the film sees (spectral upsampling). Arctic 2026 is built on memory colors.")
     }
 }
 
@@ -319,8 +321,8 @@ extension OutputGamutCompression {
         switch self {
         case .off: String(localized: "Clipped (off)")
         case .oklch: String(localized: "Gentle (OKLCh)")
-        case .oklrab: String(localized: "Gentle, keeping lightness (OKLrab)")
-        case .cam16ucs: String(localized: "Perceptual, spektrafilm's (CAM16-UCS)")
+        case .oklrab: String(localized: "Keeps lightness (OKLrab)")
+        case .cam16ucs: String(localized: "Perceptual (CAM16-UCS)")
         case .acesRGC: String(localized: "Cinema (ACES RGC)")
         }
     }
@@ -339,8 +341,8 @@ extension SpectralUpsampling {
     /// What each does, then its technical name.
     var title: LocalizedStringResource {
         switch self {
-        case .hanatos2025: "Spectral, spektrafilm's (Hanatos 2025)"
-        case .arctic2026Alpha: "Memory colors, experimental (Arctic 2026)"
+        case .hanatos2025: "Spectral (Hanatos 2025)"
+        case .arctic2026Alpha: "Experimental (Arctic 2026)"
         case .mallett2019: "Fast (Mallett 2019)"
         }
     }

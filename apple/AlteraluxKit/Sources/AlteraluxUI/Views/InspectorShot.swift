@@ -72,7 +72,7 @@ struct WhiteBalanceControls: View {
                     )
                     .help("Corrects a green or magenta cast of the light.")
                 }
-                .disabled(isAutomatic)
+                .governed(isAutomatic, reason: "Set by the automatic white balance.")
             }
             .disabled(!model.canAdjustWhiteBalance)
         }
@@ -80,7 +80,8 @@ struct WhiteBalanceControls: View {
 }
 
 /// What Apple's RAW decoder does before the film, where it offers it for the photo's camera:
-/// highlight recovery and noise reduction, each starting from its own choice.
+/// highlight recovery and noise reduction, each starting from its own choice. The color noise and
+/// the moiré, which few photos need, are under "More shot adjustments".
 struct RawDevelopmentControls: View {
     @Environment(AppModel.self) private var model
 
@@ -99,22 +100,19 @@ struct RawDevelopmentControls: View {
                 )
                 .help("Smooths the digital noise of the sensor before the film adds its own grain.")
             }
-            if let color = defaults.colorNoiseReduction {
-                ParameterSlider(
-                    "Color noise", value: percent($model.colorNoiseReduction), in: 0 ... 100,
-                    step: 1, defaultValue: color * 100, fractionDigits: 0, unit: "%",
-                )
-                .help("Takes away the colored speckles of the sensor's noise.")
-            }
         }
     }
 }
 
 extension RawDevelopmentControls {
-    /// Whether the decoder offers any of the controls kept in view (moiré reduction is under
-    /// "More shot adjustments").
+    /// Whether the decoder offers any of the controls kept in view.
     static func offersMainControls(_ defaults: RawDecodingDefaults) -> Bool {
-        defaults.highlightRecovery != nil || defaults.luminanceNoiseReduction != nil || defaults.colorNoiseReduction != nil
+        defaults.highlightRecovery != nil || defaults.luminanceNoiseReduction != nil
+    }
+
+    /// Whether the decoder offers any of the controls under "More shot adjustments".
+    static func offersMoreControls(_ defaults: RawDecodingDefaults) -> Bool {
+        defaults.colorNoiseReduction != nil || defaults.moireReduction != nil
     }
 }
 
@@ -181,7 +179,7 @@ struct DiffusionControls: View {
             "Kind of filter", selection: $filter.family,
             options: DiffusionFamily.allCases.map { WindowPopUpOption($0, title: $0.title) },
         )
-        .disabled(!filter.enabled)
+        .governed(!filter.enabled, reason: "Off: switch the diffusion filter on to choose its kind.")
         .help("Black Pro-Mist keeps the blacks deep; Pro-Mist lifts them; Glimmerglass sparkles; CineBloom blooms.")
     }
 }

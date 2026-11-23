@@ -18,8 +18,9 @@ import SwiftUI
 ///
 /// A value with a unit shows it after the number (`unit`: "EV", "K", "%"). A slider whose
 /// direction is not obvious names its two ends under it (`ends`: "warmer", "cooler"). A line
-/// under the slider (`note`) says what governs it when it is disabled, or what it is tied to; it
-/// is also what assistive technologies read as the slider's hint.
+/// under the slider (`note`) says what governs it when it is disabled, or what it is tied to;
+/// assistive technologies read it after the slider's title. In a group disabled with
+/// `governed(_:reason:)`, a slider with no note of its own is read with the group's reason.
 ///
 /// With `.labelsHidden()` only the slider is drawn, for a caller that shows the value itself
 /// (the zoom under the photo). The title is still what assistive technologies read.
@@ -47,6 +48,7 @@ public struct ParameterSlider: View {
     @Environment(\.labelsVisibility) private var labelsVisibility
     @Environment(\.slidersTakeKeyboardFocus) private var takesKeyboardFocus
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.governedReason) private var governedReason
 
     /// - Parameters:
     ///   - step: the value snaps to multiples of this.
@@ -109,7 +111,7 @@ public struct ParameterSlider: View {
             }
             .labelsHidden()
             .disabled(isSwitchedOff)
-            .accessibilityHint(note.map { Text($0) } ?? Text(verbatim: ""))
+            .accessibilityLabel(spokenTitle)
             // The keyboard focus is on the whole component, below.
             .focusable(false)
             // Assistive technologies adjust by one step too, not by a tenth of the range.
@@ -162,6 +164,13 @@ public struct ParameterSlider: View {
         }
         .help("Double-click to reset")
         .accessibilityAction(named: "Reset", reset)
+    }
+
+    /// What assistive technologies read as the slider's name: its title and, after it, its note
+    /// or the reason it is governed. Not a hint: a caller's `.help` takes a hint's place.
+    private var spokenTitle: Text {
+        guard let reason = note ?? governedReason else { return Text(title) }
+        return Text("\(Text(title)), \(Text(reason))")
     }
 
     /// The Delete key arrives as U+007F on a Mac keyboard, while `KeyEquivalent.delete` is

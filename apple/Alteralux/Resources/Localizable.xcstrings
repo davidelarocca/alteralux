@@ -3870,7 +3870,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Misura dell'esposimetro"
+            "value" : "Misurazione"
           }
         }
       }
@@ -4000,7 +4000,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diffusione nell'emulsione"
+            "value" : "Dispersione nell'emulsione"
           }
         }
       }
@@ -4020,7 +4020,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ampiezza della diffusione"
+            "value" : "Ampiezza della dispersione"
           }
         }
       }
@@ -4050,7 +4050,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riflessi"
+            "value" : "Luce parassita"
           }
         }
       }
@@ -4070,7 +4070,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ruvidità dei riflessi"
+            "value" : "Irregolarità della luce parassita"
           }
         }
       }
@@ -4080,7 +4080,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Morbidezza dei riflessi"
+            "value" : "Morbidezza della luce parassita"
           }
         }
       }
@@ -4150,7 +4150,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppo esausto"
+            "value" : "Rivelatore esausto"
           }
         }
       }
@@ -4500,7 +4500,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Li sceglie il bilanciamento automatico."
+            "value" : "Temperatura e tinta le sceglie il bianco automatico."
           }
         }
       }
@@ -4570,7 +4570,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il bagliore rosso attorno alle luci forti, dalla luce che rimbalza sul retro della pellicola."
+            "value" : "L'alone rosso attorno alle luci forti, dalla luce che rimbalza sul retro della pellicola."
           }
         }
       }
@@ -4760,7 +4760,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'alone morbido attorno alle luci."
+            "value" : "La luce morbida che il filtro allarga attorno alle luci."
           }
         }
       }
@@ -4770,7 +4770,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quanto si allarga l'alone."
+            "value" : "Quanto si allarga il bagliore."
           }
         }
       }
@@ -4780,7 +4780,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il colore dell'alone, da freddo a caldo."
+            "value" : "Il colore del bagliore, da freddo a caldo."
           }
         }
       }
@@ -4930,7 +4930,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alone e diffusione"
+            "value" : "Alone e dispersione"
           }
         }
       }
@@ -4940,7 +4940,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spenti con l'alone: la pellicola diffonde la luce in un solo passaggio, quindi si ferma anche la diffusione."
+            "value" : "Spenti con l'alone: la pellicola sparge la luce in un solo passaggio, quindi si ferma anche la dispersione."
           }
         }
       }
@@ -4950,7 +4950,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quanto si allarga il bagliore rosso attorno alle luci."
+            "value" : "Quanto si allarga l'alone rosso attorno alle luci."
           }
         }
       }
@@ -5245,26 +5245,6 @@
         }
       }
     },
-    "Set the white point" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imposta il punto di bianco"
-          }
-        }
-      }
-    },
-    "Makes the brightest tone of the scan pure white." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rende bianco puro il tono più chiaro della scansione."
-          }
-        }
-      }
-    },
     "White point" : {
       "localizations" : {
         "it" : {
@@ -5275,52 +5255,12 @@
         }
       }
     },
-    "Which level of the scan becomes white: lower brightens the scan." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quale livello della scansione diventa bianco: più basso schiarisce la scansione."
-          }
-        }
-      }
-    },
-    "Set the black point" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imposta il punto di nero"
-          }
-        }
-      }
-    },
-    "Makes the deepest tone of the scan pure black." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rende nero puro il tono più scuro della scansione."
-          }
-        }
-      }
-    },
     "Black point" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Punto di nero"
-          }
-        }
-      }
-    },
-    "Which level of the scan becomes black: higher deepens the shadows." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quale livello della scansione diventa nero: più alto scurisce le ombre."
           }
         }
       }
@@ -5390,7 +5330,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adattamento cromatico moderno (CAT16)"
+            "value" : "Adattamento cromatico (CAT16)"
           }
         }
       }
@@ -5415,12 +5355,12 @@
         }
       }
     },
-    "How the photo's colors become the spectrum of light that reaches the film's layers (spectral upsampling)." : {
+    "How the photo's colors become the spectrum of light the film sees (spectral upsampling). Arctic 2026 is built on memory colors." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Come i colori della foto diventano lo spettro di luce che arriva agli strati della pellicola (ricostruzione spettrale)."
+            "value" : "Come i colori della foto diventano lo spettro di luce che la pellicola vede (ricostruzione spettrale). Arctic 2026 parte dai colori della memoria."
           }
         }
       }
@@ -5445,22 +5385,22 @@
         }
       }
     },
-    "Gentle, keeping lightness (OKLrab)" : {
+    "Keeps lightness (OKLrab)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Delicata, conserva la luminosità (OKLrab)"
+            "value" : "Conserva la luminosità (OKLrab)"
           }
         }
       }
     },
-    "Perceptual, spektrafilm's (CAM16-UCS)" : {
+    "Perceptual (CAM16-UCS)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Percettiva, di spektrafilm (CAM16-UCS)"
+            "value" : "Percettiva (CAM16-UCS)"
           }
         }
       }
@@ -5495,22 +5435,22 @@
         }
       }
     },
-    "Spectral, spektrafilm's (Hanatos 2025)" : {
+    "Spectral (Hanatos 2025)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Spettrale, di spektrafilm (Hanatos 2025)"
+            "value" : "Spettrale (Hanatos 2025)"
           }
         }
       }
     },
-    "Memory colors, experimental (Arctic 2026)" : {
+    "Experimental (Arctic 2026)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Colori della memoria, sperimentale (Arctic 2026)"
+            "value" : "Sperimentale (Arctic 2026)"
           }
         }
       }
@@ -5561,6 +5501,46 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riporta i controlli di questa sezione ai valori iniziali"
+          }
+        }
+      }
+    },
+    "Makes the brightest tones of the scan pure white, from this level up: lower brightens the scan." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rende bianco puro i toni più chiari della scansione, da questo livello in su: più basso schiarisce la scansione."
+          }
+        }
+      }
+    },
+    "Makes the deepest tones of the scan pure black, from this level down: higher deepens the shadows." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rende nero puro i toni più scuri della scansione, da questo livello in giù: più alto scurisce le ombre."
+          }
+        }
+      }
+    },
+    "Off: switch Glare on to shape it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenta: accendi Luce parassita per regolarla."
+          }
+        }
+      }
+    },
+    "Off: switch the diffusion filter on to choose its kind." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spento: accendi il filtro di diffusione per sceglierne il tipo."
           }
         }
       }
