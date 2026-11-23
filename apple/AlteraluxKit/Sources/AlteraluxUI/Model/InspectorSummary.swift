@@ -62,14 +62,13 @@ struct InspectorSummary {
         return values.joined(separator: Self.separator)
     }
 
-    /// The film: its format, grain and halation.
+    /// The film: its format and grain.
     ///
     /// - Parameter formatName: the film format as the reader's language names it.
     func film(formatName: String) -> String {
         [
             formatName,
             settings.grainEnabled ? number(settings.grainParticleArea, fractionDigits: 2) : Self.switchedOff,
-            settings.halationEnabled ? number(settings.halationAmount, fractionDigits: 2) : Self.switchedOff,
         ].joined(separator: Self.separator)
     }
 

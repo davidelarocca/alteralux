@@ -1,11 +1,13 @@
 import Foundation
 
-/// The parts of a photo's adjustments, as the inspector's sections group them (ADR 0016).
+/// The parts of a photo's adjustments, as the inspector's sections group them (ADR 0016, ADR 0018).
+/// A part also holds what the inspector no longer shows, so that a section's reset puts it back.
 public enum DevelopPart: CaseIterable, Sendable {
     /// What is set before the film: exposure and metering, white balance, the RAW decoder, the
-    /// lens and the diffusion filter. The frame is not part of it: the crop controls own it.
+    /// lens with the halation, and the diffusion filter. The frame is not part of it: the crop
+    /// controls own it.
     case shot
-    /// The film's format, development, grain, halation and couplers. The film itself is the
+    /// The film's format, development, grain and couplers. The film itself is the
     /// heading's choice, not this part's.
     case film
     /// The print: its exposure, filters, development, pre-flash, glare,
@@ -32,16 +34,16 @@ public extension DevelopSettings {
             result.rawDecoding = start.rawDecoding
             result.lensBlur = start.lensBlur
             result.diffusionFilter = start.diffusionFilter
+            result.halationEnabled = start.halationEnabled
+            result.halationAmount = start.halationAmount
+            result.scatterAmount = start.scatterAmount
+            result.halationDetail = start.halationDetail
         case .film:
             result.filmFormatMM = start.filmFormatMM
             result.filmDevelopmentTime = start.filmDevelopmentTime
             result.grainEnabled = start.grainEnabled
             result.grainParticleArea = start.grainParticleArea
             result.grainDetail = start.grainDetail
-            result.halationEnabled = start.halationEnabled
-            result.halationAmount = start.halationAmount
-            result.scatterAmount = start.scatterAmount
-            result.halationDetail = start.halationDetail
             result.couplersEnabled = start.couplersEnabled
             result.couplersAmount = start.couplersAmount
             result.couplersDetail = start.couplersDetail

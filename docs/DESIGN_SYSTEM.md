@@ -39,9 +39,9 @@ Motion gets no animation, or a fade for a transition.
 | Adjusting a numeric parameter | every slider of the adjustments inspector and the zoom: the system slider, filled from the neutral value | `ParameterSlider` |
 | A parameter that can be switched off | grain, halation: the switch on the slider's row | `ParameterSlider` with `isOn` |
 | A value with a unit, or a direction that is not obvious | exposure in EV, temperature in K; warmer or cooler, yellower or bluer | `ParameterSlider` with `unit` and `ends` |
-| Controls another control governs | the details of a parameter that is switched off, the sliders an automatic mode sets: they stay in view, disabled, and one line says why (hidden only where a whole group has no sense) | `.governed(_:reason:)` on the group, which has each slider and pop-up read with the reason; the line is the `note` of the group's `InspectorSubheading` or of a `ParameterSlider`. No line where the switch is the row right above |
+| Controls another control governs | the sliders an automatic mode sets (temperature and tint under the automatic white balance), the details of a parameter that is switched off: they stay in view, disabled, and one line says why (hidden only where a whole group has no sense) | `.governed(_:reason:)` on the group, which has each slider and pop-up read with the reason; the line is the `note` of the group's `InspectorSubheading` or of a `ParameterSlider`. No line where the switch is the row right above |
 | A group of controls the user can collapse | the sections of the inspector; collapsed, a section shows its values and the modes that are on; changed, it has a dot and, open, a Reset of its own | `InspectorSection` |
-| The refinements of one control, inside a section | under "More … adjustments", the details of the grain, the halation, the diffusion filter, each under the name of the control it belongs to | `InspectorSubheading` |
+| A group of controls inside a section | the lens in Shot: its correction and the halation | `InspectorSubheading` |
 | The one thing a pane is about | the film at the top of the inspector, which opens the list of films | `HeadingButton` |
 | Telling items of a list apart | the films in the list of films | `FilmEmblem` in a row of a `List` |
 | Switching something on or off | every other switch | `Toggle` in a `Form` |

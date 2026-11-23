@@ -152,4 +152,4 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **A `DisclosureGroup` inside a collapsible `Section` of a `Form` does not open on macOS.** Neither a
   click nor an accessibility press reaches it, and its binding is never set (seen on 2026-11-22 with
   "More adjustments" in the inspector). Use another collapsible section right under it
-  (`MoreAdjustments`, an `InspectorSection`).
+  (an `InspectorSection`; the "More … adjustments" sections that did so were removed by ADR 0018).

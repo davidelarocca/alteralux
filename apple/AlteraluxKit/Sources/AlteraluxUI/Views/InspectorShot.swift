@@ -6,7 +6,7 @@ import SwiftUI
 // come first, over the sliders they govern; a governed slider stays in view, disabled, with the
 // value its mode chose and a line that says why.
 
-/// The camera's meter, how it weighs the scene, and the exposure on top of it. With the meter on,
+/// The camera's meter and the exposure on top of it. With the meter on,
 /// the exposure is a compensation of what it measured; with the lab compensating the print, it
 /// changes the negative rather than the brightness, and a line says so.
 struct ExposureControls: View {
@@ -15,13 +15,6 @@ struct ExposureControls: View {
     var body: some View {
         Toggle("Automatic metering", isOn: $settings.autoExposure)
             .help("Meters the scene as a camera would; the exposure below is then added to what it measured.")
-        if settings.autoExposure {
-            WindowPopUp(
-                "Metering", selection: $settings.meteringMethod,
-                options: MeteringMethod.allCases.map { WindowPopUpOption($0, title: String(localized: $0.title)) },
-            )
-            .help("How the meter weighs the scene: the center, the whole frame, the highlights.")
-        }
         ParameterSlider(
             settings.autoExposure ? "Exposure compensation" : "Exposure", value: $settings.exposureEV, in: -5 ... 5,
             step: 0.1, fractionDigits: 1, showsSign: true, unit: "EV",
@@ -79,43 +72,6 @@ struct WhiteBalanceControls: View {
     }
 }
 
-/// What Apple's RAW decoder does before the film, where it offers it for the photo's camera:
-/// highlight recovery and noise reduction, each starting from its own choice. The color noise and
-/// the moiré, which few photos need, are under "More shot adjustments".
-struct RawDevelopmentControls: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        @Bindable var model = model
-        if let defaults = model.rawDefaults, Self.offersMainControls(defaults) {
-            InspectorSubheading("RAW development")
-            if defaults.highlightRecovery != nil {
-                Toggle("Highlight recovery", isOn: $model.highlightRecovery)
-                    .help("Rebuilds the colors of the highlights where the sensor clipped.")
-            }
-            if let luminance = defaults.luminanceNoiseReduction {
-                ParameterSlider(
-                    "Noise reduction", value: percent($model.luminanceNoiseReduction), in: 0 ... 100,
-                    step: 1, defaultValue: luminance * 100, fractionDigits: 0, unit: "%",
-                )
-                .help("Smooths the digital noise of the sensor before the film adds its own grain.")
-            }
-        }
-    }
-}
-
-extension RawDevelopmentControls {
-    /// Whether the decoder offers any of the controls kept in view.
-    static func offersMainControls(_ defaults: RawDecodingDefaults) -> Bool {
-        defaults.highlightRecovery != nil || defaults.luminanceNoiseReduction != nil
-    }
-
-    /// Whether the decoder offers any of the controls under "More shot adjustments".
-    static func offersMoreControls(_ defaults: RawDecodingDefaults) -> Bool {
-        defaults.colorNoiseReduction != nil || defaults.moireReduction != nil
-    }
-}
-
 /// Whether the lens is corrected, where the RAW decoder, the camera's own data or a lens profile
 /// know this camera's lens, with a line that says which of the last two does; otherwise a line
 /// says there is nothing to correct with.
@@ -165,22 +121,19 @@ private struct CameraCorrectionLine: View {
     }
 }
 
-/// The diffusion filter in front of the lens: its strength with its switch, and which filter it is.
-struct DiffusionControls: View {
-    @Binding var filter: DiffusionFilterSettings
+/// The lens: whether it is corrected, and the halation, the red glow the film adds around the
+/// lights the lens gathers. Nothing else of the lens is in the inspector (ADR 0018).
+struct LensControls: View {
+    @Binding var settings: DevelopSettings
 
     var body: some View {
+        InspectorSubheading("Lens")
+        LensCorrectionToggle()
         ParameterSlider(
-            "Diffusion filter", value: $filter.strength, in: 0 ... 2,
-            defaultValue: 0.5, isOn: $filter.enabled,
+            "Halation", value: $settings.halationAmount, in: 0 ... 3,
+            step: 0.05, defaultValue: 1, isOn: $settings.halationEnabled,
         )
-        .help("A filter in front of the lens that makes the lights glow, as a Pro-Mist does.")
-        WindowPopUp(
-            "Kind of filter", selection: $filter.family,
-            options: DiffusionFamily.allCases.map { WindowPopUpOption($0, title: $0.title) },
-        )
-        .governed(!filter.enabled, reason: "Off: switch the diffusion filter on to choose its kind.")
-        .help("Black Pro-Mist keeps the blacks deep; Pro-Mist lifts them; Glimmerglass sparkles; CineBloom blooms.")
+        .help("The red glow around bright lights, from light bouncing off the back of the film.")
     }
 }
 

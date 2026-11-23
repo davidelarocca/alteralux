@@ -92,5 +92,6 @@ defaults, and unknown keys are errors.
 | [0013](adr/0013-workflows-are-recipes-with-their-files.md) | A workflow is a recipe and the files it writes, kept beside the recipes | Accepted |
 | [0014](adr/0014-finder-and-shortcuts-hand-photos-to-the-app.md) | A workflow is how a recipe is used, run from the Finder's right-click menu and from Shortcuts | Accepted |
 | [0015](adr/0015-the-cameras-own-lens-corrections.md) | The corrections cameras record, combined with Apple's decoder and lensfun | Accepted |
-| [0016](adr/0016-develop-in-the-order-of-the-analog-process.md) | The adjustments in the order of the analog process, and an exposure that brightens | Accepted; what is in view refined by 0017 |
-| [0017](adr/0017-in-view-what-a-photographer-uses.md) | In view what a photographer uses, the rest under the control it belongs to | Accepted |
+| [0016](adr/0016-develop-in-the-order-of-the-analog-process.md) | The adjustments in the order of the analog process, and an exposure that brightens | Accepted; what is in view set by 0018 |
+| [0017](adr/0017-in-view-what-a-photographer-uses.md) | In view what a photographer uses, the rest under the control it belongs to | Accepted; "More … adjustments" removed by 0018 |
+| [0018](adr/0018-back-to-the-essential-controls.md) | The inspector goes back to the essential controls | Accepted |

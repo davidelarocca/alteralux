@@ -17,7 +17,7 @@ struct InspectorSummaryTests {
     @Test func valuesAreWrittenAsTheirControlsWriteThem() {
         let summary = InspectorSummary(settings: settings(), locale: Locale(identifier: "en_US"))
         #expect(summary.shot() == "Auto +0.3 EV")
-        #expect(summary.film(formatName: "35 mm") == "35 mm · 0.35 · 1.00")
+        #expect(summary.film(formatName: "35 mm") == "35 mm · 0.35")
         #expect(summary.print == "+0.2 stop · -12 · 0")
         #expect(summary.scan == "0.70")
     }
@@ -43,7 +43,7 @@ struct InspectorSummaryTests {
         var settings = settings()
         settings.grainEnabled = false
         let summary = InspectorSummary(settings: settings, locale: Locale(identifier: "en_US"))
-        #expect(summary.film(formatName: "35 mm") == "35 mm · – · 1.00")
+        #expect(summary.film(formatName: "35 mm") == "35 mm · –")
     }
 
     /// The modes are said, not only the numbers.

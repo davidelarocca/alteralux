@@ -369,42 +369,22 @@ branch of its own. What was said, in the order to take it:
   it offers them, and left as the photo has them by a recipe (noise belongs to the sensor). Measured
   on the user's RAWs at ISO 640: the noise reduction changes the photo by 4 to 5%; the decoder's
   output was already not clipped at white, and its highlight recovery is on by default. Retouches after the scan: later.
-  Done, the fourth, on the user's direction of 2026-11-22
-  ([ADR 0017](adr/0017-in-view-what-a-photographer-uses.md)): in view only what a photographer uses,
-  the rest under "More … adjustments" below a subheading with the name of the control it belongs to;
-  the modes first in every section; a governed control disabled in view with a line that says why;
-  names a photographer uses, a help and a unit on every control; a reset and a mark of change for each
-  section, and summaries that name the modes. In view now: the meter, its method and the exposure,
-  the white balance, highlight recovery and noise reduction, the lens correction, the diffusion filter
-  and its kind (Shot); format, development, grain, halation, color separation (Film); scan directly,
-  the lab's compensation, paper, print exposure, filters, paper development, pre-flash (Print);
-  sharpening (Scan). Seen in the built app in Italian on a Sony sample.
-  Candidates to remove or to merge, for the user to decide (none was removed). Measured on
-  2026-11-23 on two pictures, a daylight RAW and a drawn night scene with lights far brighter than
-  white, each control at the ends of its slider: the mean change of the developed photo in 8-bit
-  levels, and the change the most changed hundredth of its pixels reaches (for scale: one stop of
-  exposure is 25 to 41 and 50 to 58; the halation switched off at night reaches 3, its size 51).
-  - Not seen in either picture: "Reflections off the film base" and "Fading of each reflection"
-    (0.04 and 1 at most); glare roughness and softness (0.13, 2); "Modern color adaptation (CAT16)"
-    (0.09, 1); the gentle screen gamut options against the default (0.03, 1); "Colors outside the
-    film" (no change at all: neither picture has colors that saturated).
-  - Hardly seen: "Long reach" and a lower "Weight of the long reach" (0.7, 4), which with "Reach"
-    describe one spread, so one slider; the glare itself (0.3 and 2 switched off, 1.5 and 7 at 20%);
-    the diffusion filter's core size, its glow and warmth pushed up and its bloom either way (0.5, 13
-    at most).
-    The kind of filter and its scale do change the photo (up to 6, 96): those two could stay.
-  - Seen, and still candidates for what they are: "Take the halo's light from the highlights" (a
-    slight change of the whole picture: 1.8, 6); "Grain layers" (hard to say what it changes); the
-    paper's curves but "Paper contrast" (fast and slow layer, red, green, blue, exhausted
-    developer: six sliders behind a switch, each 2 to 18; the contrast of the paper could come in
-    view in their place, as a paper grade); the pre-flash's own filters (for few); "Scanner blur"
-    (the opposite of the sharpening beside it; "Lens blur" already softens); "From colors to light"
-    (1 to 2, 12: color science with no sentence for a photographer).
-  - "The lab compensates the exposure": kept for photos developed before; in view it reads as a
-    second exposure. Under "More print adjustments", perhaps.
-  - The seven metering methods: matrix, multi-zone and average stay close to center-weighted (3 to
-    10), median and partial differ at night (25, 56), highlight-weighted is far darker (50 to 68).
-    Three or four would do.
+  Done, the fourth ([ADR 0017](adr/0017-in-view-what-a-photographer-uses.md)): names a photographer
+  uses, a help and a unit on every control, the modes first in every section, a governed control
+  disabled in view with a line that says why, a reset and a mark of change for each section, and
+  summaries that name the modes. Its "More … adjustments", some fifty controls under subheadings,
+  were turned down by the user on 2026-11-23 as a sidebar that never ends.
+  Done, the fifth, on the user's word of 2026-11-23
+  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector is back to about fifteen
+  controls. Shot: the meter, the exposure, the white balance and, under "Lens", the lens correction
+  and the halation. Film: format, development, grain, color separation. Print: scan directly, paper,
+  print exposure, the two filters, paper development, pre-flash. Scan: sharpening. Everything else
+  is gone from the inspector and stays as spektrafilm and Apple's RAW decoder set it; photos and
+  recipes keep the values they have. Measured before the cut, on a daylight RAW and a drawn night
+  scene, each control at the ends of its slider: the halation's reflections and their fading, the
+  glare's roughness and softness, CAT16 and the gentle gamut options changed the photo by less than
+  one level in 255. Not yet seen in the built app. Next: highlights and shadows before the film, on
+  their own. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

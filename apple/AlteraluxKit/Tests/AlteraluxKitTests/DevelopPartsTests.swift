@@ -27,10 +27,12 @@ struct DevelopPartsTests {
         let settings = edited()
         let shot = settings.resetting(.shot)
         #expect(shot.exposureEV == 0 && shot.temperature == nil && !shot.diffusionFilter.enabled)
+        // The halation is with the lens, in the shot.
+        #expect(shot.halationDetail == HalationDetail())
         #expect(shot.grainParticleArea == 0.5 && shot.printExposure == 1.4)
 
         let film = settings.resetting(.film)
-        #expect(film.grainParticleArea == 0.2 && film.halationDetail == HalationDetail())
+        #expect(film.grainParticleArea == 0.2 && film.halationDetail.bounces == 5)
         #expect(film.exposureEV == 1.2)
 
         let print = settings.resetting(.print)

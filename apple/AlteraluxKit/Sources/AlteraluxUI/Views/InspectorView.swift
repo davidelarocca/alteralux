@@ -32,21 +32,13 @@ struct InspectorView: View {
             ) {
                 ExposureControls(settings: $model.settings)
                 WhiteBalanceControls()
-                RawDevelopmentControls()
-                LensCorrectionToggle()
-                DiffusionControls(filter: $model.settings.diffusionFilter)
-            }
-            if showsShot {
-                MoreAdjustments("shot", title: "More shot adjustments") { ShotDetails(settings: $model.settings) }
+                LensControls(settings: $model.settings)
             }
             InspectorSection(
                 "Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName),
                 isModified: model.isModified(.film), reset: model.resetter(.film),
             ) {
                 FilmControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
-            }
-            if showsFilm {
-                MoreAdjustments("film", title: "More film adjustments") { FilmDetails(settings: $model.settings) }
             }
             InspectorSection(
                 "Print", isExpanded: $showsPrint, summary: summary.print,
@@ -57,9 +49,6 @@ struct InspectorView: View {
                     developmentTimes: model.printDevelopmentTimes,
                 )
             }
-            if showsPrint, !model.settings.scanFilm {
-                MoreAdjustments("print", title: "More print adjustments") { PrintDetails(settings: $model.settings) }
-            }
             InspectorSection(
                 "Scan", isExpanded: $showsScan, summary: summary.scan,
                 isModified: model.isModified(.scan), reset: model.resetter(.scan),
@@ -69,9 +58,6 @@ struct InspectorView: View {
                     step: 0.05, defaultValue: 0.7,
                 )
                 .help("How much the scanner sharpens the edges; 0 leaves the scan as soft as the film made it.")
-            }
-            if showsScan {
-                MoreAdjustments("scan", title: "More scan adjustments") { ScanDetails(settings: $model.settings) }
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
@@ -136,7 +122,8 @@ private struct FilmHeading: View {
     }
 }
 
-/// The film: its frame, its development, its grain, its halation and its color separation.
+/// The film: its frame, its development, its grain and its color separation. Its halation is with
+/// the lens, in the shot (ADR 0018).
 private struct FilmControls: View {
     @Binding var settings: DevelopSettings
     /// The times the film was measured at, when it can be developed for longer or shorter.
@@ -158,11 +145,6 @@ private struct FilmControls: View {
         )
         .help("The size of the film's silver grains: larger is coarser and more visible.")
         ParameterSlider(
-            "Halation", value: $settings.halationAmount, in: 0 ... 3,
-            step: 0.05, defaultValue: 1, isOn: $settings.halationEnabled,
-        )
-        .help("The red glow around bright lights, from light bouncing off the back of the film.")
-        ParameterSlider(
             "Color separation", value: $settings.couplersAmount, in: 0 ... 2,
             defaultValue: 1, isOn: $settings.couplersEnabled,
         )
@@ -170,8 +152,8 @@ private struct FilmControls: View {
     }
 }
 
-/// The print: whether there is one and whether the lab compensates the exposure (the modes,
-/// first), its paper, and how it is exposed and filtered under the enlarger.
+/// The print: whether there is one, its paper, and how it is exposed and filtered under the
+/// enlarger.
 private struct PrintControls: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
@@ -184,8 +166,12 @@ private struct PrintControls: View {
         Toggle("Scan the film directly", isOn: $settings.scanFilm)
             .help("Skip the print. The usual choice for slide film.")
         if !settings.scanFilm {
-            Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
-                .help("Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness.")
+            // Only photos developed before the exposure brightened have it on (ADR 0016): the
+            // switch is there for them to turn it off, and gone once it is.
+            if settings.printCompensatesExposure {
+                Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
+                    .help("Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness.")
+            }
             // The paper's name is long: it gets the row's whole width, under its caption.
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Paper")
