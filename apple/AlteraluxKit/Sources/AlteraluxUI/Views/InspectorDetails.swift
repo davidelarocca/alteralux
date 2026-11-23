@@ -283,7 +283,7 @@ private struct ColorDetails: View {
             "From colors to light", selection: $color.upsampling,
             options: SpectralUpsampling.allCases.map { WindowPopUpOption($0, title: String(localized: $0.title)) },
         )
-        .help("How the photo's colors become the spectrum of light the film sees (spectral upsampling). Arctic 2026 is built on memory colors.")
+        .help("How the photo's colors become the spectrum of light that reaches the film's layers (spectral upsampling).")
     }
 }
 
@@ -321,8 +321,8 @@ extension OutputGamutCompression {
         switch self {
         case .off: String(localized: "Clipped (off)")
         case .oklch: String(localized: "Gentle (OKLCh)")
-        case .oklrab: String(localized: "Keeps lightness (OKLrab)")
-        case .cam16ucs: String(localized: "Perceptual (CAM16-UCS)")
+        case .oklrab: String(localized: "Gentle, keeping lightness (OKLrab)")
+        case .cam16ucs: String(localized: "Perceptual, spektrafilm's (CAM16-UCS)")
         case .acesRGC: String(localized: "Cinema (ACES RGC)")
         }
     }
@@ -341,8 +341,8 @@ extension SpectralUpsampling {
     /// What each does, then its technical name.
     var title: LocalizedStringResource {
         switch self {
-        case .hanatos2025: "Spectral (Hanatos 2025)"
-        case .arctic2026Alpha: "Experimental (Arctic 2026)"
+        case .hanatos2025: "Spectral, spektrafilm's (Hanatos 2025)"
+        case .arctic2026Alpha: "Memory colors, experimental (Arctic 2026)"
         case .mallett2019: "Fast (Mallett 2019)"
         }
     }

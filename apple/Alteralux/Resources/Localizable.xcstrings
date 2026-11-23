@@ -5355,7 +5355,7 @@
         }
       }
     },
-    "How the photo's colors become the spectrum of light the film sees (spectral upsampling). Arctic 2026 is built on memory colors." : {
+    "How the photo's colors become the spectrum of light that reaches the film's layers (spectral upsampling)." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5385,7 +5385,7 @@
         }
       }
     },
-    "Keeps lightness (OKLrab)" : {
+    "Gentle, keeping lightness (OKLrab)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5395,7 +5395,7 @@
         }
       }
     },
-    "Perceptual (CAM16-UCS)" : {
+    "Perceptual, spektrafilm's (CAM16-UCS)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5435,7 +5435,7 @@
         }
       }
     },
-    "Spectral (Hanatos 2025)" : {
+    "Spectral, spektrafilm's (Hanatos 2025)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
@@ -5445,7 +5445,7 @@
         }
       }
     },
-    "Experimental (Arctic 2026)" : {
+    "Memory colors, experimental (Arctic 2026)" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
