@@ -38,13 +38,14 @@ struct CameraRecord: Sendable, Equatable {
 /// The profile of one lens on one camera: everything lensfun knows of the lens, and the crop
 /// factor of the camera it was found for, which sets how the calibrations are rescaled.
 public struct LensProfile: Sendable, Equatable {
-    /// The lens, maker and model.
+    /// The lens, maker and model; for the fixed lens of a camera, the camera.
     public let lensName: String
     let lens: LensRecord
     let cameraCropFactor: Double
 
-    init(lens: LensRecord, cameraCropFactor: Double) {
-        lensName = lens.displayName
+    /// - Parameter name: what to call the lens instead of the database's own name.
+    init(lens: LensRecord, cameraCropFactor: Double, name: String? = nil) {
+        lensName = name ?? lens.displayName
         self.lens = lens
         self.cameraCropFactor = cameraCropFactor
     }

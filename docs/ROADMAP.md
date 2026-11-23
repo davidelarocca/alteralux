@@ -108,7 +108,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    nothing to act on. Fixed on 2026-11-20: a black and white paper no longer shows the yellow and
    magenta filters, and the film and the paper measured at several development times (Kodak
    Double-X, Kodak 2302) offer them, the middle one first; checked in the built app, where 12 minutes
-   gives a brighter, harder print than 4.
+   gives a brighter, harder print than 4. Fixed on 2026-11-23: the lensfun profile of a camera with
+   a fixed lens is named after the camera in the inspector (a Ricoh GR III read "+ GW-4", the
+   converter its record also holds; the correction itself was right).
 2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
    2026-11-20 settled, built from the system's controls
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
