@@ -134,8 +134,15 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   on 2026-11-21: it lifts Nikon's always, even with its lens correction off, and never Sony's or
   Fujifilm's; toggling its lens correction shows none of this. Adding vignetting where it already does
   corrects twice: check a new maker against the sensor first (`CameraMaker.appleLiftsVignetting`).
-- **The DNG from a DJI Osmo Action does not open** (`AlteraluxError.unreadableImage` in
-  `PhotoDecoder`), seen on 2026-11-21 on a raw.pixls.us sample. Not looked into yet.
+- **A DNG with a small fault in its tags is no DNG at all for the system's decoders.** The DJI Osmo
+  Action writes the DNG version tags (50706, 50707) as five bytes where the format has four: Core
+  Image gives a RAW filter with no output and no size, ImageIO no image, and nothing says why
+  (seen on 2026-11-21 on a raw.pixls.us sample, found on 2026-11-23 by reading the file's
+  directory). `MendedDNG` hands the decoders the file's bytes with the two tags cut to four; the
+  file is not changed. A RAW that does not open while its EXIF reads fine: look at its tags first.
+- **Changing a `Data` mapped from a file crashes with no message** (a bus error, nothing in the
+  test's output): `Data(contentsOf:options: .mappedIfSafe)` is for reading. Read the file plainly
+  when its bytes are to be changed.
 - **lensfun picks "Ricoh GR III & compatibles + GW-4" for a GR III sample** (raw.pixls.us, 2026-11-21),
   the profile with the wide converter, which the photo may not have had. Not looked into yet
   (`LensFuzzyMatch`).

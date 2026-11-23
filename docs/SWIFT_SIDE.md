@@ -12,7 +12,9 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     files go through `CIRAWFilter` with tone curve, local tone mapping, gamut
     mapping and sharpening turned off; other formats go through ImageIO. It
     also provides the system's default rendering of a file, used for
-    thumbnails and for the before/after comparison.
+    thumbnails and for the before/after comparison. A DNG the system's
+    decoders refuse for a fault in its tags is handed to them mended in
+    memory (`MendedDNG`: the five-byte version tags of the DJI Osmo Action).
   - `PhotoDecoder` (an actor) is the decoder of one open photo. It keeps the
     `CIRAWFilter` between calls and decodes the photo at the size asked and,
     for a RAW, with the white balance asked; it reports the white balance the
