@@ -112,7 +112,9 @@ final class EditHistory {
         let settings = item.settings
         let url = item.url
         let kept = item.keptSettings
+        let hadAdjustments = item.hasAdjustments
         item.keptSettings = settings
+        item.hasAdjustments = true
         writes += 1
         let write = writes
         pending[url] = (settings, write)
@@ -129,6 +131,7 @@ final class EditHistory {
                 // Not kept after all: the next time the photo settles, it is tried again.
                 if item.keptSettings == settings {
                     item.keptSettings = kept
+                    item.hasAdjustments = hadAdjustments
                 }
                 report(error)
             }

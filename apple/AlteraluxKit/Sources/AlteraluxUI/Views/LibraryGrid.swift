@@ -371,12 +371,12 @@ private struct LibraryTile: View {
             ThumbnailCell(image: image, isSelected: isSelected, size: size)
                 .overlay(alignment: .bottomTrailing) {
                     if hasAdjustments {
-                        mark("slider.horizontal.3")
+                        PhotoMark.adjusted
                     }
                 }
                 .overlay(alignment: .bottomLeading) {
                     if isDiscarded {
-                        mark("xmark")
+                        PhotoMark.discarded
                     }
                 }
             HStack(spacing: Spacing.xs) {
@@ -426,15 +426,6 @@ private struct LibraryTile: View {
     }
 
     /// A small mark in a corner of the thumbnail.
-    private func mark(_ symbol: String) -> some View {
-        Image(systemName: symbol)
-            .font(Typography.badge)
-            .padding(Spacing.xs)
-            .background(.regularMaterial, in: .rect(cornerRadius: Radius.control))
-            .padding(Spacing.xs)
-            .accessibilityHidden(true)
-    }
-
     private var label: Text {
         if isDiscarded {
             return Text("\(photo.lastPathComponent), discarded")
