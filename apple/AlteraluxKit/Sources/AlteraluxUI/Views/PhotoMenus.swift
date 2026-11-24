@@ -239,13 +239,27 @@ struct PhotoQuestionAlerts: ViewModifier {
     }
 
     private func isAsking(_ asked: PhotoQuestion) -> Binding<Bool> {
-        Binding(get: { question == asked }, set: { if !$0 { question = nil } })
+        Binding(get: { question == asked }, set: {
+            if !$0 {
+                question = nil
+            }
+        })
     }
 
     private var isRenaming: Binding<Bool> {
         Binding(
-            get: { if case .rename = question { true } else { false } },
-            set: { if !$0 { question = nil } },
+            get: {
+                if case .rename = question {
+                    true
+                } else {
+                    false
+                }
+            },
+            set: {
+                if !$0 {
+                    question = nil
+                }
+            },
         )
     }
 }

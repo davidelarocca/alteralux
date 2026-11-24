@@ -197,5 +197,4 @@ extension PhotoCrop {
         let edges = [left - other.left, top - other.top, width - other.width, height - other.height, angle - other.angle]
         return edges.allSatisfy { abs($0) < 1e-9 } && quarterTurns == other.quarterTurns && isFlipped == other.isFlipped
     }
-
 }

@@ -1,6 +1,6 @@
 import CoreImage
-import os
 import Foundation
+import os
 import Testing
 @testable import AlteraluxKit
 
@@ -223,7 +223,7 @@ struct CameraLensWarpTests {
         """
         let passThrough = try #require(try CIKernel.kernels(withMetalString: source).first)
         let largest = OSAllocatedUnfairLock(initialState: 0.0)
-        let random = CIFilter(name: "CIRandomGenerator")!.outputImage!
+        let random = try #require(CIFilter(name: "CIRandomGenerator")?.outputImage)
         let extent = CGRect(x: 0, y: 0, width: width, height: height)
         let photo = try #require(passThrough.apply(extent: extent, roiCallback: { _, rect in
             largest.withLock { $0 = max($0, rect.width * rect.height) }

@@ -52,21 +52,21 @@ struct WindowMenuTests {
         #expect(chosen == "Name")
     }
 
-        /// Where the system would open the menu past the window's edge, it opens inside.
-        @Test func aMenuThatWouldPassAnEdgeMovesInside() throws {
-            let room: ClosedRange<CGFloat> = 0 ... 600
-            // Nine rows of 22 pt, the last chosen, on a button near the top: the system would
-            // put eight rows above it, past the top.
-            let top = try #require(WindowPopUpButton.menuTop(
-                buttonMidY: 560, menuHeight: 208, rows: (9, 8), room: room,
-            ))
-            #expect(top <= 600 - Spacing.s && top - 208 >= Spacing.s)
-            // Five rows, the middle one chosen, near the bottom: two rows would hang below it.
-            let low = try #require(WindowPopUpButton.menuTop(
-                buttonMidY: 20, menuHeight: 120, rows: (5, 2), room: room,
-            ))
-            #expect(low - 120 >= Spacing.s)
-            // In the middle the system's placement fits, and the system opens it.
-            #expect(WindowPopUpButton.menuTop(buttonMidY: 300, menuHeight: 120, rows: (5, 2), room: room) == nil)
-        }
+    /// Where the system would open the menu past the window's edge, it opens inside.
+    @Test func aMenuThatWouldPassAnEdgeMovesInside() throws {
+        let room: ClosedRange<CGFloat> = 0 ... 600
+        // Nine rows of 22 pt, the last chosen, on a button near the top: the system would
+        // put eight rows above it, past the top.
+        let top = try #require(WindowPopUpButton.menuTop(
+            buttonMidY: 560, menuHeight: 208, rows: (9, 8), room: room,
+        ))
+        #expect(top <= 600 - Spacing.s && top - 208 >= Spacing.s)
+        // Five rows, the middle one chosen, near the bottom: two rows would hang below it.
+        let low = try #require(WindowPopUpButton.menuTop(
+            buttonMidY: 20, menuHeight: 120, rows: (5, 2), room: room,
+        ))
+        #expect(low - 120 >= Spacing.s)
+        // In the middle the system's placement fits, and the system opens it.
+        #expect(WindowPopUpButton.menuTop(buttonMidY: 300, menuHeight: 120, rows: (5, 2), room: room) == nil)
+    }
 }

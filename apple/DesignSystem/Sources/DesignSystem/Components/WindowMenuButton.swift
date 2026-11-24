@@ -45,7 +45,7 @@ public struct WindowMenuButton<Label: View>: View {
 @MainActor
 enum WindowMenu {
     /// Room kept between the menu and the window's edge, in points.
-    nonisolated private static let margin = Spacing.s
+    private nonisolated static let margin = Spacing.s
 
     static func popUp(_ entries: [WindowMenuEntry]) {
         guard let window = NSApp.keyWindow, let view = window.contentView else { return }
