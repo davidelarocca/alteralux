@@ -187,6 +187,42 @@ struct EditStoreTests {
         #expect(store.load(for: photo) == edited())
     }
 
+    /// The same adjustments may give another picture once the engine is updated: what is kept
+    /// says which film model it was saved with, and what was kept before that says nothing.
+    @Test func theFilmModelIsKeptBesideTheAdjustments() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (photo, store) = (fixture.photo, fixture.store)
+        #expect(store.filmModel(for: photo) == nil)
+        try await store.save(edited(), for: photo)
+        #expect(!FilmModel.version.isEmpty)
+        #expect(store.filmModel(for: photo) == FilmModel.version)
+
+        // Saved again by an app built with a later engine: the model is the later one.
+        let later = EditStore(fallbackDirectory: fixture.folder.appendingPathComponent("edits"), filmModel: "9.9.9")
+        try await later.save(edited(), for: photo)
+        #expect(store.filmModel(for: photo) == "9.9.9")
+        #expect(store.load(for: photo) == edited())
+
+        // Kept before the app wrote the model down: the adjustments are read, the model unknown.
+        let earlier = Data(#"{"version":1,"settings":{"filmID":"fujifilm_velvia_100"}}"#.utf8)
+        let written = earlier.withUnsafeBytes {
+            setxattr(photo.path, EditStore.attributeName, $0.baseAddress, earlier.count, 0, 0)
+        }
+        #expect(written == 0)
+        #expect(store.filmModel(for: photo) == nil)
+        #expect(store.load(for: photo)?.filmID == "fujifilm_velvia_100")
+    }
+
+    @Test func theFilmModelIsKeptInTheAppsFolderToo() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (photo, store) = (fixture.photo, fixture.store)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: photo.path)
+        #expect(try await store.save(edited(), for: photo) == .store)
+        #expect(store.filmModel(for: photo) == FilmModel.version)
+    }
+
     /// Settings saved before a parameter existed are read with its default; the lens correction,
     /// with what the decoder does on its own, and the exposure with the lab compensating it, as
     /// the engine did, so the photo looks as it did.

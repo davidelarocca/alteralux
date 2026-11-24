@@ -24,20 +24,36 @@ public actor EditStore {
     static let formatVersion = 1
 
     private nonisolated let fallbackDirectory: URL
+    private nonisolated let currentFilmModel: String
 
-    /// - Parameter fallbackDirectory: where the adjustments of photos that cannot be written are
-    ///   kept. Created when first needed.
-    public init(fallbackDirectory: URL) {
+    /// - Parameters:
+    ///   - fallbackDirectory: where the adjustments of photos that cannot be written are kept.
+    ///     Created when first needed.
+    ///   - filmModel: the film model written beside the adjustments: the one the app is built
+    ///     with, unless a test stands in for another.
+    public init(fallbackDirectory: URL, filmModel: String = FilmModel.version) {
         self.fallbackDirectory = fallbackDirectory
+        currentFilmModel = filmModel
     }
 
     /// The adjustments kept for the photo at `url`, if any.
     public nonisolated func load(for url: URL) -> DevelopSettings? {
-        if let data = Self.attribute(of: url), let settings = Self.decode(data)?.settings {
-            return settings
+        stored(for: url)?.settings
+    }
+
+    /// The film model the adjustments kept for the photo at `url` were last saved with
+    /// (`FilmModel.version` at the time); `nil` when nothing is kept, or when it was kept before
+    /// the app wrote the model down.
+    public nonisolated func filmModel(for url: URL) -> String? {
+        stored(for: url)?.filmModel
+    }
+
+    private nonisolated func stored(for url: URL) -> StoredEdit? {
+        if let data = Self.attribute(of: url), let stored = Self.decode(data) {
+            return stored
         }
         guard let data = try? Data(contentsOf: fallbackFile(for: url)) else { return nil }
-        return Self.decode(data)?.settings
+        return Self.decode(data)
     }
 
     /// Whether anything is kept for the photo at `url`: a cheap look, for marking the photos of a
@@ -55,7 +71,9 @@ public actor EditStore {
     public func save(_ settings: DevelopSettings, for url: URL) throws -> Place {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        let data = try encoder.encode(StoredEdit(version: Self.formatVersion, settings: settings))
+        let data = try encoder.encode(
+            StoredEdit(version: Self.formatVersion, filmModel: currentFilmModel, settings: settings),
+        )
         let fallback = fallbackFile(for: url)
         // What a later version of the app wrote into the photo is not this version's to replace:
         // it cannot read it, so it cannot keep what it holds.
@@ -93,8 +111,11 @@ public actor EditStore {
         return fallbackDirectory.appendingPathComponent(name).appendingPathExtension("json")
     }
 
+    /// What is written: `{"filmModel": "0.1.2", "settings": {...}, "version": 1}`. The film model
+    /// is missing from what was written before the app recorded it.
     private struct StoredEdit: Codable {
         let version: Int
+        let filmModel: String?
         let settings: DevelopSettings
     }
 

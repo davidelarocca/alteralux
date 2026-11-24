@@ -178,6 +178,11 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - A sidecar beside the photo, for services that drop extended attributes: possible only inside
      folders the user adds, so with the library.
    - Undo steps are not kept between launches.
+   - Done on 2026-11-24: what is saved says which film model it was made with (the upstream
+     engine's version, `FilmModel`), beside a photo's adjustments and in a recipe, so a look made
+     before an engine update can be told apart. Nothing reads it yet, and nothing is said to the
+     user: what to do with an earlier look (keep its model, or say that it changed) is to decide
+     when the engine is first updated.
    - Fixed on 2026-11-20: in Italian Redo read "Ripristina", just above "Ripristina regolazioni"; it is
      "Ripeti", as macOS says it.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and
