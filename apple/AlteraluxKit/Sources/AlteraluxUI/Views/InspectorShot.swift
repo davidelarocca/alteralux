@@ -2,33 +2,54 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-// The shot section's controls (ADR 0016): what is set before the film sees the photo. The modes
-// come first, over the sliders they govern; a governed slider stays in view, disabled, with the
-// value its mode chose and a line that says why.
+// The shot section's controls (ADR 0016): what is set before the film sees the photo. The
+// exposure and the white balance are each a title with its "Auto" switch on the same row: on, the
+// mode takes care of it and nothing else is shown; off, the sliders appear under it (ADR 0020).
 
-/// The camera's meter and the exposure on top of it. With the meter on,
-/// the exposure is a compensation of what it measured; with the lab compensating the print, it
-/// changes the negative rather than the brightness, and a line says so.
+/// The exposure: left to the camera's meter, or a slider. With the meter on, its method and a
+/// compensation are in the meter's own group, closed (`MeterDetails`).
 struct ExposureControls: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        InspectorSubheading(
+            "Exposure", isOn: $model.isExposureAutomatic, switchTitle: "Auto", switchLabel: "Automatic exposure",
+        )
+        .help("On, the scene is metered as a camera would. Off, the exposure is yours, from where the meter left it.")
+        if !model.settings.autoExposure {
+            ParameterSlider(
+                "Exposure", value: $model.settings.exposureEV, in: AppModel.exposureRange,
+                step: AppModel.exposureStep, fractionDigits: 1, showsSign: true, unit: "EV",
+                note: model.settings.printCompensatesExposure && !model.settings.scanFilm
+                    ? "The lab compensates it at the print: it changes the negative, not the brightness." : nil,
+            )
+            .help("Brightens or darkens the photo before the film sees it, in stops.")
+        }
+    }
+}
+
+/// The meter's group: how it weighs the scene, and a compensation of what it measured. Both are
+/// the meter's, so they wait for it to be on.
+struct MeterDetails: View {
     @Binding var settings: DevelopSettings
 
     var body: some View {
-        Toggle("Automatic metering", isOn: $settings.autoExposure)
-            .help("Meters the scene as a camera would; the exposure below is then added to what it measured.")
-        if settings.autoExposure {
+        let off: LocalizedStringKey = "Off: switch the automatic exposure on to use the meter."
+        Group {
             WindowPopUp(
                 "Metering", selection: $settings.meteringMethod,
                 options: MeteringMethod.allCases.map { WindowPopUpOption($0, title: String(localized: $0.title)) },
             )
             .help("How the meter weighs the scene: the center, the whole frame, the highlights.")
+            ParameterSlider(
+                "Exposure compensation", value: $settings.exposureEV, in: AppModel.exposureRange,
+                step: AppModel.exposureStep, fractionDigits: 1, showsSign: true, unit: "EV",
+                note: settings.autoExposure ? nil : off,
+            )
+            .help("Added to what the meter measured, in stops: for a look that is brighter or darker on every photo.")
         }
-        ParameterSlider(
-            settings.autoExposure ? "Exposure compensation" : "Exposure", value: $settings.exposureEV, in: -5 ... 5,
-            step: 0.1, fractionDigits: 1, showsSign: true, unit: "EV",
-            note: settings.printCompensatesExposure && !settings.scanFilm
-                ? "The lab compensates it at the print: it changes the negative, not the brightness." : nil,
-        )
-        .help("Brightens or darkens the photo before the film sees it, in stops.")
+        .governed(!settings.autoExposure, reason: off)
     }
 }
 
@@ -51,32 +72,27 @@ struct SceneToneControls: View {
     }
 }
 
-/// Temperature and tint: what the RAW decoder takes as neutral. With the automatic white balance
-/// on, they show what it chose and stay still until it is switched off.
+/// The white balance: chosen from the light measured in the photo, or temperature and tint. A
+/// photo that is not a RAW has its white balance in its pixels: a line says so.
 struct WhiteBalanceControls: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
         @Bindable var model = model
         let neutral = model.neutralWhiteBalance
-        let isAutomatic = model.isWhiteBalanceAutomatic
 
-        // A photo that is not a RAW has its white balance in its pixels: a line says so, in
-        // place of two sliders that could not move.
         if model.whiteBalanceIsFixed {
-            Text("White balance can be chosen for RAW photos only.")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
+            InspectorSubheading("White balance", note: "White balance can be chosen for RAW photos only.")
         } else {
             Group {
-                Toggle("Automatic white balance", isOn: $model.isWhiteBalanceAutomatic)
-                    .help("Starts from the light measured in the photo where the camera's white balance is far from it.")
-                if isAutomatic, model.cameraChoseWhiteBalance {
-                    Text("The camera chose this white balance itself, from the scene: it is kept.")
-                        .font(Typography.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Group {
+                InspectorSubheading(
+                    "White balance", isOn: $model.isWhiteBalanceAutomatic, switchTitle: "Auto",
+                    switchLabel: "Automatic white balance",
+                    note: model.isWhiteBalanceAutomatic && model.cameraChoseWhiteBalance
+                        ? "The camera chose this white balance itself, from the scene: it is kept." : nil,
+                )
+                .help("On, it starts from the light measured in the photo where the camera's white balance is far from it.")
+                if !model.isWhiteBalanceAutomatic {
                     ParameterSlider(
                         "Temperature", value: $model.temperature, in: model.temperatureRange,
                         step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
@@ -87,11 +103,9 @@ struct WhiteBalanceControls: View {
                         "Tint", value: $model.tint, in: AppModel.tintRange,
                         step: AppModel.tintStep, defaultValue: neutral.tint, fractionDigits: 0,
                         ends: SliderEnds("Greener", "More magenta"),
-                        note: isAutomatic ? "Set by the automatic white balance." : nil,
                     )
                     .help("Corrects a green or magenta cast of the light.")
                 }
-                .governed(isAutomatic, reason: "Set by the automatic white balance.")
             }
             .disabled(!model.canAdjustWhiteBalance)
         }

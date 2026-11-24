@@ -426,6 +426,11 @@ branch of its own. What was said, in the order to take it:
   scene, dimming a lamp left the rest as it was, where the engine left to meter it doubled its
   brightness. Tried by the user in the built app on 2026-11-24, who keeps the two in their group.
   Retouches after the scan: later.
+  Done, the seventh ([ADR 0020](adr/0020-automatic-means-automatic.md)), asked by the user on
+  2026-11-24: in Shot the exposure and the white balance are each a title with its "Auto" switch on
+  the same row; on, nothing else is shown; off, the sliders appear, starting from what the automatic
+  had chosen, so the photo does not jump. The metering method and the exposure compensation are in a
+  closed group, "Meter". Not yet seen in the built app.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

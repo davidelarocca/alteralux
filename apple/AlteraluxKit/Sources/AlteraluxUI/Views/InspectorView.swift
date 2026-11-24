@@ -30,7 +30,7 @@ struct InspectorView: View {
                 "Shot", isExpanded: $showsShot, summary: summary.shot(whiteBalance: shownWhiteBalance),
                 isModified: model.isModified(.shot), reset: model.resetter(.shot),
             ) {
-                ExposureControls(settings: $model.settings)
+                ExposureControls()
                 WhiteBalanceControls()
                 LensControls(settings: $model.settings)
             }

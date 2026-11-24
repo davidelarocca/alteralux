@@ -76,5 +76,25 @@ extension WindowedTests {
                 .formStyle(.grouped)
             } == [])
         }
+
+        /// The title with its mode's switch on the row: on with nothing under it, off with the
+        /// control it governs, and with a line.
+        @Test func withASwitch() {
+            #expect(Snapshot.verify("InspectorSubheading", sizes: sizes, state: "switch", source: source) {
+                Form {
+                    Section {
+                        InspectorSubheading(
+                            "Exposure", isOn: .constant(true), switchTitle: "Auto", switchLabel: "Automatic exposure",
+                        )
+                        InspectorSubheading(
+                            "White balance", isOn: .constant(false), switchTitle: "Auto",
+                            switchLabel: "Automatic white balance", note: "The camera chose it itself.",
+                        )
+                        Toggle("A control it governs", isOn: .constant(true))
+                    }
+                }
+                .formStyle(.grouped)
+            } == [])
+        }
     }
 }

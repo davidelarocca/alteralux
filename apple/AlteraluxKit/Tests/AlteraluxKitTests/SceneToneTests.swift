@@ -230,6 +230,8 @@ struct SceneToneTests {
         #expect(metered > 0.5, "The evening is dim: the meter adds exposure, and read \(metered).")
 
         var settings = DevelopSettings(meteringMethod: .average)
+        // The decoder says the same to who asks, as the inspector does when the meter is turned off.
+        #expect(try await abs(decoder.meteredExposure(settings: settings) - metered) < 1e-6)
         settings.sceneTone.highlights = -1
         let lit = try await decoder.pixels(maxDimension: nil, whiteBalance: nil, sceneTone: SceneToneRequest(settings))
         #expect(lit.isMetered)

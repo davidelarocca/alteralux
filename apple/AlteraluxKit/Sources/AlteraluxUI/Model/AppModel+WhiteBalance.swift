@@ -45,12 +45,16 @@ extension AppModel {
     }
 
     /// Whether the white balance of the selected photo is chosen from the light measured in it.
-    /// Turned on, it lets go of a white balance chosen by hand; turned off, the photo goes back
-    /// to the camera's.
+    /// Turned on, it lets go of a white balance chosen by hand; turned off, the white balance it
+    /// gave stays as one chosen by hand, so the photo is as it was until a slider moves (ADR 0020).
     var isWhiteBalanceAutomatic: Bool {
         get { settings.autoWhiteBalance }
         set {
-            settings.autoWhiteBalance = newValue
+            guard newValue else {
+                leaveAutomaticWhiteBalance()
+                return
+            }
+            settings.autoWhiteBalance = true
             settings.temperature = nil
             settings.tint = nil
             measureAutomaticWhiteBalance()
