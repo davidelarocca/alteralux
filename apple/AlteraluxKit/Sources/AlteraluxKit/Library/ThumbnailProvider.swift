@@ -360,7 +360,7 @@ public actor ThumbnailProvider {
         }
 
         guard !Task.isCancelled,
-              let source = CGImageSourceCreateWithURL(url as CFURL, nil)
+              let source = MendedDNG.imageSource(for: url)
         else {
             return WorkResult(image: nil, decodedSource: false)
         }
