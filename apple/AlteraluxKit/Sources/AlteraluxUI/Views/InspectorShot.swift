@@ -136,8 +136,3 @@ struct LensControls: View {
         .help("The red glow around bright lights, from light bouncing off the back of the film.")
     }
 }
-
-/// A fraction from 0 to 1 as a percentage, for a slider that reads in percent.
-func percent(_ fraction: Binding<Double>) -> Binding<Double> {
-    Binding(get: { fraction.wrappedValue * 100 }, set: { fraction.wrappedValue = $0 / 100 })
-}

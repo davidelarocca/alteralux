@@ -19,23 +19,28 @@ the lens, the halation at most. Nothing else.
 
 ## Decision
 
-- The inspector has about fifteen controls and no "More … adjustments":
+- The inspector stays close to what the original spektrafilm has in view when it opens (read from
+  its interface's source on 2026-11-24: film and paper, automatic exposure and its compensation, the
+  print's automatic compensation and exposure, the yellow and magenta filters, scan the film;
+  everything else of its some 120 controls is in groups that start closed). About fourteen controls
+  and no "More … adjustments":
   - **Shot**: the meter and the exposure; the automatic white balance, temperature and tint; under
     "Lens", the lens correction and the film's halation.
-  - **Film**: format, development where the film offers it, grain, color separation.
-  - **Print**: scan directly, paper, print exposure, yellow and magenta filters, paper development
-    where the paper offers it, pre-flash.
+  - **Film**: format, development where the film offers it, grain.
+  - **Print**: scan directly, the lab's compensation of the exposure, paper, print exposure, yellow
+    and magenta filters, paper development where the paper offers it.
   - **Scan**: sharpening.
+- More than the original has in view, asked by the user or kept as the least a film needs: the white
+  balance and the lens correction (the original has them closed, with the RAW import), the halation,
+  the format, the grain and the sharpening.
 - Gone from the inspector: the metering method; the RAW decoder's noise reduction, color noise, moiré
   and highlight recovery; the diffusion filter and the lens blur; the details of the grain, of the
-  halation and scatter, of the color separation; the glare, the pre-flash's own filters, the paper's
+  halation and scatter; the color separation; the pre-flash and its filters, the glare, the paper's
   curves; the sharpening's radius, the scanner's blur and its white and black points; the color
   options.
 - What is gone stays as spektrafilm sets it, and as Apple's decoder sets it for the RAW. A photo
   developed before keeps the values it has, and so does a recipe; a section's reset puts back what it
   no longer shows too.
-- "The lab compensates the exposure" is shown only on a photo that has it on (one developed before
-  ADR 0016), so that it can be turned off there; off, it is gone.
 - Highlights and shadows before the film come next, on their own, to be judged apart.
 - From ADR 0017 stay: the order of a section (modes first), names a photographer uses, a help and a
   unit on each control, a section's own reset and mark of change, and governed controls disabled in

@@ -3905,16 +3905,6 @@
         }
       }
     },
-    "Pre-flash" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Preesposizione"
-          }
-        }
-      }
-    },
     "%@ px" : {
       "localizations" : {
         "it" : {
@@ -4075,26 +4065,6 @@
         }
       }
     },
-    "Color separation" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Separazione dei colori"
-          }
-        }
-      }
-    },
-    "How much the film's layers hold each other back as they develop (DIR couplers): purer colors and crisper edges." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quanto gli strati della pellicola si frenano a vicenda durante lo sviluppo (accoppiatori DIR): colori più puri e contorni più netti."
-          }
-        }
-      }
-    },
     "Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness." : {
       "localizations" : {
         "it" : {
@@ -4191,16 +4161,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sviluppata più a lungo, la carta guadagna contrasto; più breve, lo perde."
-          }
-        }
-      }
-    },
-    "A faint even exposure of the paper before the print: it softens the highlights and greys the whites. A few percent is a lot." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una leggera esposizione uniforme della carta prima della stampa: ammorbidisce le alte luci e ingrigisce i bianchi. Pochi punti percentuali sono già tanto."
           }
         }
       }

@@ -375,10 +375,11 @@ branch of its own. What was said, in the order to take it:
   summaries that name the modes. Its "More … adjustments", some fifty controls under subheadings,
   were turned down by the user on 2026-11-23 as a sidebar that never ends.
   Done, the fifth, on the user's word of 2026-11-23
-  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector is back to about fifteen
-  controls. Shot: the meter, the exposure, the white balance and, under "Lens", the lens correction
-  and the halation. Film: format, development, grain, color separation. Print: scan directly, paper,
-  print exposure, the two filters, paper development, pre-flash. Scan: sharpening. Everything else
+  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector is back to about fourteen
+  controls, close to what the original spektrafilm has in view when it opens. Shot: the meter, the
+  exposure, the white balance and, under "Lens", the lens correction and the halation. Film: format,
+  development, grain. Print: scan directly, the lab's compensation, paper, print exposure, the two
+  filters, paper development. Scan: sharpening. Everything else
   is gone from the inspector and stays as spektrafilm and Apple's RAW decoder set it; photos and
   recipes keep the values they have. Measured before the cut, on a daylight RAW and a drawn night
   scene, each control at the ends of its slider: the halation's reflections and their fading, the

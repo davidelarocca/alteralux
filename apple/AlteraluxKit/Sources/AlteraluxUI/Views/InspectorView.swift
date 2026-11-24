@@ -122,8 +122,8 @@ private struct FilmHeading: View {
     }
 }
 
-/// The film: its frame, its development, its grain and its color separation. Its halation is with
-/// the lens, in the shot (ADR 0018).
+/// The film: its frame, its development and its grain. Its halation is with the lens, in the shot
+/// (ADR 0018).
 private struct FilmControls: View {
     @Binding var settings: DevelopSettings
     /// The times the film was measured at, when it can be developed for longer or shorter.
@@ -144,16 +144,11 @@ private struct FilmControls: View {
             defaultValue: 0.2, isOn: $settings.grainEnabled, unit: "µm²",
         )
         .help("The size of the film's silver grains: larger is coarser and more visible.")
-        ParameterSlider(
-            "Color separation", value: $settings.couplersAmount, in: 0 ... 2,
-            defaultValue: 1, isOn: $settings.couplersEnabled,
-        )
-        .help("How much the film's layers hold each other back as they develop (DIR couplers): purer colors and crisper edges.")
     }
 }
 
-/// The print: whether there is one, its paper, and how it is exposed and filtered under the
-/// enlarger.
+/// The print: whether there is one and whether the lab compensates the exposure, its paper, and
+/// how it is exposed and filtered under the enlarger: what spektrafilm's own interface has in view.
 private struct PrintControls: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
@@ -166,12 +161,8 @@ private struct PrintControls: View {
         Toggle("Scan the film directly", isOn: $settings.scanFilm)
             .help("Skip the print. The usual choice for slide film.")
         if !settings.scanFilm {
-            // Only photos developed before the exposure brightened have it on (ADR 0016): the
-            // switch is there for them to turn it off, and gone once it is.
-            if settings.printCompensatesExposure {
-                Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
-                    .help("Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness.")
-            }
+            Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
+                .help("Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness.")
             // The paper's name is long: it gets the row's whole width, under its caption.
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Paper")
@@ -206,11 +197,6 @@ private struct PrintControls: View {
                 DevelopmentTimePicker("Paper development", time: $settings.printDevelopmentTime, times: developmentTimes)
                     .help("Developed longer, the paper gains contrast; shorter, it loses it.")
             }
-            ParameterSlider(
-                "Pre-flash", value: percent($settings.preflashExposure), in: 0 ... 50,
-                step: 0.5, fractionDigits: 1, unit: "%",
-            )
-            .help("A faint even exposure of the paper before the print: it softens the highlights and greys the whites. A few percent is a lot.")
         }
     }
 }
