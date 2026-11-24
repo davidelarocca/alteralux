@@ -146,9 +146,33 @@ struct LensDatabaseTests {
 
     @Test func aFixedLensIsFoundWithoutAName() {
         let profile = database.lens(for: info(camera: "DSC-RX100", lens: "", focal: 20))
-        #expect(profile?.lensName == "Carl Zeiss DSC-RX100 & compatibles (Standard)")
+        // Under the camera's name: the database's own ("DSC-RX100 & compatibles (Standard)")
+        // names the record, not the lens.
+        #expect(profile?.lensName == "DSC-RX100")
         // An interchangeable-lens mount has too many lenses to tell which one.
         #expect(database.lens(for: info(lens: "")) == nil)
+    }
+
+    /// lensfun keeps the Ricoh GR III's own lens (18.3 mm) and the lens with its wide converter
+    /// (13.8 mm) in one record, named after both: a photo without the converter gets the record,
+    /// corrected at its own focal length, and is not said to have the converter.
+    @Test func theGRIIIIsCorrectedAsItsOwnLensAndNamedAfterTheCamera() throws {
+        let lensfun = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent() // AlteraluxKitTests
+            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent() // AlteraluxKit
+            .deletingLastPathComponent() // apple
+            .deletingLastPathComponent() // repository root
+            .appendingPathComponent("third_party/lensfun/db")
+        let whole = try LensDatabase(directory: lensfun)
+        func photo(focal: Double) -> PhotoLensInfo {
+            info(maker: "RICOH IMAGING COMPANY, LTD.", camera: "RICOH GR III", lens: "", focal: focal, aperture: 5)
+        }
+        let profile = try #require(whole.lens(for: photo(focal: 18.3)))
+        #expect(profile.lensName == "Ricoh GR III")
+        let own = try #require(profile.correction(for: photo(focal: 18.3), imageWidth: 6000, imageHeight: 4000))
+        let converter = try #require(profile.correction(for: photo(focal: 13.8), imageWidth: 6000, imageHeight: 4000))
+        #expect(own != converter)
     }
 
     // MARK: Matching words

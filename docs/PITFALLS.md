@@ -143,9 +143,11 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **Changing a `Data` mapped from a file crashes with no message** (a bus error, nothing in the
   test's output): `Data(contentsOf:options: .mappedIfSafe)` is for reading. Read the file plainly
   when its bytes are to be changed.
-- **lensfun picks "Ricoh GR III & compatibles + GW-4" for a GR III sample** (raw.pixls.us, 2026-11-21),
-  the profile with the wide converter, which the photo may not have had. Not looked into yet
-  (`LensFuzzyMatch`).
+- **A lensfun record's name is not the lens's.** A Ricoh GR III sample (raw.pixls.us, 2026-11-21) got
+  "Ricoh GR III & compatibles + GW-4", which read as the profile of the wide converter the photo
+  did not have. It is the only record of the camera and holds both: the camera's own lens at 18.3
+  mm and the lens with the converter at 13.8 mm. The correction, taken at the photo's focal
+  length, was right; the name was not. A fixed lens is now named after its camera (2026-11-23).
 - **A lens can report another maker's name.** The user's Viltrox 56mm F1.4 on a ZV-E10M2 writes
   "56mm F1.4 DC DN | Contemporary 018", Sigma's name, so lensfun matched the Sigma's profile to it
   until the camera's own corrections came first (2026-11-21). A lensfun profile chosen by name is a

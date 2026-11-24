@@ -84,12 +84,20 @@ public final class LensDatabase: Sendable {
     /// taken. The best score wins, and a tie between lenses with different names gives `nil`.
     ///
     /// A photo that names no lens (a camera with a fixed lens) gets the fixed lens of its camera
-    /// when the database has exactly one for it.
+    /// when the database has exactly one for it, under the camera's name: the database calls such
+    /// a lens after everything its record holds ("Ricoh GR III & compatibles + GW-4" is the GR
+    /// III's own lens and, at another focal length, the lens with its wide converter).
     public func lens(for info: PhotoLensInfo) -> LensProfile? {
         guard let camera = camera(for: info), camera.cropFactor > 0.01 else { return nil }
         let name = info.lensName
-        let candidate = name.isEmpty ? fixedLens(of: camera, focalLength: info.focalLength) : lens(named: name, camera: camera, focalLength: info.focalLength)
-        return candidate.map { LensProfile(lens: $0, cameraCropFactor: camera.cropFactor) }
+        guard !name.isEmpty else {
+            return fixedLens(of: camera, focalLength: info.focalLength).map {
+                LensProfile(lens: $0, cameraCropFactor: camera.cropFactor, name: camera.models.first)
+            }
+        }
+        return lens(named: name, camera: camera, focalLength: info.focalLength).map {
+            LensProfile(lens: $0, cameraCropFactor: camera.cropFactor)
+        }
     }
 
     /// The camera a photo was taken with.
