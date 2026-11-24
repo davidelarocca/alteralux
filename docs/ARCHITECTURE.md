@@ -96,4 +96,4 @@ defaults, and unknown keys are errors.
 | [0016](adr/0016-develop-in-the-order-of-the-analog-process.md) | The adjustments in the order of the analog process, and an exposure that brightens | Accepted; what is in view set by 0018 |
 | [0017](adr/0017-in-view-what-a-photographer-uses.md) | In view what a photographer uses, the rest under the control it belongs to | Accepted; "More … adjustments" removed by 0018 |
 | [0018](adr/0018-back-to-the-essential-controls.md) | The inspector goes back to the essential controls | Accepted |
-| [0019](adr/0019-highlights-and-shadows-before-the-film.md) | Highlights and shadows as light, after the meter and before the film | Proposed |
+| [0019](adr/0019-highlights-and-shadows-before-the-film.md) | Highlights and shadows as light, after the meter and before the film | Accepted |

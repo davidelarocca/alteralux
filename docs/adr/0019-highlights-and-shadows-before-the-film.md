@@ -1,6 +1,6 @@
 # ADR-0019: Highlights and shadows as light, after the meter and before the film
 
-- Status: Proposed (accepted when the user merges the pull request that carries it)
+- Status: Accepted
 - Date: 2026-11-24
 
 ## Context
@@ -49,7 +49,8 @@ contrast and not the scene.
 - They belong to the look: a recipe carries them, as it carries the exposure.
 - In the inspector they are two sliders, from -100 to +100, in a group of their own under Shot that
   starts closed, "Highlights and shadows" ([ADR 0018](0018-back-to-the-essential-controls.md): a
-  control comes into view only by the user's word).
+  control comes into view only by the user's word). The user tried them in the built app on
+  2026-11-24 and, having first asked for them in view, chose the group.
 
 ## Alternatives considered
 

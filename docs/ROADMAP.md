@@ -419,8 +419,8 @@ branch of its own. What was said, in the order to take it:
   the exposure: two sliders in a group of their own under Shot that starts closed. The meter is
   read first, by the engine itself through the bridge, so it does not answer the change: on a test
   scene, dimming a lamp left the rest as it was, where the engine left to meter it doubled its
-  brightness. Not yet seen in the built app, and the ends of the sliders (two stops) not yet judged
-  on real photos; whether the two come into view is the user's word. Retouches after the scan: later.
+  brightness. Tried by the user in the built app on 2026-11-24, who keeps the two in their group.
+  Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.
