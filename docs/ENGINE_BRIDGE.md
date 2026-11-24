@@ -108,7 +108,9 @@ halation is within a tenth at 2048 px; the grain of a preview shown pixel for
 pixel is about two thirds as strong, at any size, because upstream blurs the
 grain by a number of pixels (`grain.blur`, 0.65) and not by a length on the
 film, so the blur weighs the same on a preview and vanishes from the full
-render once it is seen smaller.
+render once it is seen smaller. The scan's sharpening has its radius in pixels
+too: it changes a 2048 px preview three times as much as the full render seen
+at that size.
 
 Since [ADR 0007](adr/0007-decode-each-preview-at-its-size.md) the app no longer
 uses this: it hands the engine a source already decoded at the size of the

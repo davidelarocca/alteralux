@@ -17,9 +17,10 @@ private let fidelityDataDirectory = URL(fileURLWithPath: #filePath)
 ///
 /// The app develops a preview from the photo decoded small (ADR 0007), and the engine sizes
 /// grain and halation from the film format, so a pixel of a preview stands for more film. What
-/// the engine cannot resolve at a size it loses, and the grain is softened by a blur given in
-/// pixels (`grain.blur`, 0.65), which takes as much from a small picture as from a large one,
-/// where it no longer shows once the picture is seen smaller. These tests keep what was
+/// the engine cannot resolve at a size it loses, and what it measures in pixels does not follow
+/// the size: the grain is softened by a blur given in pixels (`grain.blur`, 0.65), which takes as
+/// much from a small picture as from a large one, where it no longer shows once the picture is
+/// seen smaller, and the scan is sharpened over a radius in pixels. These tests keep what was
 /// measured on 2026-11-24 from getting worse: a submodule update or a smaller preview that
 /// moves the numbers fails here and is looked at, not found by eye.
 ///
@@ -89,15 +90,39 @@ struct PreviewFidelityTests {
         return try SourceImage.fromFloats(pixels, width: side, height: height, channels: 3)
     }
 
+    /// A fence of bars a stop under and a stop over middle gray, `side` pixels wide: the same
+    /// picture at every size, since the bars fall on whole pixels at each of them. A thin strip,
+    /// as tall as a bar is wide: the bars are the same all the way down.
+    private static func fence(side: Int) throws -> SourceImage {
+        let (height, bar) = (side / 64, side / 64)
+        var pixels = [Float](repeating: 0, count: side * height * 3)
+        for row in 0 ..< height {
+            for column in 0 ..< side {
+                let level: Float = (column / bar).isMultiple(of: 2) ? 0.09 : 0.36
+                for channel in 0 ..< 3 {
+                    pixels[(row * side + column) * 3 + channel] = level
+                }
+            }
+        }
+        return try SourceImage.fromFloats(pixels, width: side, height: height, channels: 3)
+    }
+
     /// The strip developed whole at `side` pixels, as the app develops a photo decoded at that
     /// size, with the meter off so the bar does not darken the rest.
     private static func developed(
         _ renderer: FilmRenderer, side: Int, lit: Bool, _ change: (inout DevelopSettings) -> Void,
     ) async throws -> Frame {
+        try await developed(renderer, strip(side: side, lit: lit), change)
+    }
+
+    /// `source` developed whole, with the meter off.
+    private static func developed(
+        _ renderer: FilmRenderer, _ source: SourceImage, _ change: (inout DevelopSettings) -> Void,
+    ) async throws -> Frame {
         var settings = DevelopSettings()
         settings.autoExposure = false
         change(&settings)
-        let image = try await renderer.render(strip(side: side, lit: lit), settings: settings, quality: .full)
+        let image = try await renderer.render(source, settings: settings, quality: .full)
         let data = try #require(image.cgImage.dataProvider?.data) as Data
         return Frame(
             width: image.width, height: image.height,
@@ -158,5 +183,44 @@ struct PreviewFidelityTests {
         #expect((0.85 ... 1.15).contains(standardShare), "The standard preview has \(standardShare) of the export's halation.")
         let lighterShare = lighter / export
         #expect((0.7 ... 1.15).contains(lighterShare), "The lighter preview has \(lighterShare) of the export's halation.")
+    }
+
+    /// The fence developed at `side` pixels with the scan's sharpening as a new photo has it, and
+    /// without.
+    private static func fences(_ renderer: FilmRenderer, side: Int) async throws -> (sharpened: Frame, plain: Frame) {
+        let sharpened = try await developed(renderer, fence(side: side)) {
+            $0.grainEnabled = false
+            $0.halationEnabled = false
+        }
+        let plain = try await developed(renderer, fence(side: side)) {
+            $0.grainEnabled = false
+            $0.halationEnabled = false
+            $0.sharpenAmount = 0
+        }
+        return (sharpened, plain)
+    }
+
+    /// Measured on 2026-11-24 (Apple M5, GPU): the scan's sharpening changes the standard preview
+    /// 3.0 times as much as it changes the export seen at that size, and the lighter preview 5.7
+    /// times. Its radius is in pixels (0.7), as the grain's blur: on the export it is finer than
+    /// what a fitted photo shows.
+    @Test func aPreviewIsSharpenedMoreThanTheExportSeenAtItsSize() async throws {
+        let renderer = try FilmRenderer(dataDirectory: fidelityDataDirectory, backend: .automatic)
+        let export = try await Self.fences(renderer, side: Self.exportSide)
+        // How far the sharpened fence is from the plain one, both seen `side` pixels wide.
+        func change(_ fences: (sharpened: Frame, plain: Frame), at side: Int) -> Double {
+            let factor = fences.plain.width / side
+            let differences = zip(fences.sharpened.channel(1, reducedBy: factor), fences.plain.channel(1, reducedBy: factor))
+                .map { $0 - $1 }
+            return (differences.reduce(0) { $0 + $1 * $1 } / Double(differences.count)).squareRoot()
+        }
+        #expect(change(export, at: Self.standardSide) > 0.002, "No sharpening to compare.")
+
+        let standard = try await Self.fences(renderer, side: Self.standardSide)
+        let standardShare = change(standard, at: Self.standardSide) / change(export, at: Self.standardSide)
+        #expect((0.8 ... 4).contains(standardShare), "The standard preview is sharpened \(standardShare) times the export.")
+        let lighter = try await Self.fences(renderer, side: Self.lighterSide)
+        let lighterShare = change(lighter, at: Self.lighterSide) / change(export, at: Self.lighterSide)
+        #expect((0.8 ... 7.5).contains(lighterShare), "The lighter preview is sharpened \(lighterShare) times the export.")
     }
 }
