@@ -19,46 +19,45 @@ the lens, the halation at most. Nothing else.
 
 ## Decision
 
-- The inspector stays close to what the original spektrafilm has in view when it opens (read from
-  its interface's source on 2026-11-24: film and paper, automatic exposure and its compensation, the
-  print's automatic compensation and exposure, the yellow and magenta filters, scan the film;
-  everything else of its some 120 controls is in groups that start closed). About fourteen controls
-  and no "More … adjustments":
-  - **Shot**: the meter and the exposure; the automatic white balance, temperature and tint; under
-    "Lens", the lens correction and the film's halation.
+- The inspector follows the original spektrafilm, whose interface opens with a handful of controls
+  in view and keeps the rest of its some 120 in groups that start closed (read from its source on
+  2026-11-24: in view, film and paper, automatic exposure and its compensation, the print's automatic
+  compensation and exposure, the yellow and magenta filters, scan the film).
+- **In view**, about fifteen controls:
+  - **Shot**: the meter, its method and the exposure; the automatic white balance, temperature and
+    tint; under "Lens", the lens correction and the film's halation.
   - **Film**: format, development where the film offers it, grain.
   - **Print**: scan directly, the lab's compensation of the exposure, paper, print exposure, yellow
     and magenta filters, paper development where the paper offers it.
   - **Scan**: sharpening.
-- More than the original has in view, asked by the user or kept as the least a film needs: the white
-  balance and the lens correction (the original has them closed, with the RAW import), the halation,
-  the format, the grain and the sharpening.
-- Gone from the inspector: the metering method; the RAW decoder's noise reduction, color noise, moiré
-  and highlight recovery; the diffusion filter and the lens blur; the details of the grain, of the
-  halation and scatter; the color separation; the pre-flash and its filters, the glare, the paper's
-  curves; the sharpening's radius, the scanner's blur and its white and black points; the color
-  options.
-- What is gone stays as spektrafilm sets it, and as Apple's decoder sets it for the RAW. A photo
-  developed before keeps the values it has, and so does a recipe; a section's reset puts back what it
-  no longer shows too.
+- **Everything else, in groups that start closed**, one per kind, right under the section they
+  belong to (`DetailGroup`): the lens blur and the diffusion filter, the RAW development (Shot); the
+  grain, the halation and scatter, the color separation (Film); the pre-flash, the glare, the paper's
+  curves (Print); the scanner, the color options (Scan). A group stays as the user left it. No
+  "More … adjustments" list: nothing is long unless it is opened.
+- The first cut, on 2026-11-23, had taken those controls out of the inspector altogether; the user
+  found them missing the next day and asked for all of them back, closed as the original has them.
+- More than the original has in view, asked by the user or the least a film needs: the white balance
+  and the lens correction, the halation, the metering method, the format, the grain, the sharpening.
 - Highlights and shadows before the film come next, on their own, to be judged apart.
 - From ADR 0017 stay: the order of a section (modes first), names a photographer uses, a help and a
   unit on each control, a section's own reset and mark of change, and governed controls disabled in
-  view with a line that says why (the temperature and tint under the automatic white balance).
+  view with a line that says why.
 
 ## Alternatives considered
 
 | Option | Why not |
 |---|---|
-| Keeping the details under "More … adjustments", closed | It is the list the user turned down: closed, it is still there to scroll |
-| Removing the settings themselves, not only their controls | Photos and recipes that hold them would change their look |
-| Keeping the RAW decoder's noise reduction in view | Not spektrafilm's, and not among what the user asked for before the film |
+| One "More … adjustments" list per section | Opened, it is the endless list the user turned down; a group per kind is short |
+| Taking the detail controls out of the inspector | Tried on 2026-11-23: the user found them missing |
+| Keeping the RAW decoder's noise reduction in view | Not spektrafilm's, and not among what the user asked for before the film: it has its group |
 | The halation left in Film | The user wants it with the lens, the one effect allowed there |
 
 ## Consequences
 
 - ADR 0016's "every control of spektrafilm is offered" no longer holds; its order of the sections
   does.
-- A photo whose hidden values were changed shows its section as changed; Reset puts them back.
+- A photo whose values in a closed group were changed shows its section as changed; Reset puts them
+  back. A closed group does not say by itself that something in it was changed.
 - The engine parameters the app sends are the same: the parity test with the engine's defaults stays.
-- A control comes back only by the user's word, one at a time.
+- A control moves into view only by the user's word, one at a time.

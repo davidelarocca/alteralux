@@ -15,6 +15,13 @@ struct ExposureControls: View {
     var body: some View {
         Toggle("Automatic metering", isOn: $settings.autoExposure)
             .help("Meters the scene as a camera would; the exposure below is then added to what it measured.")
+        if settings.autoExposure {
+            WindowPopUp(
+                "Metering", selection: $settings.meteringMethod,
+                options: MeteringMethod.allCases.map { WindowPopUpOption($0, title: String(localized: $0.title)) },
+            )
+            .help("How the meter weighs the scene: the center, the whole frame, the highlights.")
+        }
         ParameterSlider(
             settings.autoExposure ? "Exposure compensation" : "Exposure", value: $settings.exposureEV, in: -5 ... 5,
             step: 0.1, fractionDigits: 1, showsSign: true, unit: "EV",
@@ -135,4 +142,64 @@ struct LensControls: View {
         )
         .help("The red glow around bright lights, from light bouncing off the back of the film.")
     }
+}
+
+/// What Apple's RAW decoder does before the film, where it offers it for the photo's camera:
+/// highlight recovery and noise reduction, each starting from its own choice. The color noise and
+/// the moiré, which few photos need, are under "More shot adjustments".
+struct RawDevelopmentControls: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        @Bindable var model = model
+        if let defaults = model.rawDefaults, Self.offersMainControls(defaults) {
+            if defaults.highlightRecovery != nil {
+                Toggle("Highlight recovery", isOn: $model.highlightRecovery)
+                    .help("Rebuilds the colors of the highlights where the sensor clipped.")
+            }
+            if let luminance = defaults.luminanceNoiseReduction {
+                ParameterSlider(
+                    "Noise reduction", value: percent($model.luminanceNoiseReduction), in: 0 ... 100,
+                    step: 1, defaultValue: luminance * 100, fractionDigits: 0, unit: "%",
+                )
+                .help("Smooths the digital noise of the sensor before the film adds its own grain.")
+            }
+        }
+    }
+}
+
+extension RawDevelopmentControls {
+    /// Whether the decoder offers any of the controls kept in view.
+    static func offersMainControls(_ defaults: RawDecodingDefaults) -> Bool {
+        defaults.highlightRecovery != nil || defaults.luminanceNoiseReduction != nil
+    }
+
+    /// Whether the decoder offers any of the controls under "More shot adjustments".
+    static func offersMoreControls(_ defaults: RawDecodingDefaults) -> Bool {
+        defaults.colorNoiseReduction != nil || defaults.moireReduction != nil
+    }
+}
+
+/// The diffusion filter in front of the lens: its strength with its switch, and which filter it is.
+struct DiffusionControls: View {
+    @Binding var filter: DiffusionFilterSettings
+
+    var body: some View {
+        ParameterSlider(
+            "Diffusion filter", value: $filter.strength, in: 0 ... 2,
+            defaultValue: 0.5, isOn: $filter.enabled,
+        )
+        .help("A filter in front of the lens that makes the lights glow, as a Pro-Mist does.")
+        WindowPopUp(
+            "Kind of filter", selection: $filter.family,
+            options: DiffusionFamily.allCases.map { WindowPopUpOption($0, title: $0.title) },
+        )
+        .governed(!filter.enabled, reason: "Off: switch the diffusion filter on to choose its kind.")
+        .help("Black Pro-Mist keeps the blacks deep; Pro-Mist lifts them; Glimmerglass sparkles; CineBloom blooms.")
+    }
+}
+
+/// A fraction from 0 to 1 as a percentage, for a slider that reads in percent.
+func percent(_ fraction: Binding<Double>) -> Binding<Double> {
+    Binding(get: { fraction.wrappedValue * 100 }, set: { fraction.wrappedValue = $0 / 100 })
 }

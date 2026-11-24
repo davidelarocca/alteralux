@@ -42,6 +42,7 @@ Motion gets no animation, or a fade for a transition.
 | Controls another control governs | the sliders an automatic mode sets (temperature and tint under the automatic white balance), the details of a parameter that is switched off: they stay in view, disabled, and one line says why (hidden only where a whole group has no sense) | `.governed(_:reason:)` on the group, which has each slider and pop-up read with the reason; the line is the `note` of the group's `InspectorSubheading` or of a `ParameterSlider`. No line where the switch is the row right above |
 | A group of controls the user can collapse | the sections of the inspector; collapsed, a section shows its values and the modes that are on; changed, it has a dot and, open, a Reset of its own | `InspectorSection` |
 | A group of controls inside a section | the lens in Shot: its correction and the halation | `InspectorSubheading` |
+| The detail controls of one kind | the grain's, the halation's, the diffusion filter's, the paper's curves: a group that starts closed, right under the section it belongs to | another `InspectorSection` (a disclosure group inside a section does not open on macOS) |
 | The one thing a pane is about | the film at the top of the inspector, which opens the list of films | `HeadingButton` |
 | Telling items of a list apart | the films in the list of films | `FilmEmblem` in a row of a `List` |
 | Switching something on or off | every other switch | `Toggle` in a `Form` |

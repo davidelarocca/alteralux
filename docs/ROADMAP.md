@@ -375,16 +375,16 @@ branch of its own. What was said, in the order to take it:
   summaries that name the modes. Its "More … adjustments", some fifty controls under subheadings,
   were turned down by the user on 2026-11-23 as a sidebar that never ends.
   Done, the fifth, on the user's word of 2026-11-23
-  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector is back to about fourteen
-  controls, close to what the original spektrafilm has in view when it opens. Shot: the meter, the
-  exposure, the white balance and, under "Lens", the lens correction and the halation. Film: format,
-  development, grain. Print: scan directly, the lab's compensation, paper, print exposure, the two
-  filters, paper development. Scan: sharpening. Everything else
-  is gone from the inspector and stays as spektrafilm and Apple's RAW decoder set it; photos and
-  recipes keep the values they have. Measured before the cut, on a daylight RAW and a drawn night
+  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector follows the original
+  spektrafilm: about fifteen controls in view, and every other control in a group of its kind that
+  starts closed, right under its section. In view, Shot: the meter and its method, the exposure, the
+  white balance and, under "Lens", the lens correction and the halation; Film: format, development,
+  grain; Print: scan directly, the lab's compensation, paper, print exposure, the two filters, paper
+  development; Scan: sharpening. Closed: lens blur and diffusion filter, RAW development; grain,
+  halation and scatter, color separation; pre-flash, glare, paper curves; scanner, color. Measured before the cut, on a daylight RAW and a drawn night
   scene, each control at the ends of its slider: the halation's reflections and their fading, the
   glare's roughness and softness, CAT16 and the gentle gamut options changed the photo by less than
-  one level in 255. Not yet seen in the built app. Next: highlights and shadows before the film, on
+  one level in 255: candidates to remove, if the user says so. Opened for the user in the built app on 2026-11-24. Next: highlights and shadows before the film, on
   their own. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind

@@ -34,11 +34,17 @@ struct InspectorView: View {
                 WhiteBalanceControls()
                 LensControls(settings: $model.settings)
             }
+            if showsShot {
+                ShotDetails(settings: $model.settings)
+            }
             InspectorSection(
                 "Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName),
                 isModified: model.isModified(.film), reset: model.resetter(.film),
             ) {
                 FilmControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
+            }
+            if showsFilm {
+                FilmDetails(settings: $model.settings)
             }
             InspectorSection(
                 "Print", isExpanded: $showsPrint, summary: summary.print,
@@ -49,6 +55,9 @@ struct InspectorView: View {
                     developmentTimes: model.printDevelopmentTimes,
                 )
             }
+            if showsPrint, !model.settings.scanFilm {
+                PrintDetails(settings: $model.settings)
+            }
             InspectorSection(
                 "Scan", isExpanded: $showsScan, summary: summary.scan,
                 isModified: model.isModified(.scan), reset: model.resetter(.scan),
@@ -58,6 +67,9 @@ struct InspectorView: View {
                     step: 0.05, defaultValue: 0.7,
                 )
                 .help("How much the scanner sharpens the edges; 0 leaves the scan as soft as the film made it.")
+            }
+            if showsScan {
+                ScanDetails(settings: $model.settings)
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
