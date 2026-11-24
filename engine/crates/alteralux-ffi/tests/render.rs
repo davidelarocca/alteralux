@@ -141,6 +141,32 @@ fn bridge_output_matches_direct_pipeline() {
     assert!(max - min > 0.3, "suspiciously flat output: {min}..{max}");
 }
 
+/// What the bridge says the meter reads is what a render with the meter on
+/// adds: the pixels scaled by it, rendered with the meter off, are the same
+/// photo. The app relies on it to meter a photo before changing its light.
+#[test]
+fn metered_ev_is_what_the_meter_adds() {
+    let mut read = Vec::new();
+    for method in ["center_weighted", "average", "highlight_weighted"] {
+        let metered = source().metered_ev(method.into(), ColorSpace::Rec2020).unwrap();
+        read.push(metered);
+        let on = format!(r#"{{"camera": {{"auto_exposure": true, "auto_exposure_method": "{method}"}}}}"#);
+        let with_meter = rgb_of(&engine().render(source(), request(&on)).unwrap());
+
+        let scale = 2f32.powf(metered);
+        let bytes: Vec<u8> = chart_rgb().iter().flat_map(|v| (v * scale).to_le_bytes()).collect();
+        let scaled = SourceImage::from_f32_pixels(W, H, 3, bytes).unwrap();
+        let off = r#"{"camera": {"auto_exposure": false}}"#;
+        let by_hand = rgb_of(&engine().render(scaled, request(off)).unwrap());
+
+        let worst = with_meter.iter().zip(&by_hand).map(|(a, b)| (a - b).abs()).fold(0f32, f32::max);
+        assert!(worst < 1e-4, "{method}: metered {metered} EV, off by {worst}");
+    }
+    // The methods do not all read the same, or the test would prove little.
+    assert!(read.iter().any(|ev| (ev - read[0]).abs() > 0.05), "every method read {read:?}");
+    assert!(source().metered_ev("center_weighted".into(), ColorSpace::Srgb).is_ok());
+}
+
 #[test]
 fn cached_pipeline_matches_a_fresh_one() {
     // One engine renders a sequence of edits, re-using its cached pipeline

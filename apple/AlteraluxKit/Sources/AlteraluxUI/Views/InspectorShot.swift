@@ -32,6 +32,25 @@ struct ExposureControls: View {
     }
 }
 
+/// The scene's highlights and shadows: light taken from, or given to, one end of the scene after
+/// the exposure and before the film (ADR 0019).
+struct SceneToneControls: View {
+    @Binding var tone: SceneTone
+
+    var body: some View {
+        ParameterSlider(
+            "Highlights", value: percent($tone.highlights), in: -100 ... 100, step: 1, fractionDigits: 0,
+            showsSign: true, ends: SliderEnds("Dimmer", "Brighter"),
+        )
+        .help("Darkens or brightens the brightest parts of the scene before the film sees them.")
+        ParameterSlider(
+            "Shadows", value: percent($tone.shadows), in: -100 ... 100, step: 1, fractionDigits: 0,
+            showsSign: true, ends: SliderEnds("Deeper", "More open"),
+        )
+        .help("Deepens or lifts the darkest parts of the scene before the film sees them.")
+    }
+}
+
 /// Temperature and tint: what the RAW decoder takes as neutral. With the automatic white balance
 /// on, they show what it chose and stay still until it is switched off.
 struct WhiteBalanceControls: View {

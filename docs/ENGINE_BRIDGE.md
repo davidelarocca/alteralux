@@ -115,6 +115,15 @@ uses this: it hands the engine a source already decoded at the size of the
 preview and asks for `maxDimension` 0. The scaling and its cache stay here,
 with their tests, for any other caller.
 
+### The meter
+
+`SourceImage.metered_ev(method, input)` returns what the engine's meter reads
+for a picture, in stops: the upstream function a render calls when
+`camera.auto_exposure` is on. Pixels scaled by two to that power and rendered
+with the meter off are the photo the engine would have exposed itself (a test
+compares the two). The app uses it to change the scene's light after the meter
+has read it ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)).
+
 ### Pixels and safety
 
 - Pixels cross the boundary as bytes (`Data` in Swift): RGBA half float for

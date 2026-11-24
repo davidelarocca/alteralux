@@ -31,7 +31,8 @@ and for export. White balance is chosen in the RAW decoder, before the engine se
 the lens corrected: by Apple's decoder where it knows the lens, otherwise with the corrections the camera
 recorded in the RAW (Sony, Fujifilm, Nikon Z, Olympus, Panasonic) or with lensfun's profiles, and the
 vignetting from the camera where Apple's decoder leaves it, by Core Image kernels (`Lens/` in
-AlteraluxKit), before the frame.
+AlteraluxKit), before the frame. The scene's highlights and shadows are changed there too, after the
+engine's meter has read the photo and before the film sees it.
 
 A photo's adjustments are kept in the photo itself, as an extended attribute, and read back when it is
 opened again. Undo and redo are the window's own.
@@ -95,3 +96,4 @@ defaults, and unknown keys are errors.
 | [0016](adr/0016-develop-in-the-order-of-the-analog-process.md) | The adjustments in the order of the analog process, and an exposure that brightens | Accepted; what is in view set by 0018 |
 | [0017](adr/0017-in-view-what-a-photographer-uses.md) | In view what a photographer uses, the rest under the control it belongs to | Accepted; "More … adjustments" removed by 0018 |
 | [0018](adr/0018-back-to-the-essential-controls.md) | The inspector goes back to the essential controls | Accepted |
+| [0019](adr/0019-highlights-and-shadows-before-the-film.md) | Highlights and shadows as light, after the meter and before the film | Proposed |

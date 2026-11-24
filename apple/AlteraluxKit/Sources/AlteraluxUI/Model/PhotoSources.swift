@@ -24,10 +24,13 @@ final class PhotoSources {
         var lensCorrection: Bool?
         var crop: PhotoCrop?
         var rawDecoding = RawDecodingOptions()
+        /// The scene's highlights and shadows with the exposure they are measured from; `nil`
+        /// when they are left alone, and the exposure then changes nothing of what is decoded.
+        var sceneTone: SceneToneRequest?
     }
 
-    /// The white balance, the lens correction and the frame of what is kept. A change of any
-    /// makes all of it useless.
+    /// The white balance, the lens correction, the frame and the scene's light of what is kept.
+    /// A change of any makes all of it useless.
     private var kind = Decoding()
     /// Counts the changes of white balance or frame, to tell a decode that ends after one.
     private var epoch = 0
@@ -56,6 +59,7 @@ final class PhotoSources {
         Decoding(
             whiteBalance: whiteBalance(for: settings), lensCorrection: settings.lensCorrection,
             crop: settings.crop.flatMap { $0.isWhole ? nil : $0 }, rawDecoding: settings.rawDecoding,
+            sceneTone: SceneToneRequest(settings),
         )
     }
 
@@ -104,7 +108,7 @@ final class PhotoSources {
         let task = Task {
             try await decoder.decode(
                 maxDimension: dimension, whiteBalance: wanted.whiteBalance, lensCorrection: wanted.lensCorrection,
-                crop: wanted.crop, rawDecoding: wanted.rawDecoding,
+                crop: wanted.crop, rawDecoding: wanted.rawDecoding, sceneTone: wanted.sceneTone,
             )
         }
         decoding[dimension] = task

@@ -42,6 +42,9 @@ public actor PhotoDecoder {
     private let standardImage: CIImage?
     /// The white balance measured in the photo, once it was: `.some(nil)` when it could not be.
     private var measuredWhiteBalance: WhiteBalance??
+    /// The exposure the engine's meter reads for the photo, kept for the last way it was
+    /// decoded and metered: a control that changes the scene's light moves many times over it.
+    private var metered: (key: MeteringKey, stops: Double)?
 
     /// Opens `url`. Reads what the file says about itself, not its pixels.
     ///
@@ -135,7 +138,7 @@ public actor PhotoDecoder {
         let whiteBalance = whiteBalance(for: settings)
         return try await decode(
             maxDimension: maxDimension, whiteBalance: whiteBalance, lensCorrection: settings.lensCorrection,
-            crop: settings.crop, rawDecoding: settings.rawDecoding,
+            crop: settings.crop, rawDecoding: settings.rawDecoding, sceneTone: SceneToneRequest(settings),
         )
     }
 
@@ -151,14 +154,17 @@ public actor PhotoDecoder {
     ///     is then the long side of the framed picture.
     ///   - rawDecoding: the RAW decoder's highlight recovery and noise reduction. Ignored for other
     ///     files.
+    ///   - sceneTone: the scene's highlights and shadows, and the exposure they are measured
+    ///     from; `nil` to leave the scene as it is. With the meter on, the result holds the
+    ///     meter's exposure (`LoadedImage.isMetered`).
     public nonisolated func decode(
         maxDimension: Int? = nil, whiteBalance: WhiteBalance? = nil, lensCorrection: Bool? = nil,
-        crop: PhotoCrop? = nil, rawDecoding: RawDecodingOptions = .init(),
+        crop: PhotoCrop? = nil, rawDecoding: RawDecodingOptions = .init(), sceneTone: SceneToneRequest? = nil,
     ) async throws -> LoadedImage {
         let limit = maxDimension.flatMap { $0 > 0 ? $0 : nil }
         let pixels = try await pixels(
             maxDimension: limit, whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop,
-            rawDecoding: rawDecoding,
+            rawDecoding: rawDecoding, sceneTone: sceneTone,
         )
         // Handing the pixels to the engine copies them: not while holding the decoder.
         return try pixels.loaded(from: url, isRaw: isRaw)
@@ -167,8 +173,37 @@ public actor PhotoDecoder {
     /// The pixels out of Core Image, before they are handed to the engine.
     func pixels(
         maxDimension: Int?, whiteBalance: WhiteBalance?, lensCorrection: Bool? = nil, crop: PhotoCrop? = nil,
-        rawDecoding: RawDecodingOptions = .init(),
+        rawDecoding: RawDecodingOptions = .init(), sceneTone: SceneToneRequest? = nil,
     ) throws -> DecodedPixels {
+        // The meter reads the photo as it is decoded without the change of light, so it comes
+        // first: it decodes the photo small, with the same decoder.
+        var meteredStops: Double?
+        if let sceneTone, SceneToneKernel.isAvailable, let method = sceneTone.meteringMethod {
+            meteredStops = try self.meteredStops(MeteringKey(
+                whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop, rawDecoding: rawDecoding,
+                method: method,
+            ))
+        }
+        let image = try image(
+            maxDimension: maxDimension, whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop,
+            rawDecoding: rawDecoding,
+        )
+        guard
+            let sceneTone,
+            let lit = SceneToneKernel.apply(
+                sceneTone.tone, to: image, meteredEV: meteredStops ?? 0, exposureEV: sceneTone.exposureEV,
+            )
+        else { return try ImageLoader.pixels(of: image, url: url) }
+        var pixels = try ImageLoader.pixels(of: lit, url: url)
+        pixels.isMetered = meteredStops != nil
+        return pixels
+    }
+
+    /// The photo as Core Image decodes it: with its white balance, its lens corrected, framed.
+    private func image(
+        maxDimension: Int?, whiteBalance: WhiteBalance?, lensCorrection: Bool?, crop: PhotoCrop?,
+        rawDecoding: RawDecodingOptions,
+    ) throws -> CIImage {
         let crop = crop.flatMap { $0.isWhole ? nil : $0 }
         // The whole photo is decoded at the size that gives the framed picture the size asked.
         let framedLongSide = longSide(framedBy: crop)
@@ -194,7 +229,38 @@ public actor PhotoDecoder {
         } else {
             throw AlteraluxError.unreadableImage(url)
         }
-        return try ImageLoader.pixels(of: crop.map { ImageLoader.framed(image, by: $0) } ?? image, url: url)
+        return crop.map { ImageLoader.framed(image, by: $0) } ?? image
+    }
+
+    /// What tells one metering of the photo from another: how it is decoded and how it is read.
+    private struct MeteringKey: Equatable {
+        var whiteBalance: WhiteBalance?
+        var lensCorrection: Bool?
+        var crop: PhotoCrop?
+        var rawDecoding: RawDecodingOptions
+        var method: MeteringMethod
+    }
+
+    /// The long side the photo is decoded at to be metered: the engine's meter reads a picture
+    /// no larger than this, taking one pixel in so many of a larger one.
+    static let meteringSide = 256
+
+    /// The stops the engine's meter adds to the photo decoded as `key` says, read by the engine
+    /// itself on the photo decoded small.
+    private func meteredStops(_ key: MeteringKey) throws -> Double {
+        if let metered, metered.key == key {
+            return metered.stops
+        }
+        let small = try ImageLoader.pixels(
+            of: image(
+                maxDimension: Self.meteringSide, whiteBalance: key.whiteBalance, lensCorrection: key.lensCorrection,
+                crop: key.crop, rawDecoding: key.rawDecoding,
+            ),
+            url: url,
+        )
+        let stops = try Double(small.loaded(from: url, isRaw: isRaw).source.meteredEv(method: key.method.rawValue, input: .rec2020))
+        metered = (key, stops)
+        return stops
     }
 }
 

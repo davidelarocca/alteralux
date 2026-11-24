@@ -270,6 +270,29 @@ struct PhotoSourcesTests {
         #expect(try await sources.source(dimension: 120, settings: settings).source !== asShot.source)
     }
 
+    /// The scene's highlights and shadows are in the pixels, measured from the exposure: once
+    /// they are changed, another exposure decodes again; while they are not, it does not.
+    @Test func theScenesLightDecodesAgainAndThenSoDoesTheExposure() async throws {
+        let (sources, folder) = try sources()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        var settings = DevelopSettings()
+        let plain = try await sources.source(dimension: 120, settings: settings)
+        #expect(!plain.isMetered)
+        settings.sceneTone.shadows = 0.5
+        let lifted = try await sources.source(dimension: 120, settings: settings)
+        #expect(lifted.source !== plain.source && lifted.isMetered)
+        #expect(try await sources.source(dimension: 120, settings: settings).source === lifted.source)
+        settings.exposureEV = 1
+        let exposed = try await sources.source(dimension: 120, settings: settings)
+        #expect(exposed.source !== lifted.source)
+        // Anything else leaves what was decoded.
+        settings.grainEnabled = false
+        #expect(try await sources.source(dimension: 120, settings: settings).source === exposed.source)
+        // With the meter off the pixels keep their own exposure.
+        settings.autoExposure = false
+        #expect(try await !sources.source(dimension: 120, settings: settings).isMetered)
+    }
+
     @Test func onlyAFewReducedSizesAreKept() async throws {
         let (sources, folder) = try sources()
         defer { try? FileManager.default.removeItem(at: folder) }

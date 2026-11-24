@@ -24,6 +24,15 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
   - `DevelopSettings` carries the white balance as an optional temperature
     and tint, where `nil` is "as the camera recorded". They are not part of
     the engine's patch.
+  - `SceneTone` is the scene's highlights and shadows, changed after the
+    meter and before the film
+    ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)): a gain by
+    luminance that a Core Image kernel (`SceneToneKernel`) puts into the
+    pixels, in `PhotoDecoder`. With the meter on, the decoder first asks the
+    engine what its meter reads for the photo decoded small
+    (`SourceImage.meteredEv`), puts that exposure into the pixels too and
+    marks the result (`LoadedImage.isMetered`); `FilmRenderer` then exposes it
+    with the meter off. Left at zero, none of this runs.
   - `DevelopSettings` is the app's model of an edit (`Codable`). It converts to
     the engine's JSON patch; tests check that the engine accepts it and that
     each value lands on the intended parameter.
