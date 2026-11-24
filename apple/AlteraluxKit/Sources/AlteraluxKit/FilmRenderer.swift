@@ -47,11 +47,16 @@ public final class FilmRenderer: Sendable {
         try engine.stocks()
     }
 
-    /// Develops `image` with `settings`.
+    /// Develops `image` with `settings`. An image that already holds the meter's exposure
+    /// (`LoadedImage.isMetered`) is exposed with the meter off.
     public func render(
         _ image: LoadedImage, settings: DevelopSettings, quality: RenderQuality,
     ) async throws -> DevelopedImage {
-        try await render(image.source, settings: settings, quality: quality)
+        var settings = settings
+        if image.isMetered {
+            settings.autoExposure = false
+        }
+        return try await render(image.source, settings: settings, quality: quality)
     }
 
     /// Develops an engine source image with `settings`.

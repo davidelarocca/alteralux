@@ -49,14 +49,17 @@ private func whole(_ value: Binding<Int>) -> Binding<Double> {
     Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue = Int($0.rounded()) })
 }
 
-/// The shot's groups: the lens's blur with the diffusion filter, and what Apple's RAW decoder
-/// offers for the photo's camera.
+/// The shot's groups: the scene's highlights and shadows, the lens's blur with the diffusion
+/// filter, and what Apple's RAW decoder offers for the photo's camera.
 struct ShotDetails: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
 
     var body: some View {
         @Bindable var model = model
+        DetailGroup("tone", title: "Highlights and shadows") {
+            SceneToneControls(tone: $settings.sceneTone)
+        }
         DetailGroup("lens", title: "Lens blur and diffusion filter") {
             ParameterSlider("Lens blur", value: $settings.lensBlur, in: 0 ... 100, step: 1, fractionDigits: 0, unit: "µm")
                 .help("Blurs the image on the film, as a soft or vintage lens would. 0 is a sharp lens.")

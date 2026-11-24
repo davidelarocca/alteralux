@@ -17,6 +17,10 @@ public struct LoadedImage: Sendable {
     public let height: Int
     /// `true` when the file was a camera RAW decoded with Apple's RAW engine.
     public let isRaw: Bool
+    /// `true` when the pixels already hold the exposure the engine's meter reads for the photo,
+    /// because the scene's highlights and shadows were changed after it (ADR 0019): the film is
+    /// then exposed with the meter off, whatever the adjustments say.
+    public let isMetered: Bool
 }
 
 /// A white balance: what the decoder takes as neutral.
@@ -239,12 +243,14 @@ struct DecodedPixels: Sendable {
     let pixels: Data
     let width: Int
     let height: Int
+    /// Whether the meter's exposure is already in the pixels (see `LoadedImage.isMetered`).
+    var isMetered = false
 
     /// Hands the pixels to the engine.
     func loaded(from url: URL, isRaw: Bool) throws -> LoadedImage {
         let source = try SourceImage.fromF32Pixels(
             width: UInt32(width), height: UInt32(height), channels: 4, pixels: pixels,
         )
-        return LoadedImage(url: url, source: source, width: width, height: height, isRaw: isRaw)
+        return LoadedImage(url: url, source: source, width: width, height: height, isRaw: isRaw, isMetered: isMetered)
     }
 }

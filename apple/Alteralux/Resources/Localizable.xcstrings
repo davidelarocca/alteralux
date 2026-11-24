@@ -4695,6 +4695,96 @@
         }
       }
     },
+    "Highlights and shadows" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alte luci e ombre"
+          }
+        }
+      }
+    },
+    "Highlights" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alte luci"
+          }
+        }
+      }
+    },
+    "Shadows" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ombre"
+          }
+        }
+      }
+    },
+    "Dimmer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più scure"
+          }
+        }
+      }
+    },
+    "Brighter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più chiare"
+          }
+        }
+      }
+    },
+    "Deeper" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più chiuse"
+          }
+        }
+      }
+    },
+    "More open" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più aperte"
+          }
+        }
+      }
+    },
+    "Darkens or brightens the brightest parts of the scene before the film sees them." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scurisce o schiarisce le parti più luminose della scena prima che la pellicola le veda."
+          }
+        }
+      }
+    },
+    "Deepens or lifts the darkest parts of the scene before the film sees them." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiude o apre le parti più scure della scena prima che la pellicola le veda."
+          }
+        }
+      }
+    },
     "Lens blur and diffusion filter" : {
       "localizations" : {
         "it" : {

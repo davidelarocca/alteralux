@@ -3,11 +3,13 @@
 use std::sync::{Arc, Mutex};
 
 use rayon::prelude::*;
+use spektrafilm_core::stages::filming;
 use spektrafilm_math::image::ImageBuf;
 use spektrafilm_math::precision::{Scalar, from_f32, to_f32};
 
+use crate::color::ColorSpace;
 use crate::engine::RenderStats;
-use crate::error::EngineError;
+use crate::error::{EngineError, catch_panic};
 
 /// Layout of the bytes returned by [`RenderedImage::pixels`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq, uniffi::Enum)]
@@ -92,6 +94,22 @@ impl SourceImage {
     /// size is already cached or is not smaller than the source.
     pub fn prepare_preview(&self, max_dimension: u32) {
         let _ = self.scaled_for(max_dimension);
+    }
+
+    /// The exposure the engine's meter gives this image, in stops: what a
+    /// render adds before the film when `camera.auto_exposure` is on, read
+    /// with the same upstream function. `method` is a value of
+    /// `camera.auto_exposure_method`; `input` is the space of the pixels.
+    ///
+    /// It lets the app meter a photo once and then change its light before
+    /// the film without the meter answering the change: the pixels scaled by
+    /// two to this power, rendered with the meter off, are the photo the
+    /// engine would have exposed itself.
+    pub fn metered_ev(&self, method: String, input: ColorSpace) -> Result<f32, EngineError> {
+        catch_panic(|| {
+            let rgb_to_xyz = filming::input_colorspace_to_xyz(input.engine_name());
+            Ok(filming::measure_autoexposure_ev(&self.image, &rgb_to_xyz, &method))
+        })
     }
 }
 

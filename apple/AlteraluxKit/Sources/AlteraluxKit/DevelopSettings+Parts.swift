@@ -3,8 +3,8 @@ import Foundation
 /// The parts of a photo's adjustments, as the inspector's sections group them (ADR 0016, ADR 0018).
 /// A part also holds what the inspector no longer shows, so that a section's reset puts it back.
 public enum DevelopPart: CaseIterable, Sendable {
-    /// What is set before the film: exposure and metering, white balance, the RAW decoder, the
-    /// lens with the halation, and the diffusion filter. The frame is not part of it: the crop
+    /// What is set before the film: exposure and metering, the scene's highlights and shadows,
+    /// white balance, the RAW decoder, the lens with the halation, and the diffusion filter. The frame is not part of it: the crop
     /// controls own it.
     case shot
     /// The film's format, development, grain and couplers. The film itself is the
@@ -27,6 +27,7 @@ public extension DevelopSettings {
             result.exposureEV = start.exposureEV
             result.autoExposure = start.autoExposure
             result.meteringMethod = start.meteringMethod
+            result.sceneTone = start.sceneTone
             result.temperature = start.temperature
             result.tint = start.tint
             result.autoWhiteBalance = start.autoWhiteBalance

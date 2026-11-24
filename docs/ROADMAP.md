@@ -413,8 +413,14 @@ branch of its own. What was said, in the order to take it:
   halation and scatter, color separation; pre-flash, glare, paper curves; scanner, color. Measured before the cut, on a daylight RAW and a drawn night
   scene, each control at the ends of its slider: the halation's reflections and their fading, the
   glare's roughness and softness, CAT16 and the gentle gamut options changed the photo by less than
-  one level in 255: candidates to remove, if the user says so. Opened for the user in the built app on 2026-11-24. Next: highlights and shadows before the film, on
-  their own. Retouches after the scan: later.
+  one level in 255: candidates to remove, if the user says so. Opened for the user in the built app on 2026-11-24.
+  Done, the sixth ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)): highlights and
+  shadows before the film, as light given to or taken from one end of the scene after the meter and
+  the exposure: two sliders in a group of their own under Shot that starts closed. The meter is
+  read first, by the engine itself through the bridge, so it does not answer the change: on a test
+  scene, dimming a lamp left the rest as it was, where the engine left to meter it doubled its
+  brightness. Tried by the user in the built app on 2026-11-24, who keeps the two in their group.
+  Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.
