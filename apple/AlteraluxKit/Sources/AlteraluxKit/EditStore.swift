@@ -48,12 +48,20 @@ public actor EditStore {
         stored(for: url)?.filmModel
     }
 
+    /// What is kept for the photo at `url`: in the photo, or in the app's folder.
+    ///
+    /// Both can hold something: a photo adjusted, then locked, then adjusted again carries the
+    /// earlier adjustments and has the later ones in the app's folder, where they stay until the
+    /// photo can be written again. Those are the photo's, as long as they were kept for the file
+    /// that is there now; the app's folder knows a photo by its path alone, and another photo
+    /// may have taken the place of the one it kept them for.
     private nonisolated func stored(for url: URL) -> StoredEdit? {
-        if let data = Self.attribute(of: url), let stored = Self.decode(data) {
-            return stored
+        let carried = Self.attribute(of: url).flatMap(Self.decode)
+        let kept = (try? Data(contentsOf: fallbackFile(for: url))).flatMap(Self.decode)
+        if let kept, let photo = kept.photo, photo == PhotoStamp(of: url) {
+            return kept
         }
-        guard let data = try? Data(contentsOf: fallbackFile(for: url)) else { return nil }
-        return Self.decode(data)
+        return carried ?? kept
     }
 
     /// Whether anything is kept for the photo at `url`: a cheap look, for marking the photos of a
@@ -71,9 +79,8 @@ public actor EditStore {
     public func save(_ settings: DevelopSettings, for url: URL) throws -> Place {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
-        let data = try encoder.encode(
-            StoredEdit(version: Self.formatVersion, filmModel: currentFilmModel, settings: settings),
-        )
+        var stored = StoredEdit(version: Self.formatVersion, filmModel: currentFilmModel, settings: settings)
+        let data = try encoder.encode(stored)
         let fallback = fallbackFile(for: url)
         // What a later version of the app wrote into the photo is not this version's to replace:
         // it cannot read it, so it cannot keep what it holds.
@@ -84,7 +91,8 @@ public actor EditStore {
             return .photo
         }
         try FileManager.default.createDirectory(at: fallbackDirectory, withIntermediateDirectories: true)
-        try data.write(to: fallback, options: .atomic)
+        stored.photo = PhotoStamp(of: url)
+        try encoder.encode(stored).write(to: fallback, options: .atomic)
         return .store
     }
 
@@ -116,7 +124,27 @@ public actor EditStore {
     private struct StoredEdit: Codable {
         let version: Int
         let filmModel: String?
+        /// In the app's folder only: the photo the adjustments were kept for.
+        var photo: PhotoStamp?
         let settings: DevelopSettings
+    }
+
+    /// What tells a photo from another that takes its path: its size and when its pixels were
+    /// last written. Neither changes when the photo is locked, unlocked or given an attribute.
+    private struct PhotoStamp: Codable, Equatable {
+        let size: Int
+        /// Seconds since the reference date, rounded to the millisecond so that it is read back
+        /// as it was written.
+        let modified: Int
+
+        init?(of url: URL) {
+            // A new URL: one that was asked before answers from its cache.
+            let values = try? URL(fileURLWithPath: url.path)
+                .resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
+            guard let size = values?.fileSize, let modified = values?.contentModificationDate else { return nil }
+            self.size = size
+            self.modified = Int((modified.timeIntervalSinceReferenceDate * 1000).rounded())
+        }
     }
 
     /// What `data` holds, if this version of the app can read it.
