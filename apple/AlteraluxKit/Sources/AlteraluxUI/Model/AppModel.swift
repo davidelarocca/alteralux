@@ -265,7 +265,8 @@ public final class AppModel {
             initial.filmID = settings.filmID
             initial.paperID = settings.paperID
             initial.scanFilm = settings.scanFilm
-            let item = PhotoItem(url: url, settings: history.kept(for: url) ?? initial, isScoped: isScoped)
+            let kept = history.kept(for: url)
+            let item = PhotoItem(url: url, settings: kept ?? initial, isScoped: isScoped, hasAdjustments: kept != nil)
             photos.append(item)
             first = first ?? item
             loadThumbnail(for: item)
