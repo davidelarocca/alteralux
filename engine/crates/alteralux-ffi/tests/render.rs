@@ -94,6 +94,19 @@ fn direct_render(film: &str, print: &str, params_json: &str) -> Vec<f32> {
     out.data.iter().map(|&v| to_f32(v)).collect()
 }
 
+/// The version the app records beside every look is the one the upstream
+/// engine declares, not the bridge's own.
+#[test]
+fn engine_version_is_the_upstream_engines() {
+    let version = alteralux_ffi::engine_version();
+    let parts: Vec<&str> = version.split('.').collect();
+    assert_eq!(parts.len(), 3, "not a version: {version}");
+    assert!(parts.iter().all(|part| part.parse::<u32>().is_ok()), "not a version: {version}");
+    let manifest = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../vendor/spektrafilm-rs/Cargo.toml");
+    let manifest = std::fs::read_to_string(manifest).unwrap();
+    assert!(manifest.contains(&format!("version = \"{version}\"")));
+}
+
 #[test]
 fn catalogue_lists_films_and_papers() {
     let stocks = engine().stocks().unwrap();

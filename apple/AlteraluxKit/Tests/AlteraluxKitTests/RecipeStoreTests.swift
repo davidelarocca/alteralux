@@ -86,6 +86,30 @@ struct RecipeStoreTests {
         #expect(files.count == 2)
     }
 
+    /// A recipe says which film model its look was made with, and keeps saying it when it is
+    /// renamed by an app built with a later engine; one saved before says nothing.
+    @Test func aRecipeKeepsTheFilmModelItWasMadeWith() async throws {
+        let fixture = Fixture()
+        defer { fixture.remove() }
+        #expect(Recipe(name: "Now", from: look()).filmModel == FilmModel.version)
+
+        var recipe = Recipe(name: "Before", from: look(), filmModel: "0.0.1")
+        try await fixture.store.save(recipe)
+        recipe = try #require(await fixture.store.all().first)
+        recipe.name = "After"
+        try await fixture.store.save(recipe)
+        let renamed = try #require(await fixture.store.all().first)
+        #expect(renamed.name == "After" && renamed.filmModel == "0.0.1")
+
+        // A recipe saved before the app wrote the model down.
+        let written = try String(contentsOf: fixture.file(for: recipe), encoding: .utf8)
+        let before = written.replacingOccurrences(of: #""filmModel":"0.0.1","#, with: "")
+        #expect(before != written)
+        try Data(before.utf8).write(to: fixture.file(for: recipe))
+        let earlier = try #require(await fixture.store.all().first)
+        #expect(earlier.filmModel == nil && earlier.look == recipe.look)
+    }
+
     @Test func deletingRemovesOnlyThatRecipe() async throws {
         let fixture = Fixture()
         defer { fixture.remove() }

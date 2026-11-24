@@ -34,3 +34,12 @@ uniffi::setup_scaffolding!();
 pub fn bridge_version() -> String {
     env!("CARGO_PKG_VERSION").to_string()
 }
+
+/// Version of the upstream engine this bridge is built with: the film model
+/// that gives a look its pixels. The app writes it beside the adjustments and
+/// the recipes it saves, so a look made with an earlier model can be told
+/// apart once the engine is updated.
+#[uniffi::export]
+pub fn engine_version() -> String {
+    env!("SPEKTRAFILM_VERSION").to_string()
+}

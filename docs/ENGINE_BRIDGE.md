@@ -34,6 +34,13 @@ The upstream engine is a **git submodule pinned to a commit**. We never patch
 it: anything macOS-specific lives in this repository. Updating the engine means
 moving the submodule pointer and re-running the tests.
 
+The bridge reports the upstream engine's version (`engine_version()`, read from
+the submodule's manifest when the bridge is built), and the app writes it
+beside every photo's adjustments and in every recipe. It is the only trace of
+which film model a saved look was made with, so the pointer moves from one
+upstream release to the next, not to a commit between two that still carries
+the earlier version.
+
 ## The bridge contract (`engine/crates/alteralux-ffi`)
 
 ### Linear in, linear out

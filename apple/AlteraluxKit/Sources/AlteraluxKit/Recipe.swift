@@ -14,12 +14,19 @@ public struct Recipe: NamedItem, Equatable {
     public var name: String
     /// The look. Its temperature, tint and crop are always `nil`.
     public let look: DevelopSettings
+    /// The film model the look was made with (`FilmModel.version` when the recipe was saved);
+    /// `nil` for a recipe saved before the app wrote it down. A rename keeps it.
+    public let filmModel: String?
 
-    /// A recipe with the look of `settings`.
-    public init(id: UUID = UUID(), name: String, from settings: DevelopSettings) {
+    /// A recipe with the look of `settings`, made with the film model the app is built with
+    /// unless another is given.
+    public init(
+        id: UUID = UUID(), name: String, from settings: DevelopSettings, filmModel: String? = FilmModel.version,
+    ) {
         self.id = id
         self.name = name
         look = DevelopSettings().takingLook(of: settings)
+        self.filmModel = filmModel
     }
 
     /// Reads a saved recipe. A white balance or a crop found in it, which only a file written by
@@ -31,6 +38,7 @@ public struct Recipe: NamedItem, Equatable {
             id: values.decode(UUID.self, forKey: .id),
             name: values.decode(String.self, forKey: .name),
             from: values.decode(DevelopSettings.self, forKey: .look),
+            filmModel: values.decodeIfPresent(String.self, forKey: .filmModel),
         )
     }
 
