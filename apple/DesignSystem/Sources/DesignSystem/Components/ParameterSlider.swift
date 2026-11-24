@@ -16,6 +16,12 @@ import SwiftUI
 /// A parameter that can be switched off (grain, halation) passes `isOn`: its switch sits on the
 /// slider's row, and Space flips it. Off, the slider keeps its value and does not move.
 ///
+/// A value with a unit shows it after the number (`unit`: "EV", "K", "%"). A slider whose
+/// direction is not obvious names its two ends under it (`ends`: "warmer", "cooler"). A line
+/// under the slider (`note`) says what governs it when it is disabled, or what it is tied to;
+/// assistive technologies read it after the slider's title. In a group disabled with
+/// `governed(_:reason:)`, a slider with no note of its own is read with the group's reason.
+///
 /// With `.labelsHidden()` only the slider is drawn, for a caller that shows the value itself
 /// (the zoom under the photo). The title is still what assistive technologies read.
 public extension EnvironmentValues {
@@ -26,6 +32,7 @@ public extension EnvironmentValues {
 }
 
 public struct ParameterSlider: View {
+    @Environment(\.locale) private var locale
     private let title: LocalizedStringKey
     @Binding private var value: Double
     private let range: ClosedRange<Double>
@@ -34,10 +41,14 @@ public struct ParameterSlider: View {
     private let fractionDigits: Int
     private let showsSign: Bool
     private let isOn: Binding<Bool>?
+    private let unit: String?
+    private let ends: SliderEnds?
+    private let note: LocalizedStringKey?
 
     @Environment(\.labelsVisibility) private var labelsVisibility
     @Environment(\.slidersTakeKeyboardFocus) private var takesKeyboardFocus
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.governedReason) private var governedReason
 
     /// - Parameters:
     ///   - step: the value snaps to multiples of this.
@@ -45,6 +56,9 @@ public struct ParameterSlider: View {
     ///   - fractionDigits: decimals shown in the value.
     ///   - showsSign: show `+` for positive values (for offsets around zero).
     ///   - isOn: for a parameter that can be switched off: adds the switch to the row.
+    ///   - unit: written after the value, as it is (a symbol: "EV", "K", "µm", "%").
+    ///   - ends: what the two ends of the slider do, under it.
+    ///   - note: a line under the slider: why it is disabled, or what it is tied to.
     public init(
         _ title: LocalizedStringKey,
         value: Binding<Double>,
@@ -54,6 +68,9 @@ public struct ParameterSlider: View {
         fractionDigits: Int = 2,
         showsSign: Bool = false,
         isOn: Binding<Bool>? = nil,
+        unit: String? = nil,
+        ends: SliderEnds? = nil,
+        note: LocalizedStringKey? = nil,
     ) {
         self.title = title
         _value = value
@@ -63,6 +80,9 @@ public struct ParameterSlider: View {
         self.fractionDigits = fractionDigits
         self.showsSign = showsSign
         self.isOn = isOn
+        self.unit = unit
+        self.ends = ends
+        self.note = note
     }
 
     public var body: some View {
@@ -74,7 +94,7 @@ public struct ParameterSlider: View {
                     Spacer()
                     // `Text` formats with the environment's locale, so the value follows the
                     // language of the view it is in.
-                    Text(value, format: valueFormat)
+                    Text(verbatim: formattedValue)
                         .font(Typography.value)
                         .foregroundStyle(valueStyle)
                     if let isOn {
@@ -91,6 +111,7 @@ public struct ParameterSlider: View {
             }
             .labelsHidden()
             .disabled(isSwitchedOff)
+            .accessibilityLabel(spokenTitle)
             // The keyboard focus is on the whole component, below.
             .focusable(false)
             // Assistive technologies adjust by one step too, not by a tenth of the range.
@@ -100,6 +121,23 @@ public struct ParameterSlider: View {
                 case .decrement: move(by: -1)
                 @unknown default: break
                 }
+            }
+            if let ends, labelsVisibility != .hidden {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(ends.leading)
+                    Spacer()
+                    Text(ends.trailing)
+                }
+                .font(Typography.caption)
+                .foregroundStyle(isEnabled && !isSwitchedOff ? .secondary : .tertiary)
+                .accessibilityHidden(true)
+            }
+            if let note, labelsVisibility != .hidden {
+                Text(note)
+                    .font(Typography.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityHidden(true)
             }
         }
         .contentShape(Rectangle())
@@ -126,6 +164,13 @@ public struct ParameterSlider: View {
         }
         .help("Double-click to reset")
         .accessibilityAction(named: "Reset", reset)
+    }
+
+    /// What assistive technologies read as the slider's name: its title and, after it, its note
+    /// or the reason it is governed. Not a hint: a caller's `.help` takes a hint's place.
+    private var spokenTitle: Text {
+        guard let reason = note ?? governedReason else { return Text(title) }
+        return Text("\(Text(title)), \(Text(reason))")
     }
 
     /// The Delete key arrives as U+007F on a Mac keyboard, while `KeyEquivalent.delete` is
@@ -170,12 +215,29 @@ public struct ParameterSlider: View {
         )
     }
 
+    /// The value as the row writes it, in the view's language, with its unit.
+    private var formattedValue: String {
+        let number = value.formatted(valueFormat.locale(locale))
+        return unit.map { "\(number) \($0)" } ?? number
+    }
+
     private var valueFormat: FloatingPointFormatStyle<Double> {
         .number
             .precision(.fractionLength(fractionDigits))
             // A large value is read as one number: a temperature is "5200", not "5,200".
             .grouping(.never)
             .sign(strategy: showsSign ? .always(includingZero: false) : .automatic)
+    }
+}
+
+/// What the two ends of a slider do to the photo, written under it: "warmer" and "cooler".
+public struct SliderEnds {
+    public let leading: LocalizedStringKey
+    public let trailing: LocalizedStringKey
+
+    public init(_ leading: LocalizedStringKey, _ trailing: LocalizedStringKey) {
+        self.leading = leading
+        self.trailing = trailing
     }
 }
 

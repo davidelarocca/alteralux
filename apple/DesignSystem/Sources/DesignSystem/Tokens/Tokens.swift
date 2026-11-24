@@ -35,6 +35,8 @@ public enum Typography {
     public static let sheetTitle = Font.headline
     /// A line of context above or under a heading.
     public static let caption = Font.subheadline
+    /// The title of a group of controls inside a section, naming what they refine.
+    public static let subheading = Font.subheadline.weight(.semibold)
     /// The speed written on a film's emblem.
     public static let emblem = Font.subheadline.weight(.heavy)
     /// Numeric values next to a control: digits keep their width while they change.

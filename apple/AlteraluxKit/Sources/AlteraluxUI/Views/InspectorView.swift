@@ -27,52 +27,49 @@ struct InspectorView: View {
         Form {
             FilmHeading(paneHeight: height)
             InspectorSection(
-                "Shot", isExpanded: $showsShot,
-                summary: summary.shot(
-                    whiteBalance: model.canAdjustWhiteBalance
-                        ? WhiteBalance(temperature: model.temperature, tint: model.tint) : nil,
-                ),
+                "Shot", isExpanded: $showsShot, summary: summary.shot(whiteBalance: shownWhiteBalance),
+                isModified: model.isModified(.shot), reset: model.resetter(.shot),
             ) {
                 ExposureControls(settings: $model.settings)
                 WhiteBalanceControls()
-                NoiseReductionControls()
-                LensCorrectionToggle()
-                CropRow()
-                ParameterSlider(
-                    "Diffusion filter", value: $model.settings.diffusionFilter.strength, in: 0 ... 2,
-                    defaultValue: 0.5, isOn: $model.settings.diffusionFilter.enabled,
-                )
-                .help("A filter in front of the lens that makes the lights glow, as a Pro-Mist does.")
+                LensControls(settings: $model.settings)
             }
             if showsShot {
-                MoreAdjustments("shot", title: "More shot adjustments") {
-                    RawDecodingDetails()
-                    ShotDetails(settings: $model.settings)
-                }
+                ShotDetails(settings: $model.settings)
             }
-            InspectorSection("Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName)) {
+            InspectorSection(
+                "Film", isExpanded: $showsFilm, summary: summary.film(formatName: formatName),
+                isModified: model.isModified(.film), reset: model.resetter(.film),
+            ) {
                 FilmControls(settings: $model.settings, developmentTimes: model.filmDevelopmentTimes)
             }
             if showsFilm {
-                MoreAdjustments("film", title: "More film adjustments") { FilmDetails(settings: $model.settings) }
+                FilmDetails(settings: $model.settings)
             }
-            InspectorSection("Print", isExpanded: $showsPrint, summary: summary.print) {
+            InspectorSection(
+                "Print", isExpanded: $showsPrint, summary: summary.print,
+                isModified: model.isModified(.print), reset: model.resetter(.print),
+            ) {
                 PrintControls(
                     settings: $model.settings, isBlackAndWhite: model.selectedPaper?.isBlackAndWhite == true,
                     developmentTimes: model.printDevelopmentTimes,
                 )
             }
             if showsPrint, !model.settings.scanFilm {
-                MoreAdjustments("print", title: "More print adjustments") { PrintDetails(settings: $model.settings) }
+                PrintDetails(settings: $model.settings)
             }
-            InspectorSection("Scan", isExpanded: $showsScan, summary: summary.scan) {
+            InspectorSection(
+                "Scan", isExpanded: $showsScan, summary: summary.scan,
+                isModified: model.isModified(.scan), reset: model.resetter(.scan),
+            ) {
                 ParameterSlider(
                     "Sharpening", value: $model.settings.sharpenAmount, in: 0 ... 2,
                     step: 0.05, defaultValue: 0.7,
                 )
+                .help("How much the scanner sharpens the edges; 0 leaves the scan as soft as the film made it.")
             }
             if showsScan {
-                MoreAdjustments("scan", title: "More scan adjustments") { ScanDetails(settings: $model.settings) }
+                ScanDetails(settings: $model.settings)
             }
             Section {
                 Button("Reset Adjustments") { model.resetAdjustments() }
@@ -86,6 +83,15 @@ struct InspectorView: View {
         .contentMargins(.horizontal, Spacing.s, for: .scrollContent)
         .disabled(model.films.isEmpty)
         .onGeometryChange(for: CGFloat.self, of: \.size.height) { height = $0 }
+    }
+
+    /// The white balance the shot section's summary shows: `nil` when it cannot be chosen.
+    private var shownWhiteBalance: InspectorSummary.ShownWhiteBalance? {
+        guard model.canAdjustWhiteBalance else { return nil }
+        return .init(
+            value: WhiteBalance(temperature: model.temperature, tint: model.tint),
+            isAutomatic: model.isWhiteBalanceAutomatic,
+        )
     }
 
     /// The film format in the reader's language, for the summary of the film section.
@@ -128,131 +134,8 @@ private struct FilmHeading: View {
     }
 }
 
-/// How much light the shot lets in, before the film: the camera's meter and a compensation on
-/// top of it. Whether it brightens the photo or only the negative is the print's choice.
-private struct ExposureControls: View {
-    @Binding var settings: DevelopSettings
-
-    var body: some View {
-        ParameterSlider(
-            "Exposure", value: $settings.exposureEV, in: -5 ... 5,
-            step: 0.1, fractionDigits: 1, showsSign: true,
-        )
-        .help("Brightens or darkens the photo before the film sees it, in stops.")
-        Toggle("Automatic metering", isOn: $settings.autoExposure)
-            .help("Meters the scene as a camera would, weighting its center; the exposure is added to it.")
-    }
-}
-
-/// The photo's frame, chosen in the crop controls over the photo.
-private struct CropRow: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        LabeledContent {
-            Button("Crop…") { model.beginCrop() }
-                .disabled(!model.canCrop)
-        } label: {
-            Text("Cropping")
-            Text(state)
-        }
-    }
-
-    private var state: LocalizedStringKey {
-        guard let crop = model.settings.crop, !crop.isWhole else { return "Whole photo" }
-        return crop.angle == 0 ? "Cropped" : "Cropped and straightened"
-    }
-}
-
-/// Temperature and tint: what the RAW decoder takes as neutral, before the film sees the
-/// photo. They start from what the camera recorded and go back to it.
-private struct WhiteBalanceControls: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        @Bindable var model = model
-        let neutral = model.neutralWhiteBalance
-
-        // A photo that is not a RAW has its white balance in its pixels: a line says so, in
-        // place of two sliders that could not move.
-        if model.whiteBalanceIsFixed {
-            Text("White balance can be chosen for RAW photos only.")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
-        } else {
-            Group {
-                Toggle("Automatic white balance", isOn: $model.isWhiteBalanceAutomatic)
-                    .help("Start from the light measured in the photo where the camera's white balance is far from it.")
-                if model.isWhiteBalanceAutomatic, model.cameraChoseWhiteBalance {
-                    Text("The camera chose this white balance itself, from the scene: it is kept.")
-                        .font(Typography.caption)
-                        .foregroundStyle(.secondary)
-                }
-                ParameterSlider(
-                    "Temperature", value: $model.temperature, in: model.temperatureRange,
-                    step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
-                )
-                .help("The color of the light, in kelvin. Lower values make the photo cooler.")
-                ParameterSlider(
-                    "Tint", value: $model.tint, in: AppModel.tintRange,
-                    step: AppModel.tintStep, defaultValue: neutral.tint, fractionDigits: 0,
-                )
-            }
-            .disabled(!model.canAdjustWhiteBalance)
-        }
-    }
-}
-
-/// Whether the lens is corrected, where the RAW decoder, the camera's own data or a lens profile
-/// know this camera's lens, with a line that says which of the last two does; otherwise a line
-/// says there is nothing to correct with.
-private struct LensCorrectionToggle: View {
-    @Environment(AppModel.self) private var model
-
-    var body: some View {
-        @Bindable var model = model
-        Toggle("Lens correction", isOn: $model.isLensCorrected)
-            .disabled(!model.correctsLens)
-            .help("Straightens the lens's curved lines, brightens its darker corners and takes away its colored fringes.")
-        if model.hasPhoto, !model.correctsLens {
-            Text("No correction is known for this photo's lens.")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
-        } else if let correction = model.cameraLensCorrection {
-            CameraCorrectionLine(correction: correction)
-        } else if let lens = model.lensProfileName {
-            Text("Lensfun profile: \(lens)")
-                .font(Typography.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-}
-
-/// Who corrects the lens when the camera recorded some of it: the camera alone, or with lensfun,
-/// or only the vignetting after Apple's decoder.
-private struct CameraCorrectionLine: View {
-    let correction: CameraLensCorrection
-
-    var body: some View {
-        let lens = correction.lensName
-        Group {
-            switch (correction.geometrySource, correction.vignettingSource) {
-            case (.apple, _):
-                Text("Vignetting corrected with the camera's data")
-            case (.lensfun, _):
-                Text("Lensfun profile, vignetting from the camera: \(lens)")
-            case (_, .lensfun):
-                Text("Camera's own correction, vignetting from lensfun: \(lens)")
-            default:
-                Text("Camera's own correction: \(lens)")
-            }
-        }
-        .font(Typography.caption)
-        .foregroundStyle(.secondary)
-    }
-}
-
-/// The film: its frame, its development, its grain and its halation.
+/// The film: its frame, its development and its grain. Its halation is with the lens, in the shot
+/// (ADR 0018).
 private struct FilmControls: View {
     @Binding var settings: DevelopSettings
     /// The times the film was measured at, when it can be developed for longer or shorter.
@@ -269,24 +152,15 @@ private struct FilmControls: View {
                 .help("Developed longer, the film gains contrast; shorter, it loses it.")
         }
         ParameterSlider(
-            "Grain", value: $settings.grainParticleArea, in: 0.05 ... 1,
-            defaultValue: 0.2, isOn: $settings.grainEnabled,
+            "Grain size", value: $settings.grainParticleArea, in: 0.05 ... 1,
+            defaultValue: 0.2, isOn: $settings.grainEnabled, unit: "µm²",
         )
-        ParameterSlider(
-            "Halation", value: $settings.halationAmount, in: 0 ... 3,
-            step: 0.05, defaultValue: 1, isOn: $settings.halationEnabled,
-        )
-        .help("The red glow around bright lights.")
-        ParameterSlider(
-            "DIR couplers", value: $settings.couplersAmount, in: 0 ... 2,
-            defaultValue: 1, isOn: $settings.couplersEnabled,
-        )
-        .help("Development inhibitors passing between the film's layers: purer colors and crisper edges.")
+        .help("The size of the film's silver grains: larger is coarser and more visible.")
     }
 }
 
-/// The print: whether there is one, its paper, and how it is exposed and filtered under the
-/// enlarger.
+/// The print: whether there is one and whether the lab compensates the exposure, its paper, and
+/// how it is exposed and filtered under the enlarger: what spektrafilm's own interface has in view.
 private struct PrintControls: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
@@ -299,6 +173,8 @@ private struct PrintControls: View {
         Toggle("Scan the film directly", isOn: $settings.scanFilm)
             .help("Skip the print. The usual choice for slide film.")
         if !settings.scanFilm {
+            Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
+                .help("Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness.")
             // The paper's name is long: it gets the row's whole width, under its caption.
             VStack(alignment: .leading, spacing: Spacing.xxs) {
                 Text("Paper")
@@ -311,26 +187,38 @@ private struct PrintControls: View {
                 .labelsHidden()
                 .fixedSize(horizontal: false, vertical: true)
             }
-            ParameterSlider("Print exposure", value: $settings.printExposure, in: 0.2 ... 3, defaultValue: 1)
+            .help("The paper the negative is printed on: its contrast and its colors.")
+            ParameterSlider(
+                "Print exposure", value: stops($settings.printExposure), in: -2.3 ... 1.5,
+                step: 0.1, fractionDigits: 1, showsSign: true, unit: "stop", ends: SliderEnds("Lighter", "Darker"),
+            )
+            .help("How long the paper is exposed under the enlarger: more light makes a darker print.")
             if !isBlackAndWhite {
                 ParameterSlider(
                     "Yellow filter", value: $settings.yellowFilterShift, in: -50 ... 50,
-                    step: 1, fractionDigits: 0, showsSign: true,
+                    step: 1, fractionDigits: 0, showsSign: true, ends: SliderEnds("Yellower", "Bluer"),
                 )
+                .help("The enlarger's yellow filter: more filter makes the print bluer, less makes it yellower.")
                 ParameterSlider(
                     "Magenta filter", value: $settings.magentaFilterShift, in: -50 ... 50,
-                    step: 1, fractionDigits: 0, showsSign: true,
+                    step: 1, fractionDigits: 0, showsSign: true, ends: SliderEnds("More magenta", "Greener"),
                 )
+                .help("The enlarger's magenta filter: more filter makes the print greener, less makes it more magenta.")
             }
             if !developmentTimes.isEmpty {
                 DevelopmentTimePicker("Paper development", time: $settings.printDevelopmentTime, times: developmentTimes)
+                    .help("Developed longer, the paper gains contrast; shorter, it loses it.")
             }
-            ParameterSlider("Pre-flash", value: $settings.preflashExposure, in: 0 ... 0.5, step: 0.005, fractionDigits: 3)
-                .help("A faint even exposure of the paper before the print, which holds detail in the highlights.")
-            Toggle("The lab compensates the exposure", isOn: $settings.printCompensatesExposure)
-                .help("Prints to a normal density, as a lab would: the exposure then changes the negative, not the brightness.")
         }
     }
+}
+
+/// A multiplier of exposure as stops: 2 is +1, 0.5 is -1.
+private func stops(_ multiplier: Binding<Double>) -> Binding<Double> {
+    Binding(
+        get: { log2(max(multiplier.wrappedValue, 0.01)) },
+        set: { multiplier.wrappedValue = pow(2, $0) },
+    )
 }
 
 /// The time a black and white material is developed for, among those it was measured at. With
