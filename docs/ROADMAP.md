@@ -229,6 +229,8 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      and a cache.
    - Fixed on 2026-11-20: the arrow keys move in every direction, a folder that cannot be added
      says why, and the thumbnails kept on disk are pruned at launch to 512 MB, oldest first.
+   - Done on 2026-11-24, asked by the user: the strip marks the photos that have adjustments, with
+     the grid's own mark (`PhotoMark`), so one that was touched is told from one that was not.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several

@@ -12,6 +12,9 @@ final class PhotoItem: Identifiable {
     var settings: DevelopSettings
     /// The adjustments as they are kept with the photo, or as it was opened if none are yet.
     var keptSettings: DevelopSettings
+    /// Whether adjustments are kept with the photo: what its mark in the strip says, as the
+    /// library's grid says it. A photo that was only opened and looked at has none.
+    var hasAdjustments: Bool
     var thumbnail: CGImage?
     /// Whether the app holds a security-scoped access on `url` to release.
     let isScoped: Bool
@@ -20,10 +23,11 @@ final class PhotoItem: Identifiable {
         url.lastPathComponent
     }
 
-    init(url: URL, settings: DevelopSettings, isScoped: Bool) {
+    init(url: URL, settings: DevelopSettings, isScoped: Bool, hasAdjustments: Bool = false) {
         self.url = url
         self.settings = settings
         keptSettings = settings
+        self.hasAdjustments = hasAdjustments
         self.isScoped = isScoped
     }
 }

@@ -136,6 +136,7 @@ extension AppModel {
         for change in changes {
             if let item = photos.first(where: { $0.url == change.photo }) {
                 put(change.settings, on: item)
+                item.hasAdjustments = change.isKept
             }
         }
         history.keep(changes.map { ($0.photo, $0.isKept ? $0.settings : nil) })

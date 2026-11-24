@@ -92,6 +92,31 @@ struct EditHistoryTests {
         #expect(model.history.kept(for: fixture.photos[0])?.exposureEV == 0.7)
     }
 
+    /// The strip marks the photos that have adjustments kept with them, as the library's grid
+    /// does: one only opened has none, one adjusted has, and so it is after another launch.
+    @Test func aPhotoOfTheStripSaysWhetherItHasAdjustments() async throws {
+        let fixture = try Fixture(count: 2)
+        defer { fixture.remove() }
+        let model = fixture.model()
+        model.open(fixture.photos)
+        #expect(model.photos.allSatisfy { !$0.hasAdjustments })
+        try await change(model) { $0.exposureEV = 0.7 }
+        #expect(model.photos[0].hasAdjustments && !model.photos[1].hasAdjustments)
+
+        // Adjustments given away from the develop screen, as a recipe from the library, and
+        // taken back.
+        model.set([PhotoAdjustments(photo: fixture.photos[1], settings: DevelopSettings(exposureEV: 1), isKept: true)])
+        #expect(model.photos[1].hasAdjustments)
+        model.history.undo()
+        #expect(!model.photos[1].hasAdjustments)
+        await model.history.waitUntilSaved()
+
+        // Another launch: the mark comes from what each photo carries.
+        let second = fixture.model()
+        second.open(fixture.photos)
+        #expect(second.photos[0].hasAdjustments && !second.photos[1].hasAdjustments)
+    }
+
     @Test func aPhotoThatWasOnlyLookedAtIsNotWritten() async throws {
         let fixture = try Fixture(count: 2)
         defer { fixture.remove() }

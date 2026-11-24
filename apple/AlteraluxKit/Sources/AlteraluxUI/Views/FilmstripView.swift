@@ -25,11 +25,17 @@ struct FilmstripView: View {
                             model.select(item)
                         } label: {
                             ThumbnailCell(image: item.thumbnail, isSelected: item.id == model.selectedID)
+                                // The library's mark: a photo with adjustments is told from one not touched.
+                                .overlay(alignment: .bottomTrailing) {
+                                    if item.hasAdjustments {
+                                        PhotoMark.adjusted
+                                    }
+                                }
                         }
                         .buttonStyle(.plain)
                         .id(item.id)
                         .help(item.name)
-                        .accessibilityLabel(item.name)
+                        .accessibilityLabel(item.hasAdjustments ? Text("\(item.name), with adjustments") : Text(verbatim: item.name))
                         .accessibilityAddTraits(item.id == model.selectedID ? .isSelected : [])
                         .contextMenu {
                             Button("Remove from Strip") { model.remove(item) }

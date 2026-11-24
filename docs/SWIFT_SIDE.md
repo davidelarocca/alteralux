@@ -196,7 +196,9 @@ open photos, the settings of the selected one and its preview.
   meanwhile waits for the GPU): so the 2048 px preview stands in for it, and
   it is rendered only after that has been on screen for 400 ms with the
   settings still. A zoom made while the settings are still is not held back.
-  The strip's thumbnail follows the settled preview only. The photo is
+  The strip's thumbnail follows the settled preview only, and carries the
+  library's mark (`PhotoMark`) once adjustments are kept with the photo
+  (`PhotoItem.hasAdjustments`). The photo is
   decoded for the 1024 px preview as soon as it is on screen (see Sources),
   so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the
