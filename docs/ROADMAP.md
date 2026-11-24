@@ -198,6 +198,11 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      before an engine update can be told apart. Nothing reads it yet, and nothing is said to the
      user: what to do with an earlier look (keep its model, or say that it changed) is to decide
      when the engine is first updated.
+   - Fixed on 2026-11-24, found by reading `EditStore`: a photo adjusted, then locked (or on a
+     disk turned read-only), then adjusted again came back with the earlier adjustments after a
+     relaunch. The later ones were kept in the app's folder, and the photo's own were read first.
+     What the app's folder keeps now says which file it was kept for (its size and date), and is
+     read first while that file is the one at the path.
    - Fixed on 2026-11-20: in Italian Redo read "Ripristina", just above "Ripristina regolazioni"; it is
      "Ripeti", as macOS says it.
 6. **The library**: the folders the user adds, shown as they are on disk, a grid of their photos, and

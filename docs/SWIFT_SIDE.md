@@ -29,7 +29,9 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     each value lands on the intended parameter.
   - `EditStore` keeps a photo's adjustments between launches: in an extended
     attribute of the photo, or in a folder of the app's when the photo cannot
-    be written ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)). Beside the
+    be written ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)); what is in
+    that folder is later than what the photo carries, and is read first as
+    long as it was kept for the file now at that path. Beside the
     adjustments it writes the film model they were saved with
     (`FilmModel.version`, the upstream engine's version), and a `Recipe`
     carries the one its look was made with, which a rename keeps: an engine

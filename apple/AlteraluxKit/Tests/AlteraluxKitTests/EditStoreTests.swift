@@ -91,6 +91,49 @@ struct EditStoreTests {
         #expect(!FileManager.default.fileExists(atPath: store.fallbackFile(for: photo).path))
     }
 
+    /// A photo adjusted, then locked, then adjusted again: the later adjustments are in the app's
+    /// folder while the photo still carries the earlier ones. The later ones are the photo's.
+    @Test func adjustmentsMadeAfterAPhotoWasLockedAreTheOnesReadBack() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (photo, store) = (fixture.photo, fixture.store)
+        #expect(try await store.save(edited(), for: photo) == .photo)
+
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: photo.path)
+        var later = edited()
+        later.exposureEV = -1
+        #expect(try await store.save(later, for: photo) == .store)
+        #expect(store.load(for: photo) == later)
+
+        // Unlocked, it is still the later ones, and the next save puts them in the photo.
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: photo.path)
+        #expect(store.load(for: photo) == later)
+        later.exposureEV = -2
+        #expect(try await store.save(later, for: photo) == .photo)
+        #expect(store.load(for: photo) == later)
+        #expect(!FileManager.default.fileExists(atPath: store.fallbackFile(for: photo).path))
+    }
+
+    /// The app's folder knows a photo by its path alone. What it kept for a photo that is no
+    /// longer there does not replace what another photo, now at that path, carries.
+    @Test func whatWasKeptForAnotherPhotoAtThePathDoesNotReplaceWhatThePhotoCarries() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let (folder, photo, store) = (fixture.folder, fixture.photo, fixture.store)
+        try FileManager.default.setAttributes([.posixPermissions: 0o444], ofItemAtPath: photo.path)
+        #expect(try await store.save(edited(), for: photo) == .store)
+
+        let other = folder.appendingPathComponent("other.tif")
+        try Data("other pixels".utf8).write(to: other)
+        var own = DevelopSettings()
+        own.exposureEV = 1.5
+        #expect(try await store.save(own, for: other) == .photo)
+        try FileManager.default.setAttributes([.posixPermissions: 0o644], ofItemAtPath: photo.path)
+        try FileManager.default.removeItem(at: photo)
+        try FileManager.default.moveItem(at: other, to: photo)
+        #expect(store.load(for: photo) == own)
+    }
+
     /// This version cannot read it, so it must not replace it: its own adjustments go to the
     /// app's folder, and the photo keeps what the later version wrote.
     @Test func aPhotoEditedByALaterVersionIsLeftAlone() async throws {
