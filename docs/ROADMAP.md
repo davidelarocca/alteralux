@@ -98,8 +98,12 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   preview shown pixel for pixel has about two thirds of the export's grain (0.66 at 2048 px, 0.62 at
   1024 px), and 0.87 when the standard preview is shown at half its size; the 100% view is the
   export's own render. The engine blurs the grain by 0.65 pixels whatever the size of the picture.
-  Not changed: scaling that blur with the size of the preview would bring the fitted photo close to
-  the export, and would change what every preview looks like, so it waits for the user's word. On
+  Sharpening, measured the same way on a fence of bars: the scan's sharpening, whose radius is in
+  pixels too (0.7), changes the standard preview 3.0 times as much as the export seen at that size,
+  and the lighter preview 5.7 times: a fitted photo looks crisper than its export.
+  Not changed: scaling what the engine measures in pixels (the grain's blur, the sharpening's radius)
+  with the size of the preview would bring the fitted photo close to the export, and would change
+  what every preview looks like, so it waits for the user's word. On
   the same strips the GPU's halation adds 0.79, 0.56 and 0.39 of the red, green and blue light the
   CPU backend's adds: the two upstream backends do not develop the same halation (see "Export
   precision" below).
