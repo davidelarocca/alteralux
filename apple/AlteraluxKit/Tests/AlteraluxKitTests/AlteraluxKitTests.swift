@@ -165,9 +165,13 @@ struct DevelopSettingsTests {
                     compare(pair.0, pair.1, path: path + "[\(index)]")
                 }
             case let (left as NSNumber, right as NSNumber):
-                if abs(left.doubleValue - right.doubleValue) > 1e-6 { differences.append(path) }
+                if abs(left.doubleValue - right.doubleValue) > 1e-6 {
+                    differences.append(path)
+                }
             case let (left as String, right as String):
-                if left != right { differences.append(path) }
+                if left != right {
+                    differences.append(path)
+                }
             case (nil, nil), (is NSNull, is NSNull):
                 break
             default:

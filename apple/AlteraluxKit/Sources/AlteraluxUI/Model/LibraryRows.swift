@@ -48,7 +48,7 @@ struct LibraryRows: Equatable {
         var rows: [Row] = []
         // The photos of the row being filled, with their widths at the height asked for.
         var pending: [(photo: URL, width: CGFloat)] = []
-        /// How much a row of these photos is stretched to fill the grid's width.
+        // How much a row of these photos is stretched to fill the grid's width.
         func stretch(_ items: [(photo: URL, width: CGFloat)]) -> CGFloat {
             let room = width - spacing * CGFloat(items.count - 1)
             return room / items.reduce(0) { $0 + $1.width }

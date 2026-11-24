@@ -13,7 +13,7 @@ struct FilmstripView: View {
         thumbnails
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
-        .background(.bar)
+            .background(.bar)
     }
 
     private var thumbnails: some View {
