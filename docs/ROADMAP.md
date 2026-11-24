@@ -108,9 +108,12 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    nothing to act on. Fixed on 2026-11-20: a black and white paper no longer shows the yellow and
    magenta filters, and the film and the paper measured at several development times (Kodak
    Double-X, Kodak 2302) offer them, the middle one first; checked in the built app, where 12 minutes
-   gives a brighter, harder print than 4. Fixed on 2026-11-23: the lensfun profile of a camera with
-   a fixed lens is named after the camera in the inspector (a Ricoh GR III read "+ GW-4", the
-   converter its record also holds; the correction itself was right).
+   gives a brighter, harder print than 4. Fixed on 2026-11-23: the DNG of a DJI Osmo Action, which
+   the system's decoders refuse for a fault in its version tags, opens (`MendedDNG`; developed from
+   a raw.pixls.us sample by the app's own decoder and renderer, not yet seen in the built app); the
+   lensfun profile of a camera with a fixed lens is named after the camera in the inspector (a
+   Ricoh GR III read "+ GW-4", the converter its record also holds; the correction itself was
+   right).
 2. **The interface redrawn** in the visual direction of the vision: the structure the mockups of
    2026-11-20 settled, built from the system's controls
    ([ADR 0006](adr/0006-use-the-systems-controls.md)). Done: the slider (the system's, filled from the
@@ -371,6 +374,23 @@ branch of its own. What was said, in the order to take it:
   it offers them, and left as the photo has them by a recipe (noise belongs to the sensor). Measured
   on the user's RAWs at ISO 640: the noise reduction changes the photo by 4 to 5%; the decoder's
   output was already not clipped at white, and its highlight recovery is on by default. Retouches after the scan: later.
+  Done, the fourth ([ADR 0017](adr/0017-in-view-what-a-photographer-uses.md)): names a photographer
+  uses, a help and a unit on every control, the modes first in every section, a governed control
+  disabled in view with a line that says why, a reset and a mark of change for each section, and
+  summaries that name the modes. Its "More … adjustments", some fifty controls under subheadings,
+  were turned down by the user on 2026-11-23 as a sidebar that never ends.
+  Done, the fifth, on the user's word of 2026-11-23
+  ([ADR 0018](adr/0018-back-to-the-essential-controls.md)): the inspector follows the original
+  spektrafilm: about fifteen controls in view, and every other control in a group of its kind that
+  starts closed, right under its section. In view, Shot: the meter and its method, the exposure, the
+  white balance and, under "Lens", the lens correction and the halation; Film: format, development,
+  grain; Print: scan directly, the lab's compensation, paper, print exposure, the two filters, paper
+  development; Scan: sharpening. Closed: lens blur and diffusion filter, RAW development; grain,
+  halation and scatter, color separation; pre-flash, glare, paper curves; scanner, color. Measured before the cut, on a daylight RAW and a drawn night
+  scene, each control at the ends of its slider: the halation's reflections and their fading, the
+  glare's roughness and softness, CAT16 and the gentle gamut options changed the photo by less than
+  one level in 255: candidates to remove, if the user says so. Opened for the user in the built app on 2026-11-24. Next: highlights and shadows before the film, on
+  their own. Retouches after the scan: later.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

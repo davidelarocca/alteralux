@@ -66,7 +66,7 @@ public enum ImageLoader {
     ///
     /// - Parameter maxDimension: long side of the result, in pixels.
     public static func originalPreview(of url: URL, maxDimension: Int) -> CGImage? {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        guard let source = MendedDNG.imageSource(for: url) else { return nil }
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
@@ -91,7 +91,9 @@ public enum ImageLoader {
 
     /// The RAW decoder for `url`, set for scene-linear output.
     static func rawFilter(for url: URL) throws -> CIRAWFilter {
-        guard let filter = CIRAWFilter(imageURL: url) else {
+        // A DNG with a fault the decoder refuses is handed over mended (see `MendedDNG`).
+        let mended = MendedDNG.data(for: url).flatMap { CIRAWFilter(imageData: $0, identifierHint: MendedDNG.typeIdentifier) }
+        guard let filter = mended ?? CIRAWFilter(imageURL: url) else {
             throw AlteraluxError.unreadableImage(url)
         }
         // Scene-linear output: no tone curve, no local tone mapping, no gamut

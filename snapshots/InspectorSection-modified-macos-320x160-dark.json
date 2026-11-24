@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-23T07:46:52Z",
+  "contractSize": "320x160",
+  "locale": "",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "InspectorSection",
+  "size": "320x160",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/InspectorSection.swift",
+  "state": "modified",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/InspectorSnapshotTests.swift",
+  "approved": "2026-11-23T07:50:25Z",
+  "approvedFrom": "missing"
+}

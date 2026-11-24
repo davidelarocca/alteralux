@@ -3175,16 +3175,6 @@
         }
       }
     },
-    "Start from the light measured in the photo where the camera's white balance is far from it." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parte dalla luce misurata nella foto quando il bilanciamento della fotocamera è lontano da questa."
-          }
-        }
-      }
-    },
     "Stop" : {
       "localizations" : {
         "it" : {
@@ -3301,16 +3291,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La fotocamera ha scelto da sola questo bianco, guardando la scena: viene tenuto."
-          }
-        }
-      }
-    },
-    "The color of the light, in kelvin. Lower values make the photo cooler." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il colore della luce, in kelvin. Valori più bassi rendono la foto più fredda."
           }
         }
       }
@@ -3571,16 +3551,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il progetto spektrafilm originale"
-          }
-        }
-      }
-    },
-    "The red glow around bright lights." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il bagliore rosso attorno alle luci intense."
           }
         }
       }
@@ -3865,56 +3835,6 @@
         }
       }
     },
-    "Cropping" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ritaglio"
-          }
-        }
-      }
-    },
-    "Crop…" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ritaglia…"
-          }
-        }
-      }
-    },
-    "Whole photo" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto intera"
-          }
-        }
-      }
-    },
-    "Cropped" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ritagliata"
-          }
-        }
-      }
-    },
-    "Cropped and straightened" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ritagliata e raddrizzata"
-          }
-        }
-      }
-    },
     "The lab compensates the exposure" : {
       "localizations" : {
         "it" : {
@@ -3945,62 +3865,12 @@
         }
       }
     },
-    "Meters the scene as a camera would, weighting its center; the exposure is added to it." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Misura la scena come una fotocamera, dando più peso al centro; l'esposizione si somma alla misura."
-          }
-        }
-      }
-    },
-    "Prints to a normal density, as a lab would: the exposure then changes the negative, not the brightness." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stampa a densità normale, come un laboratorio: l'esposizione cambia allora il negativo, non la luminosità."
-          }
-        }
-      }
-    },
     "Metering" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Misura dell'esposimetro"
-          }
-        }
-      }
-    },
-    "How the automatic metering weighs the scene." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Come l'esposimetro automatico pesa la scena."
-          }
-        }
-      }
-    },
-    "Lens softness" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Morbidezza dell'obiettivo"
-          }
-        }
-      }
-    },
-    "Blurs the image on the film, in micrometres, as a soft lens would." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sfoca l'immagine sulla pellicola, in micrometri, come un obiettivo morbido."
+            "value" : "Misurazione"
           }
         }
       }
@@ -4115,36 +3985,6 @@
         }
       }
     },
-    "Couplers' reach" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Raggio degli accoppiatori"
-          }
-        }
-      }
-    },
-    "Couplers' tail" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coda degli accoppiatori"
-          }
-        }
-      }
-    },
-    "Tail weight" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Peso della coda"
-          }
-        }
-      }
-    },
     "Halation size" : {
       "localizations" : {
         "it" : {
@@ -4160,7 +4000,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Diffusione nell'emulsione"
+            "value" : "Dispersione nell'emulsione"
           }
         }
       }
@@ -4180,57 +4020,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ampiezza della diffusione"
-          }
-        }
-      }
-    },
-    "Bounces" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rimbalzi"
-          }
-        }
-      }
-    },
-    "How many times light bounces off the back of the film." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quante volte la luce rimbalza sul retro della pellicola."
-          }
-        }
-      }
-    },
-    "Bounce decay" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Attenuazione dei rimbalzi"
-          }
-        }
-      }
-    },
-    "Keep the halation's light" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Conserva la luce dell'alone"
-          }
-        }
-      }
-    },
-    "The light the halo spreads is taken from the light that made it." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La luce che l'alone diffonde è tolta a quella che lo ha generato."
+            "value" : "Ampiezza della dispersione"
           }
         }
       }
@@ -4260,7 +4050,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Riflessi"
+            "value" : "Luce parassita"
           }
         }
       }
@@ -4280,7 +4070,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ruvidità dei riflessi"
+            "value" : "Irregolarità della luce parassita"
           }
         }
       }
@@ -4290,7 +4080,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Morbidezza dei riflessi"
+            "value" : "Morbidezza della luce parassita"
           }
         }
       }
@@ -4301,26 +4091,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ricostruisci le curve della carta"
-          }
-        }
-      }
-    },
-    "Rebuilds the paper's response from its model, so its contrast can be changed." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ricostruisce la risposta della carta dal suo modello, così se ne può cambiare il contrasto."
-          }
-        }
-      }
-    },
-    "Contrast" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Contrasto"
           }
         }
       }
@@ -4380,7 +4150,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppo esausto"
+            "value" : "Rivelatore esausto"
           }
         }
       }
@@ -4391,126 +4161,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Raggio della nitidezza"
-          }
-        }
-      }
-    },
-    "Scanner softness" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Morbidezza dello scanner"
-          }
-        }
-      }
-    },
-    "Correct the white" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Correggi il bianco"
-          }
-        }
-      }
-    },
-    "White level" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Livello del bianco"
-          }
-        }
-      }
-    },
-    "Correct the black" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Correggi il nero"
-          }
-        }
-      }
-    },
-    "Black level" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Livello del nero"
-          }
-        }
-      }
-    },
-    "Gamut compression" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compressione del gamut"
-          }
-        }
-      }
-    },
-    "How colors the screen cannot show are brought inside it." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Come i colori che lo schermo non sa mostrare vengono riportati al suo interno."
-          }
-        }
-      }
-    },
-    "Input gamut compression" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Compressione del gamut in ingresso"
-          }
-        }
-      }
-    },
-    "CAT16 adaptation" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adattamento CAT16"
-          }
-        }
-      }
-    },
-    "Adapts the photo's colors to the film's light with CAT16 rather than CAT02." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adatta i colori della foto alla luce della pellicola con CAT16 invece di CAT02."
-          }
-        }
-      }
-    },
-    "Spectral upsampling" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ricostruzione spettrale"
-          }
-        }
-      }
-    },
-    "How the photo's colors become the light that reaches the film's layers." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Come i colori della foto diventano la luce che arriva agli strati della pellicola."
           }
         }
       }
@@ -4585,26 +4235,6 @@
         }
       }
     },
-    "Off" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna"
-          }
-        }
-      }
-    },
-    "Toward the spectral locus" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verso il luogo spettrale"
-          }
-        }
-      }
-    },
     "Diffusion filter" : {
       "localizations" : {
         "it" : {
@@ -4625,26 +4255,6 @@
         }
       }
     },
-    "DIR couplers" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Accoppiatori DIR"
-          }
-        }
-      }
-    },
-    "Development inhibitors passing between the film's layers: purer colors and crisper edges." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inibitori di sviluppo che passano tra gli strati della pellicola: colori più puri e contorni più netti."
-          }
-        }
-      }
-    },
     "Pre-flash" : {
       "localizations" : {
         "it" : {
@@ -4655,52 +4265,12 @@
         }
       }
     },
-    "A faint even exposure of the paper before the print, which holds detail in the highlights." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Una leggera esposizione uniforme della carta prima della stampa, che trattiene i dettagli nelle alte luci."
-          }
-        }
-      }
-    },
     "More shot adjustments" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Altre regolazioni dello scatto"
-          }
-        }
-      }
-    },
-    "More film adjustments" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre regolazioni della pellicola"
-          }
-        }
-      }
-    },
-    "More print adjustments" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre regolazioni della stampa"
-          }
-        }
-      }
-    },
-    "More scan adjustments" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Altre regolazioni della scansione"
           }
         }
       }
@@ -4791,6 +4361,1166 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ px"
+          }
+        }
+      }
+    },
+    "Meters the scene as a camera would; the exposure below is then added to what it measured." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Misura la scena come una fotocamera; l'esposizione qui sotto si somma alla misura."
+          }
+        }
+      }
+    },
+    "How the meter weighs the scene: the center, the whole frame, the highlights." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come l'esposimetro pesa la scena: il centro, tutto il fotogramma, le alte luci."
+          }
+        }
+      }
+    },
+    "Exposure compensation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compensazione dell'esposizione"
+          }
+        }
+      }
+    },
+    "The lab compensates it at the print: it changes the negative, not the brightness." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il laboratorio la compensa in stampa: cambia il negativo, non la luminosità."
+          }
+        }
+      }
+    },
+    "Starts from the light measured in the photo where the camera's white balance is far from it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte dalla luce misurata nella foto quando il bilanciamento della fotocamera se ne discosta."
+          }
+        }
+      }
+    },
+    "Cooler" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più freddo"
+          }
+        }
+      }
+    },
+    "Warmer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più caldo"
+          }
+        }
+      }
+    },
+    "The color of the light the photo was taken in, in kelvin." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore della luce in cui è stata scattata la foto, in kelvin."
+          }
+        }
+      }
+    },
+    "Greener" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più verde"
+          }
+        }
+      }
+    },
+    "More magenta" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più magenta"
+          }
+        }
+      }
+    },
+    "Set by the automatic white balance." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temperatura e tinta le sceglie il bianco automatico."
+          }
+        }
+      }
+    },
+    "Corrects a green or magenta cast of the light." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Corregge una dominante verde o magenta della luce."
+          }
+        }
+      }
+    },
+    "RAW development" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppo RAW"
+          }
+        }
+      }
+    },
+    "Black Pro-Mist keeps the blacks deep; Pro-Mist lifts them; Glimmerglass sparkles; CineBloom blooms." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Black Pro-Mist tiene i neri profondi; Pro-Mist li schiarisce; Glimmerglass scintilla; CineBloom sfuma."
+          }
+        }
+      }
+    },
+    "How much the scanner sharpens the edges; 0 leaves the scan as soft as the film made it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto lo scanner rende netti i contorni; 0 lascia la scansione morbida come l'ha fatta la pellicola."
+          }
+        }
+      }
+    },
+    "Grain size" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dimensione della grana"
+          }
+        }
+      }
+    },
+    "The size of the film's silver grains: larger is coarser and more visible." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La dimensione dei granuli d'argento della pellicola: più grandi, grana più grossa e visibile."
+          }
+        }
+      }
+    },
+    "The red glow around bright lights, from light bouncing off the back of the film." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'alone rosso attorno alle luci forti, dalla luce che rimbalza sul retro della pellicola."
+          }
+        }
+      }
+    },
+    "Color separation" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Separazione dei colori"
+          }
+        }
+      }
+    },
+    "How much the film's layers hold each other back as they develop (DIR couplers): purer colors and crisper edges." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto gli strati della pellicola si frenano a vicenda durante lo sviluppo (accoppiatori DIR): colori più puri e contorni più netti."
+          }
+        }
+      }
+    },
+    "Prints to a normal density, as a lab would: the shot's exposure then changes the negative, not the brightness." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stampa a densità normale, come un laboratorio: l'esposizione dello scatto cambia allora il negativo, non la luminosità."
+          }
+        }
+      }
+    },
+    "The paper the negative is printed on: its contrast and its colors." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carta su cui si stampa il negativo: il suo contrasto e i suoi colori."
+          }
+        }
+      }
+    },
+    "Lighter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più chiara"
+          }
+        }
+      }
+    },
+    "Darker" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più scura"
+          }
+        }
+      }
+    },
+    "How long the paper is exposed under the enlarger: more light makes a darker print." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto si espone la carta sotto l'ingranditore: più luce dà una stampa più scura."
+          }
+        }
+      }
+    },
+    "Yellower" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più gialla"
+          }
+        }
+      }
+    },
+    "Bluer" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più blu"
+          }
+        }
+      }
+    },
+    "The enlarger's yellow filter: more filter makes the print bluer, less makes it yellower." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il filtro giallo dell'ingranditore: più filtro fa la stampa più blu, meno la fa più gialla."
+          }
+        }
+      }
+    },
+    "The enlarger's magenta filter: more filter makes the print greener, less makes it more magenta." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il filtro magenta dell'ingranditore: più filtro fa la stampa più verde, meno la fa più magenta."
+          }
+        }
+      }
+    },
+    "Developed longer, the paper gains contrast; shorter, it loses it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppata più a lungo, la carta guadagna contrasto; più breve, lo perde."
+          }
+        }
+      }
+    },
+    "A faint even exposure of the paper before the print: it softens the highlights and greys the whites. A few percent is a lot." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Una leggera esposizione uniforme della carta prima della stampa: ammorbidisce le alte luci e ingrigisce i bianchi. Pochi punti percentuali sono già tanto."
+          }
+        }
+      }
+    },
+    "Lens" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiettivo"
+          }
+        }
+      }
+    },
+    "Lens blur" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfocatura dell'obiettivo"
+          }
+        }
+      }
+    },
+    "Lens blur and diffusion filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfocatura e filtro di diffusione"
+          }
+        }
+      }
+    },
+    "Blurs the image on the film, as a soft or vintage lens would. 0 is a sharp lens." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfoca l'immagine sulla pellicola, come un obiettivo morbido o d'epoca. 0 è un obiettivo nitido."
+          }
+        }
+      }
+    },
+    "How far the whole glow reaches, as the filter would on a larger or smaller frame." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin dove arriva tutto il bagliore, come il filtro su un fotogramma più grande o più piccolo."
+          }
+        }
+      }
+    },
+    "The soft halo around the lights." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La luce morbida che il filtro allarga attorno alle luci."
+          }
+        }
+      }
+    },
+    "How wide the halo spreads." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto si allarga il bagliore."
+          }
+        }
+      }
+    },
+    "The color of the halo, from cool to warm." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il colore del bagliore, da freddo a caldo."
+          }
+        }
+      }
+    },
+    "The bright glow right around each light." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il bagliore intenso subito attorno a ogni luce."
+          }
+        }
+      }
+    },
+    "How wide that bright glow is." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto è largo quel bagliore."
+          }
+        }
+      }
+    },
+    "The faint veil the filter lays over the whole picture, which lifts the shadows." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il velo leggero che il filtro stende su tutta l'immagine, che schiarisce le ombre."
+          }
+        }
+      }
+    },
+    "How far that veil spreads." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto si estende quel velo."
+          }
+        }
+      }
+    },
+    "Off: switch Grain on in Film to shape it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenta: accendi la grana in Pellicola per regolarla."
+          }
+        }
+      }
+    },
+    "Softens the grain: 0 is crisp, higher is smoother." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ammorbidisce la grana: 0 è nitida, più alto è più morbida."
+          }
+        }
+      }
+    },
+    "In how many layers the grain forms: more layers make it finer and less regular." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In quanti strati si forma la grana: più strati la rendono più fine e meno regolare."
+          }
+        }
+      }
+    },
+    "Reach" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portata"
+          }
+        }
+      }
+    },
+    "How far each layer holds back its neighbors: wider gives softer, larger halos of color at the edges." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin dove ogni strato frena i vicini: più ampia dà aloni di colore più larghi e morbidi ai contorni."
+          }
+        }
+      }
+    },
+    "Long reach" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Portata lunga"
+          }
+        }
+      }
+    },
+    "The faint, far part of that reach." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La parte lontana e debole di quella portata."
+          }
+        }
+      }
+    },
+    "Weight of the long reach" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peso della portata lunga"
+          }
+        }
+      }
+    },
+    "How much the far part counts against the near one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto conta la parte lontana rispetto a quella vicina."
+          }
+        }
+      }
+    },
+    "Halation and scatter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alone e dispersione"
+          }
+        }
+      }
+    },
+    "Off with Halation: the film spreads light in one go, so the scatter stops too." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenti con l'alone: la pellicola sparge la luce in un solo passaggio, quindi si ferma anche la dispersione."
+          }
+        }
+      }
+    },
+    "How wide the red glow spreads around the lights." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto si allarga l'alone rosso attorno alle luci."
+          }
+        }
+      }
+    },
+    "How far that light spreads." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto si estende quella luce."
+          }
+        }
+      }
+    },
+    "Reflections off the film base" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riflessi sul supporto"
+          }
+        }
+      }
+    },
+    "How many times light bounces off the back of the film: more reflections, wider halos." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quante volte la luce rimbalza sul retro della pellicola: più riflessi, aloni più ampi."
+          }
+        }
+      }
+    },
+    "Fading of each reflection" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attenuazione di ogni riflesso"
+          }
+        }
+      }
+    },
+    "How much light each reflection loses: higher fades the outer halos faster." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanta luce perde ogni riflesso: più alto spegne prima gli aloni esterni."
+          }
+        }
+      }
+    },
+    "Take the halo's light from the highlights" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prendi la luce dell'alone dalle alte luci"
+          }
+        }
+      }
+    },
+    "The light the halo spreads is taken from the light that made it, so the highlights do not grow brighter." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La luce che l'alone diffonde è tolta a quella che lo genera, così le alte luci non diventano più chiare."
+          }
+        }
+      }
+    },
+    "Off: raise Pre-flash in Print to color it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenta: alza la preesposizione in Stampa per colorarla."
+          }
+        }
+      }
+    },
+    "Pre-flash yellow filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtro giallo della preesposizione"
+          }
+        }
+      }
+    },
+    "The yellow filter of the pre-flash alone: it colors the greyed whites." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il filtro giallo della sola preesposizione: colora i bianchi ingrigiti."
+          }
+        }
+      }
+    },
+    "Pre-flash magenta filter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filtro magenta della preesposizione"
+          }
+        }
+      }
+    },
+    "The magenta filter of the pre-flash alone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il filtro magenta della sola preesposizione."
+          }
+        }
+      }
+    },
+    "How unevenly the stray light falls: higher is blotchier." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto è irregolare la luce parassita: più alto è più a chiazze."
+          }
+        }
+      }
+    },
+    "How soft the stray light's edges are." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto sono morbidi i bordi della luce parassita."
+          }
+        }
+      }
+    },
+    "Paper curves" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Curve della carta"
+          }
+        }
+      }
+    },
+    "Rebuilds the paper's response from its model, so its contrast can be changed below." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricostruisce la risposta della carta dal suo modello, così qui sotto se ne può cambiare il contrasto."
+          }
+        }
+      }
+    },
+    "Paper contrast" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contrasto della carta"
+          }
+        }
+      }
+    },
+    "The paper's contrast as a whole, as a harder or softer grade would give." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto della carta nel suo insieme, come una gradazione più dura o più morbida."
+          }
+        }
+      }
+    },
+    "The contrast of the paper's fast emulsion, which sets the lighter tones." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto dell'emulsione rapida della carta, che decide i toni più chiari."
+          }
+        }
+      }
+    },
+    "The contrast of the paper's slow emulsion, which sets the deeper tones." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto dell'emulsione lenta della carta, che decide i toni più scuri."
+          }
+        }
+      }
+    },
+    "The contrast of the paper's red-sensitive layer alone: it shifts colors between light and dark tones." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto del solo strato sensibile al rosso: sposta i colori tra toni chiari e scuri."
+          }
+        }
+      }
+    },
+    "The contrast of the green-sensitive layer alone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto del solo strato sensibile al verde."
+          }
+        }
+      }
+    },
+    "The contrast of the blue-sensitive layer alone." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il contrasto del solo strato sensibile al blu."
+          }
+        }
+      }
+    },
+    "Off: switch on Rebuild the paper's curves to change them." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spente: accendi «Ricostruisci le curve della carta» per cambiarle."
+          }
+        }
+      }
+    },
+    "Off: switch the diffusion filter on to shape it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spento: accendi il filtro di diffusione per regolarlo."
+          }
+        }
+      }
+    },
+    "Off: switch Color separation on to shape it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenta: accendi la separazione dei colori per regolarla."
+          }
+        }
+      }
+    },
+    "A tired developer: it flattens the deepest blacks of the print." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un rivelatore stanco: appiattisce i neri più profondi della stampa."
+          }
+        }
+      }
+    },
+    "How wide the edges the sharpening finds: small for fine detail, larger for outlines." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quanto sono larghi i contorni che la nitidezza cerca: piccolo per i dettagli fini, più grande per i profili."
+          }
+        }
+      }
+    },
+    "Scanner" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scanner"
+          }
+        }
+      }
+    },
+    "Scanner blur" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfocatura dello scanner"
+          }
+        }
+      }
+    },
+    "Softens the scan, as a scanner's own lens would. 0 is sharp." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ammorbidisce la scansione, come l'obiettivo dello scanner. 0 è nitida."
+          }
+        }
+      }
+    },
+    "White point" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punto di bianco"
+          }
+        }
+      }
+    },
+    "Black point" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Punto di nero"
+          }
+        }
+      }
+    },
+    "Color (advanced)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colore (avanzato)"
+          }
+        }
+      }
+    },
+    "Color science: the defaults are spektrafilm's own." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scienza del colore: i valori iniziali sono quelli di spektrafilm."
+          }
+        }
+      }
+    },
+    "Colors outside the screen" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colori fuori dallo schermo"
+          }
+        }
+      }
+    },
+    "How colors the screen cannot show are brought inside it (gamut compression)." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come i colori che lo schermo non sa mostrare vengono riportati al suo interno (compressione del gamut)."
+          }
+        }
+      }
+    },
+    "Colors outside the film" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colori fuori dalla pellicola"
+          }
+        }
+      }
+    },
+    "How colors of the photo the film could not see are brought inside what it can (input gamut compression)." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come i colori della foto che la pellicola non vedrebbe vengono riportati entro quelli che vede (compressione del gamut in ingresso)."
+          }
+        }
+      }
+    },
+    "Modern color adaptation (CAT16)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adattamento cromatico (CAT16)"
+          }
+        }
+      }
+    },
+    "Adapts the photo's colors to the film's light with CAT16 rather than the older CAT02: better blues and violets." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adatta i colori della foto alla luce della pellicola con CAT16 invece del più vecchio CAT02: blu e viola migliori."
+          }
+        }
+      }
+    },
+    "From colors to light" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dai colori alla luce"
+          }
+        }
+      }
+    },
+    "How the photo's colors become the spectrum of light that reaches the film's layers (spectral upsampling)." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come i colori della foto diventano lo spettro di luce che la pellicola vede (ricostruzione spettrale). Arctic 2026 parte dai colori della memoria."
+          }
+        }
+      }
+    },
+    "Clipped (off)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tagliati (nessuna)"
+          }
+        }
+      }
+    },
+    "Gentle (OKLCh)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delicata (OKLCh)"
+          }
+        }
+      }
+    },
+    "Gentle, keeping lightness (OKLrab)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conserva la luminosità (OKLrab)"
+          }
+        }
+      }
+    },
+    "Perceptual, spektrafilm's (CAM16-UCS)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Percettiva (CAM16-UCS)"
+          }
+        }
+      }
+    },
+    "Cinema (ACES RGC)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cinema (ACES RGC)"
+          }
+        }
+      }
+    },
+    "Left as they are (off)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lasciati come sono (nessuna)"
+          }
+        }
+      }
+    },
+    "Brought toward real colors (xy)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riportati verso colori reali (xy)"
+          }
+        }
+      }
+    },
+    "Spectral, spektrafilm's (Hanatos 2025)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spettrale (Hanatos 2025)"
+          }
+        }
+      }
+    },
+    "Memory colors, experimental (Arctic 2026)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sperimentale (Arctic 2026)"
+          }
+        }
+      }
+    },
+    "Fast (Mallett 2019)" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veloce (Mallett 2019)"
+          }
+        }
+      }
+    },
+    "Auto WB" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bianco auto"
+          }
+        }
+      }
+    },
+    "Auto %@" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto %@"
+          }
+        }
+      }
+    },
+    "Changed" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modificata"
+          }
+        }
+      }
+    },
+    "Puts this section's controls back to how they start" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riporta i controlli di questa sezione ai valori iniziali"
+          }
+        }
+      }
+    },
+    "Makes the brightest tones of the scan pure white, from this level up: lower brightens the scan." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rende bianco puro i toni più chiari della scansione, da questo livello in su: più basso schiarisce la scansione."
+          }
+        }
+      }
+    },
+    "Makes the deepest tones of the scan pure black, from this level down: higher deepens the shadows." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rende nero puro i toni più scuri della scansione, da questo livello in giù: più alto scurisce le ombre."
+          }
+        }
+      }
+    },
+    "Off: switch Glare on to shape it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spenta: accendi Luce parassita per regolarla."
+          }
+        }
+      }
+    },
+    "Off: switch the diffusion filter on to choose its kind." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spento: accendi il filtro di diffusione per sceglierne il tipo."
           }
         }
       }

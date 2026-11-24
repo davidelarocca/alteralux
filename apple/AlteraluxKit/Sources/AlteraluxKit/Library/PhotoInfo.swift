@@ -117,7 +117,7 @@ public enum PhotoInfoReader {
     }
 
     private static func imageProperties(of photo: URL) -> [String: Any]? {
-        guard let source = CGImageSourceCreateWithURL(photo as CFURL, nil) else { return nil }
+        guard let source = MendedDNG.imageSource(for: photo) else { return nil }
         return CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [String: Any]
     }
 
