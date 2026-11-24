@@ -90,6 +90,19 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   the selection in Italian at the smallest window. This was before the recipes became a menu and
   the export sheet took its new shape: those two are covered by tests and snapshots, not yet seen
   in the built app.
+- Measured on 2026-11-24 (Apple M5, the GPU backend, strips of gray developed at 1024, 2048 and
+  6144 px with Kodak Portra 400 and Gold 200; kept by `PreviewFidelityTests`), how close a preview is
+  to the exported photo seen at the same size. Halation: the standard preview (2048 px) adds 0.96 of
+  the export's red glow around a lamp, the lighter preview shown while a control moves (1024 px)
+  0.87, and there less of its green and blue, so the glow is redder while the control moves. Grain: a
+  preview shown pixel for pixel has about two thirds of the export's grain (0.66 at 2048 px, 0.62 at
+  1024 px), and 0.87 when the standard preview is shown at half its size; the 100% view is the
+  export's own render. The engine blurs the grain by 0.65 pixels whatever the size of the picture.
+  Not changed: scaling that blur with the size of the preview would bring the fitted photo close to
+  the export, and would change what every preview looks like, so it waits for the user's word. On
+  the same strips the GPU's halation adds 0.79, 0.56 and 0.39 of the red, green and blue light the
+  CPU backend's adds: the two upstream backends do not develop the same halation (see "Export
+  precision" below).
 - **Not verified yet**: several photos selected at once in the built app (a recipe and an export for
   many are covered by tests of the app model); the export into a folder chosen in the panel; stopping
   an export halfway; the menus of the bar (Move to, Copy to, Tag) and the emptying into the Trash by
@@ -403,7 +416,9 @@ Defects found on real RAW files go to step 1.
 
 - **Export precision.** Upstream offers an f64 CPU build for exact parity with Python. f32 and f64 builds
   cannot share one static library, so if the difference turns out to be visible the f64 engine would ship
-  as a separate helper (an XPC service) used only for export.
+  as a separate helper (an XPC service) used only for export. Measured on 2026-11-24: the halation
+  of the GPU backend, which the app uses for previews and exports alike, is weaker and redder than
+  the CPU backend's (see "Verified, and not yet verified").
 - **Photos extension.** As far as we know, Photos hands editing extensions a rendered image rather than
   the RAW original, which would lower the quality compared with the app (the app can read originals from
   the library through PhotoKit). To verify first thing when the Photos integration starts.

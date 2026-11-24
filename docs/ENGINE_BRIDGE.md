@@ -102,7 +102,13 @@ when it stops, and scaling a 24 MP photo takes about 250 ms, far more than
 rendering the preview. `SourceImage.preparePreview(maxDimension:)` scales ahead
 of time. The simulation scales
 grain and halation from the physical film format, so a preview looks like the
-full render.
+full render, as far as its pixels can show it. Measured on 2026-11-24 against a
+6144 px render seen at the preview's size (`PreviewFidelityTests`): the
+halation is within a tenth at 2048 px; the grain of a preview shown pixel for
+pixel is about two thirds as strong, at any size, because upstream blurs the
+grain by a number of pixels (`grain.blur`, 0.65) and not by a length on the
+film, so the blur weighs the same on a preview and vanishes from the full
+render once it is seen smaller.
 
 Since [ADR 0007](adr/0007-decode-each-preview-at-its-size.md) the app no longer
 uses this: it hands the engine a source already decoded at the size of the
