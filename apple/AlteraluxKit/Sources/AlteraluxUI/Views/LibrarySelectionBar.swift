@@ -1,13 +1,13 @@
 import DesignSystem
 import SwiftUI
 
-/// What can be done with the selected photos: give a recipe, export, develop with a workflow,
+/// What can be done with the selected photos: give a recipe, export, develop with a recipe,
 /// move, copy, tag, discard.
 /// It floats over the grid, near its bottom edge, while photos are selected.
 ///
 /// Its lists open above it, inside the window: a menu would open downward, past the window's
 /// edge. The bar never cuts a title short: where the grid is too narrow for every action side
-/// by side, moving, copying and tagging show their symbols alone.
+/// by side, developing with a recipe, moving, copying and tagging show their symbols alone.
 struct LibrarySelectionBar: View {
     @Environment(AppModel.self) private var model
     /// What was typed over the list of tags.
@@ -52,10 +52,10 @@ struct LibrarySelectionBar: View {
             .help("Develop the selected photos and write them as files")
             .disabled(!model.canPresentExport)
         ChoiceListButton(
-            Text("Workflow"), symbol: isCompact ? "flowchart" : nil, choices: workflows,
-            empty: Text("No workflows yet. Make one in Recipes and Workflows."),
+            Text("Develop with…"), symbol: isCompact ? "photo.badge.arrow.down" : nil, choices: developing,
+            empty: Text("No recipes yet. Save one while developing a photo."),
         )
-        .help("Develop the selected photos with a workflow: a recipe, and the files it writes")
+        .help("Develop the selected photos with a recipe and write its files. The photos keep their adjustments.")
         ChoiceListButton(
             Text("Move to…"), symbol: isCompact ? "folder" : nil,
             choices: destinations { folder in Task { await model.moveSelection(to: folder) } },
@@ -86,12 +86,12 @@ struct LibrarySelectionBar: View {
         }
     }
 
-    /// The workflows, each with what it writes. Choosing one opens the sheet that develops the
-    /// photos with it.
-    private var workflows: [Choice] {
-        model.workflows.map { workflow in
-            Choice(id: workflow.id.uuidString, title: workflow.name, subtitle: model.summary(of: workflow)) {
-                model.presentWorkflowRun(workflow)
+    /// The recipes, each with the files it writes. Choosing one opens the sheet that develops
+    /// the photos with it.
+    private var developing: [Choice] {
+        model.recipes.map { recipe in
+            Choice(id: recipe.id.uuidString, title: recipe.name, subtitle: AppModel.summary(of: recipe.files)) {
+                model.presentRecipeRun(recipe)
             }
         }
     }

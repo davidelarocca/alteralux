@@ -169,41 +169,48 @@ struct RecipeStoreTests {
         #expect(reread.look.temperature == nil)
     }
 
-    @Test func aRecipeSavedWhenRecipesAdaptedIsReadWithItsLook() async throws {
-        let fixture = try Fixture()
+    @Test func aRecipeSavedBeforeRecipesWroteFilesIsReadWithItsLookAndANewRecipesFiles() async throws {
+        let fixture = Fixture()
         defer { fixture.remove() }
         let recipe = Recipe(name: "Portra di sera", from: DevelopSettings(filmID: "kodak_portra_400"))
         try await fixture.store.save(recipe)
-        // Recipes kept whether they adapted to each photo; workflows do now.
-        var written = try String(contentsOf: fixture.file(for: recipe), encoding: .utf8)
-        written = written.replacingOccurrences(of: #""name""#, with: #""adaptsToEachPhoto":true,"name""#)
-        try Data(written.utf8).write(to: fixture.file(for: recipe))
-        #expect(try #require(await fixture.store.all().first) == recipe)
+        // Recipes once kept whether they adapted to each photo, and had no files of their own.
+        let file = fixture.file(for: recipe)
+        var stored = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
+        var item = try #require(stored["recipe"] as? [String: Any])
+        #expect(item["files"] != nil)
+        item["files"] = nil
+        item["adaptsToEachPhoto"] = true
+        stored["recipe"] = item
+        try JSONSerialization.data(withJSONObject: stored).write(to: file)
+        let read = try #require(await fixture.store.all().first)
+        #expect(read == recipe && read.files == RecipeFiles())
     }
 
-    @Test func adaptingMetersEachPhotoAndBalancesItsWhite() {
+    @Test func aRecipeStartsEachPhotoFromItsLightWhenItWasSavedOnAutomatic() {
+        // Saved with both on Automatic: the exposure is metered and the white balance measured.
         var look = DevelopSettings(filmID: "kodak_ektar_100")
-        look.autoExposure = false
-        look.exposureEV = 0.7
-        let recipe = Recipe(name: "Ektar", from: look)
-        let given = recipe.applied(to: DevelopSettings(), adapting: true)
-        #expect(given.filmID == "kodak_ektar_100" && given.exposureEV == 0.7)
-        #expect(given.autoExposure && given.autoWhiteBalance)
+        look.autoWhiteBalance = true
+        look.temperature = 5200
+        let automatic = Recipe(name: "Ektar", from: look)
+        #expect(automatic.look.autoExposure && automatic.look.autoWhiteBalance && automatic.look.temperature == nil)
+        let given = automatic.applied(to: DevelopSettings())
+        #expect(given.filmID == "kodak_ektar_100" && given.autoExposure && given.autoWhiteBalance)
 
         // A white balance chosen by hand stays.
         let chosen = DevelopSettings(temperature: 3200, tint: 4)
-        let kept = recipe.applied(to: chosen, adapting: true)
+        let kept = automatic.applied(to: chosen)
         #expect(kept.temperature == 3200 && kept.tint == 4 && !kept.autoWhiteBalance)
 
-        // Given as it is, the recipe leaves the photo's white balance and exposure as the look has them.
-        let plainGiven = recipe.applied(to: DevelopSettings())
-        #expect(!plainGiven.autoExposure && !plainGiven.autoWhiteBalance)
-
-        // A workflow adapts when it says so.
-        var workflow = Workflow(name: "Ektar", recipeID: recipe.id)
-        #expect(workflow.adaptsToEachPhoto && workflow.settings(for: DevelopSettings(), recipe: recipe).autoExposure)
-        workflow.adaptsToEachPhoto = false
-        #expect(!workflow.settings(for: DevelopSettings(), recipe: recipe).autoExposure)
+        // Saved with both by hand: one exposure for every photo, and each photo's own white balance.
+        look.autoExposure = false
+        look.exposureEV = 0.7
+        look.autoWhiteBalance = false
+        let fixed = Recipe(name: "Ektar by hand", from: look)
+        let plain = fixed.applied(to: DevelopSettings())
+        #expect(!plain.autoExposure && plain.exposureEV == 0.7 && !plain.autoWhiteBalance)
+        // A photo already on the automatic white balance keeps it.
+        #expect(fixed.applied(to: DevelopSettings(autoWhiteBalance: true)).autoWhiteBalance)
     }
 
     @Test func aRecipeLeavesThePhotosLensCorrection() {
@@ -213,52 +220,118 @@ struct RecipeStoreTests {
     }
 }
 
-/// Keeping workflows between launches, in the same way as recipes.
-struct WorkflowStoreTests {
-    @Test func aWorkflowNamesItsFilesAsItSays() {
-        var workflow = Workflow(name: "Web", recipeID: UUID())
-        #expect(workflow.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042 Kodak Portra 400")
-        workflow.naming = .name
-        #expect(workflow.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042")
-        workflow.naming = .nameAndText("web")
-        #expect(workflow.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042 web")
-        #expect(workflow.destination == .sameFolder && workflow.writesBesidePhotos)
+/// The files a recipe writes, kept with it, and the workflows kept before recipes had them.
+struct RecipeFilesStoreTests {
+    @Test func aRecipeNamesItsFilesAsItSays() {
+        var files = RecipeFiles()
+        #expect(files.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042 Kodak Portra 400")
+        files.naming = .name
+        #expect(files.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042")
+        files.naming = .nameAndText("web")
+        #expect(files.fileName(photoName: "IMG_0042", film: "Kodak Portra 400") == "IMG_0042 web")
+        #expect(files.destination == .sameFolder && files.writesBesidePhotos && files.asks.isEmpty)
     }
 
-    @Test func aWorkflowIsReadBackAndItsFileNamesWhatItHolds() async throws {
+    @Test func aRecipesFilesAreReadBack() async throws {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-tests-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
         let output = folder.appendingPathComponent("Output")
         try FileManager.default.createDirectory(at: output, withIntermediateDirectories: true)
-        let store = WorkflowStore(directory: folder.appendingPathComponent("workflows"))
-        let beside = Workflow(name: "Web", recipeID: UUID(), destination: .besideOriginals(folderName: "Web"))
-        let chosen = try Workflow(
-            name: "Print", recipeID: UUID(), options: ExportOptions(format: .tiff, longSide: 4096),
-            destination: .folder(FolderBookmark(for: output)),
+        let store = RecipeStore(directory: folder.appendingPathComponent("recipes"))
+        let beside = Recipe(
+            name: "Web", from: DevelopSettings(),
+            files: RecipeFiles(naming: .nameAndText("web"), destination: .besideOriginals(folderName: "Web"), asks: [.size]),
+        )
+        let chosen = try Recipe(
+            name: "Print", from: DevelopSettings(),
+            files: RecipeFiles(options: ExportOptions(format: .tiff, longSide: 4096), destination: .folder(FolderBookmark(for: output))),
         )
         try await store.save(beside)
         try await store.save(chosen)
-        #expect(await WorkflowStore(directory: folder.appendingPathComponent("workflows")).all() == [chosen, beside])
-
-        let file = folder.appendingPathComponent("workflows/\(beside.id.uuidString).json")
-        let stored = try #require(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
-        #expect(stored["version"] as? Int == 1 && stored["workflow"] != nil)
-
-        // A workflow kept before workflows adapted and named their files reads as it was.
-        var older = stored
-        var item = try #require(stored["workflow"] as? [String: Any])
-        #expect(item["adaptsToEachPhoto"] != nil && item["naming"] != nil)
-        item["adaptsToEachPhoto"] = nil
-        item["naming"] = nil
-        older["workflow"] = item
-        try JSONSerialization.data(withJSONObject: older).write(to: file)
-        let reread = try #require(await WorkflowStore(directory: folder.appendingPathComponent("workflows")).all().last)
-        #expect(!reread.adaptsToEachPhoto && reread.naming == .nameAndFilm && reread.asks.isEmpty && reread.destination == beside.destination)
+        #expect(await RecipeStore(directory: folder.appendingPathComponent("recipes")).all() == [chosen, beside])
 
         // The bookmark finds the folder again.
-        if case let .folder(bookmark) = chosen.destination {
+        #expect(!chosen.files.writesBesidePhotos)
+        if case let .folder(bookmark) = chosen.files.destination {
             #expect(bookmark.resolve()?.standardizedFileURL.path == output.standardizedFileURL.path)
             #expect(bookmark.name == "Output")
         }
+    }
+
+    /// Writes a workflow as the app kept it before recipes wrote files.
+    private func writeWorkflow(
+        _ id: UUID = UUID(), named name: String, recipe: Recipe, adapts: Bool?, in directory: URL,
+    ) throws {
+        var workflow: [String: Any] = try [
+            "id": id.uuidString, "name": name, "recipeID": recipe.id.uuidString,
+            "options": JSONSerialization.jsonObject(with: JSONEncoder().encode(ExportOptions(format: .tiff))),
+            "destination": ["besideOriginals": ["folderName": "Prints"]],
+        ]
+        if let adapts {
+            workflow["adaptsToEachPhoto"] = adapts
+            workflow["naming"] = ["nameAndText": ["_0": "print"]]
+            workflow["asks"] = ["destination"]
+        }
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        try JSONSerialization.data(withJSONObject: ["version": 1, "workflow": workflow])
+            .write(to: directory.appendingPathComponent("\(id.uuidString).json"))
+    }
+
+    @Test func workflowsBecomeRecipesWithTheirFilesAndTheirIds() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-tests-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = RecipeStore(directory: folder.appendingPathComponent("recipes"))
+        let workflows = folder.appendingPathComponent("workflows")
+        var look = DevelopSettings(filmID: "kodak_ektar_100")
+        look.autoExposure = false
+        let ektar = Recipe(name: "Ektar", from: look, filmModel: "0.0.1")
+        let untouched = Recipe(name: "Untouched", from: DevelopSettings())
+        try await store.save(ektar)
+        try await store.save(untouched)
+        // One with the recipe's name, which adapted; one under a name of its own, from before
+        // workflows adapted and named their files; one whose recipe is gone.
+        let same = UUID()
+        let web = UUID()
+        try writeWorkflow(same, named: "Ektar", recipe: ektar, adapts: true, in: workflows)
+        try writeWorkflow(web, named: "Ektar for print", recipe: ektar, adapts: nil, in: workflows)
+        try writeWorkflow(named: "Orphan", recipe: Recipe(name: "Gone", from: DevelopSettings()), adapts: false, in: workflows)
+
+        await WorkflowMigration.run(workflows: workflows, into: store)
+
+        let recipes = await store.all()
+        // The workflow with the recipe's name took its place; the other stands beside it.
+        #expect(recipes.map(\.name) == ["Ektar", "Ektar for print", "Untouched"])
+        #expect(recipes.map(\.id) == [same, web, untouched.id])
+        let adapting = recipes[0]
+        #expect(adapting.look.filmID == "kodak_ektar_100" && adapting.look.autoExposure && adapting.look.autoWhiteBalance)
+        #expect(adapting.filmModel == "0.0.1")
+        #expect(adapting.files == RecipeFiles(
+            options: ExportOptions(format: .tiff), naming: .nameAndText("print"),
+            destination: .besideOriginals(folderName: "Prints"), asks: [.destination],
+        ))
+        // One kept before workflows adapted is given as its recipe was, its files named as they were.
+        #expect(!recipes[1].look.autoExposure && !recipes[1].look.autoWhiteBalance)
+        #expect(recipes[1].files.naming == .nameAndFilm && recipes[1].files.asks.isEmpty)
+        #expect(recipes[2] == untouched)
+        #expect(!FileManager.default.fileExists(atPath: workflows.path))
+
+        // Nothing is left to do a second time.
+        await WorkflowMigration.run(workflows: workflows, into: store)
+        #expect(await store.all() == recipes)
+    }
+
+    @Test func aWorkflowThatCannotBeReadIsLeftWhereItIs() async throws {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent("alteralux-tests-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let store = RecipeStore(directory: folder.appendingPathComponent("recipes"))
+        let workflows = folder.appendingPathComponent("workflows")
+        try FileManager.default.createDirectory(at: workflows, withIntermediateDirectories: true)
+        let junk = workflows.appendingPathComponent("junk.json")
+        try Data("not json".utf8).write(to: junk)
+
+        await WorkflowMigration.run(workflows: workflows, into: store)
+
+        #expect(await store.all().isEmpty)
+        #expect(try Data(contentsOf: junk) == Data("not json".utf8))
     }
 }

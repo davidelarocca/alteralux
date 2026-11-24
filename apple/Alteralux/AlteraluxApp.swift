@@ -29,7 +29,7 @@ struct AlteraluxApp: App {
             AlteraluxCommands(model: app.model)
         }
 
-        Window("Recipes and Workflows", id: RecipesWindow.id) {
+        Window("Recipes", id: RecipesWindow.id) {
             RecipesWindow()
                 .environment(app.model)
         }

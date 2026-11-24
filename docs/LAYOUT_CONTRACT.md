@@ -25,8 +25,8 @@ Sizes are in points, `<width>x<height>`, or `<width>` alone when the height does
 | Main window | `MainWindow` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/MainScreen.swift | `MainWindow` | 900x600 | 1280x820 | - | - | - |
 | Library, the folders | `LibrarySidebar` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/LibraryScreen.swift | | 180x548 | 220x768 | 320 | - | - |
 | Library, the photos | `LibraryGrid` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/LibraryGrid.swift | | 580x548 | 1060x768 | - | - | - |
-| Recipes and workflows | `RecipesWindow` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipesWindow.swift | `RecipesWindow` | 640x480 | 780x640 | - | - | - |
-| Recipes and workflows, the recipe | `RecipeDetail` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipesWindow.swift | | 460x428 | 560x588 | - | - | - |
+| Recipes | `RecipesWindow` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipesWindow.swift | `RecipesWindow` | 640x480 | 780x640 | - | - | - |
+| Recipes, the recipe | `RecipeDetail` | apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipesWindow.swift | | 460x428 | 560x588 | - | - | - |
 
 - **View**: the SwiftUI type of the screen's content. **File**: where it is declared, from the repository root.
   A split view (`NavigationSplitView`, `HSplitView`) takes any width, so its content cannot be measured: name
@@ -60,19 +60,18 @@ click) are the system's and open at the pointer: they are the one exception.
 | `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
 | Filter and Sort | Library, the trailing side of the toolbar | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window (measured at 900 pt) |
 | `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
-| `RecipesWindow` | `RecipeMenu`, Recipes and Workflows…; the Window menu | a window of its own | 780x640, down to 640x480 | on screen, where the system opens a new window |
-| `WorkflowEditor` | `RecipesWindow`, New Workflow… and Edit… | sheet (`FormSheet`) on the recipes window | 420 wide | fits inside the 640 pt window |
-| Recipe, Format, Color profile, Size, File name, Destination of a workflow | `WorkflowEditor` | system pop-up button (`WindowPopUp`) | system | moved inside the window where the system's would pass an edge |
-| The Finder's panel (`FinderPanel`: `FinderWorkflowRun`, `FinderNewWorkflow`) | The Finder's "Develop with alteralux…", when the workflows leave something open, are several, or there is none | a small floating panel of its own, drawn as a sheet (`FormSheet`), that does not bring the app forward | 420 wide | centered on the screen; the app's windows stay where they are, or closed |
+| `RecipesWindow` | `RecipeMenu`, Manage Recipes…; the Window menu | a window of its own | 780x640, down to 640x480 | on screen, where the system opens a new window |
+| `RecipeEditor` | `RecipeMenu`, Save as New Recipe…, on the main window; `RecipesWindow`, Edit… and Duplicate… | sheet (`FormSheet`): the name and the files, in a line with Edit… for a new recipe | 420 wide | fits inside the 900 pt and the 640 pt windows; its form scrolls when the files are open |
+| Format, Color profile, Size, File name, Destination of a recipe's files | `RecipeEditor` | system pop-up button (`WindowPopUp`) | system | moved inside the window where the system's would pass an edge |
+| The Finder's panel (`FinderPanel`: `FinderRecipeRun`) | The Finder's "Develop with alteralux…", when the recipes are several or the one there is leaves something open | a small floating panel of its own, drawn as a sheet (`FormSheet`), that does not bring the app forward | 420 wide | centered on the screen; the app's windows stay where they are, or closed |
 | "Develop N Photos" with no recipe, and what went wrong with photos from the Finder | The Finder's "Develop with alteralux…" | system alert, on its own | system | centered on the screen, without the app's window |
-| `WorkflowRunForm` | Library, Workflow of the selection's bar; Develop with Workflow in a photo's menu | the export sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
-| Lists of the selection's bar | Library, Recipe, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
+| `RecipeRunForm` | Library, Develop with… of the selection's bar; Develop with Recipe in a photo's menu | the export sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
+| Lists of the selection's bar | Library, Recipe, Develop with…, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |
 | `NewTagSheet` | `LibraryPhotoMenu`, Tags, New Tag… | sheet (`FormSheet`): the name and the color | 420 wide | fits inside the 900 pt window |
 | New name of a photo | `LibraryPhotoMenu`, Rename… | system alert with a text field | system | centered in the window |
 | Moving photos to the Trash | `LibraryPhotoMenu`, Move to Trash | system confirmation dialog | system | centered in the window |
-| Name of a recipe | `RecipeMenu`, Save as New Recipe…; `RecipesWindow`, Rename… | system alert with a text field | system | centered in the window |
-| Deleting a recipe or a workflow | `RecipesWindow`, Delete… | system confirmation dialog | system | centered in the window |
+| Deleting a recipe | `RecipesWindow`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
 | Paper, film format, development times | Main window, the inspector's pop-up buttons (`WindowPopUp`) | system pop-up menu | system | over the button as the system opens it; moved inside the window where it would pass the bottom or top edge (measured at 900 pt, the paper's menu with its last paper chosen) |
@@ -90,8 +89,8 @@ Deliberate departures from the rules above, with the reason.
   toolbar): the list of folders at its narrowest, and the photos beside the list at its widest.
 
 - With photos selected the library's grid has `LibrarySelectionBar` floating over it, near its bottom
-  edge. It never cuts a title: where the column is too narrow for every action side by side, moving,
-  copying and tagging show their symbols alone. Its lists (`ChoiceListButton`: recipes, folders, tags)
+  edge. It never cuts a title: where the column is too narrow for every action side by side, developing
+  with a recipe, moving, copying and tagging show their symbols alone. Its lists (`ChoiceListButton`: recipes, folders, tags)
   open above the bar, inside the window, at most 320 pt tall. A layout test measures the grid with a
   selection.
 - The library's grid lays its photos in rows, each photo as wide as its own shape, and every row

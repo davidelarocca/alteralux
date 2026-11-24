@@ -4,8 +4,8 @@ import SwiftUI
 
 /// The recipes as a menu, in the toolbar while developing: its button is the symbol alone, and
 /// its menu opens inside the window (`WindowMenuButton`). Choosing a recipe gives it; under the
-/// recipes the menu saves the look on screen as a new one, where there is one, asking for its
-/// name with the system's alert, and opens the window of recipes and workflows. The menu has no
+/// recipes the menu saves the look on screen as a new one, where there is one, in a sheet that
+/// asks its name and shows the files it writes, and opens the window of recipes. The menu has no
 /// submenus: one would open past the window's edge.
 struct RecipeMenu: View {
     let model: AppModel
@@ -15,23 +15,16 @@ struct RecipeMenu: View {
     let give: (Recipe) -> Void
 
     @Environment(\.openWindow) private var openWindow
-    @State private var isNaming = false
-    @State private var name = ""
+    /// The recipe being saved, in its sheet.
+    @State private var saving: RecipeDraft?
 
     var body: some View {
         WindowMenuButton(entries: entries) {
             Label("Recipe", systemImage: "camera.filters")
         }
-        .alert("Save as New Recipe", isPresented: $isNaming) {
-            TextField("Name", text: $name)
-            Button("Save") {
-                let name = name
-                Task { await model.saveRecipe(named: name) }
-            }
-            .disabled(!AppModel.isRecipeName(name))
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("The recipe keeps the look of this photo: everything but its white balance.")
+        .sheet(item: $saving) { draft in
+            RecipeEditor(draft: draft)
+                .environment(model)
         }
     }
 
@@ -46,23 +39,12 @@ struct RecipeMenu: View {
         entries.append(.separator)
         if savesNew {
             entries.append(.item(String(localized: "Save as New Recipe…")) {
-                name = ""
-                isNaming = true
+                saving = RecipeDraft(recipe: model.newRecipe(), kind: .new)
             })
         }
-        entries.append(.item(String(localized: "Recipes and Workflows…")) {
+        entries.append(.item(String(localized: "Manage Recipes…")) {
             openWindow(id: RecipesWindow.id)
         })
         return entries
     }
-}
-
-/// What the recipe window asks the user, and about which recipe.
-struct RecipeQuestion: Equatable {
-    enum Kind {
-        case rename, delete
-    }
-
-    let kind: Kind
-    var recipe: Recipe?
 }

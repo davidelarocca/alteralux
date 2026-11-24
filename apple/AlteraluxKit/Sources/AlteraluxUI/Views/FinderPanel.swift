@@ -11,12 +11,10 @@ import SwiftUI
 enum FinderPanel {
     static func ask(_ question: FinderQuestion) async -> FinderAnswer {
         switch question {
-        case let .run(photos, workflows, recipes, chosen):
+        case let .run(photos, recipes, chosen):
             return await present { reply in
-                FinderWorkflowRun(photos: photos, workflows: workflows, recipes: recipes, chosen: chosen, reply: reply)
+                FinderRecipeRun(photos: photos, recipes: recipes, chosen: chosen, reply: reply)
             }
-        case let .newWorkflow(photos, recipes):
-            return await present { reply in FinderNewWorkflow(photos: photos, recipes: recipes, reply: reply) }
         case let .noRecipe(photos):
             let opens = alert(
                 title: String(localized: "Develop \(photos) Photos"),
@@ -100,96 +98,46 @@ enum FinderPanel {
     }
 }
 
-/// The workflow that develops the photos sent from the Finder, among several, and the settings
+/// The recipe that develops the photos sent from the Finder, among several, and the settings
 /// it leaves open.
-struct FinderWorkflowRun: View {
+struct FinderRecipeRun: View {
     let photos: Int
-    let workflows: [Workflow]
     let recipes: [Recipe]
     let reply: (FinderAnswer) -> Void
-    @State private var run: Workflow
+    @State private var run: Recipe
 
-    init(photos: Int, workflows: [Workflow], recipes: [Recipe], chosen: Workflow.ID?, reply: @escaping (FinderAnswer) -> Void) {
+    init(photos: Int, recipes: [Recipe], chosen: Recipe.ID?, reply: @escaping (FinderAnswer) -> Void) {
         self.photos = photos
-        self.workflows = workflows
         self.recipes = recipes
         self.reply = reply
-        _run = State(initialValue: workflows.first { $0.id == chosen } ?? workflows[0])
+        _run = State(initialValue: recipes.first { $0.id == chosen } ?? recipes[0])
     }
 
     var body: some View {
         FormSheet(
             Text("Develop \(photos) Photos"),
-            confirm: SheetAction(Text("Develop"), isEnabled: AppModel.canSave(run)) { reply(.run(run)) },
+            confirm: SheetAction(Text("Develop"), isEnabled: AppModel.canWrite(run.files)) { reply(.run(run)) },
             cancel: SheetAction(Text("Cancel")) { reply(.cancel) },
         ) {
-            WorkflowRunSection(workflows: workflows, recipes: recipes, run: $run)
+            RecipeRunSection(recipes: recipes, run: $run)
         }
     }
 }
 
-/// How to develop the photos sent from the Finder, with no workflow yet: the few choices that
-/// make one, kept so that the next time nothing is asked.
-struct FinderNewWorkflow: View {
-    let photos: Int
-    let recipes: [Recipe]
-    let reply: (FinderAnswer) -> Void
-    @State private var workflow: Workflow
-
-    init(photos: Int, recipes: [Recipe], reply: @escaping (FinderAnswer) -> Void) {
-        self.photos = photos
-        self.recipes = recipes
-        self.reply = reply
-        let first = recipes.first
-        _workflow = State(initialValue: Workflow(name: first?.name ?? "", recipeID: first?.id ?? UUID()))
-    }
-
-    var body: some View {
-        FormSheet(
-            Text("Develop \(photos) Photos"),
-            message: Text("Choose how. It is kept as a workflow: next time the photos are developed without asking."),
-            confirm: SheetAction(Text("Develop"), isEnabled: !recipes.isEmpty && AppModel.canSave(workflow)) { reply(.newWorkflow(workflow)) },
-            cancel: SheetAction(Text("Cancel")) { reply(.cancel) },
-        ) {
-            Section {
-                WindowPopUp("Recipe", selection: recipe, options: recipes.map { WindowPopUpOption($0.id, title: $0.name) })
-                Toggle("Adapts to each photo", isOn: $workflow.adaptsToEachPhoto)
-            }
-            Section {
-                WindowPopUp("Format", selection: $workflow.options.format, options: ExportOptionsFields.formats)
-                WindowPopUp("Size", selection: $workflow.options.longSide, options: ExportOptionsFields.sizes)
-                WorkflowNamingFields(workflow: $workflow, allowsAsking: false)
-                WorkflowDestinationFields(workflow: $workflow, allowsAsking: false)
-            }
-        }
-    }
-
-    /// The recipe; the workflow takes its name.
-    private var recipe: Binding<Recipe.ID> {
-        Binding(
-            get: { workflow.recipeID },
-            set: { id in
-                workflow.recipeID = id
-                workflow.name = recipes.first { $0.id == id }?.name ?? workflow.name
-            },
-        )
-    }
-}
-
-#Preview("Finder, a workflow that asks") {
-    let recipe = Recipe(name: "Portra at dusk", from: DevelopSettings())
-    FinderWorkflowRun(
+#Preview("Finder, a recipe that asks") {
+    FinderRecipeRun(
         photos: 3,
-        workflows: [
-            Workflow(name: "Portra for the web", recipeID: recipe.id, asks: [.format, .destination]),
-            Workflow(name: "Prints", recipeID: recipe.id),
+        recipes: [
+            Recipe(name: "Portra for the web", from: DevelopSettings(), files: RecipeFiles(asks: [.format, .destination])),
+            Recipe(name: "Prints", from: DevelopSettings()),
         ],
-        recipes: [recipe], chosen: nil, reply: { _ in },
+        chosen: nil, reply: { _ in },
     )
 }
 
-#Preview("Finder, a new workflow") {
-    FinderNewWorkflow(
-        photos: 3, recipes: [Recipe(name: "Portra at dusk", from: DevelopSettings())], reply: { _ in },
+#Preview("Finder, one recipe that asks") {
+    FinderRecipeRun(
+        photos: 1, recipes: [Recipe(name: "Portra at dusk", from: DevelopSettings(), files: RecipeFiles(asks: [.size]))],
+        chosen: nil, reply: { _ in },
     )
 }

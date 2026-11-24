@@ -3,7 +3,7 @@ import AppKit
 import Foundation
 import UniformTypeIdentifiers
 
-// Photos handed over from outside the app to develop with a workflow: from the Finder's
+// Photos handed over from outside the app to develop with a recipe: from the Finder's
 // "Develop with alteralux…" (a Services entry) and from the Shortcuts action "Develop Photos".
 // They are developed as the library's selected photos are, and are not added to the library or
 // to the strip.
@@ -11,14 +11,13 @@ import UniformTypeIdentifiers
 extension AppModel {
     // MARK: - From the Finder
 
-    /// Develops photos sent from the Finder with a workflow, out of sight: with the only one
-    /// there is, at once; otherwise with the one chosen, or made, in a small panel at the center
-    /// of the screen. The files are written without a question, and a file already there keeps
-    /// its name. What is not a photo is left out.
-    public func developWithWorkflow(handedOver urls: [URL]) async {
+    /// Develops photos sent from the Finder with a recipe, out of sight: with the only one
+    /// there is, at once, when it asks nothing; otherwise with the one chosen in a small panel
+    /// at the center of the screen. The files are written without a question, and a file
+    /// already there keeps its name. What is not a photo is left out.
+    public func developWithRecipe(handedOver urls: [URL]) async {
         // The engine starts while the question, if any, is on screen.
         await loadRecipes()
-        await loadWorkflows()
         let engine = Task { await start() }
         let photos = urls.filter(Self.isPhoto)
         guard !photos.isEmpty else {
@@ -27,42 +26,34 @@ extension AppModel {
         guard !isExporting else {
             return await tell(String(localized: "alteralux is already developing photos. Try again when it is done."))
         }
-        guard let workflow = await workflowForFinder(photos: photos.count) else { return }
-        if workflow.writesBesidePhotos {
+        guard let recipe = await recipeForFinder(photos: photos.count) else { return }
+        if recipe.files.writesBesidePhotos {
             // The system's panel needs the app in front; it has no window of its own to show.
             NSApplication.shared.activate()
             guard await askToWrite(into: foldersNeedingPermission(for: photos)) else { return }
         }
         await engine.value
-        await develop(photos, with: workflow, existing: .keepBoth)
+        await develop(photos, with: recipe, existing: .keepBoth)
         if let message = alertMessage {
             alertMessage = nil
             await tell(message)
         }
     }
 
-    /// The workflow photos sent from the Finder are developed with: the only one, when it
-    /// settles everything; otherwise the one chosen, or made, in the panel, with the answers to
-    /// what it asks. `nil` when there is none to use.
-    private func workflowForFinder(photos: Int) async -> Workflow? {
-        if workflows.count == 1, workflows[0].asks.isEmpty {
-            return workflows[0]
+    /// The recipe photos sent from the Finder are developed with: the only one, when it
+    /// settles everything; otherwise the one chosen in the panel, with the answers to what it
+    /// asks. `nil` when there is none to use.
+    private func recipeForFinder(photos: Int) async -> Recipe? {
+        if recipes.count == 1, recipes[0].files.asks.isEmpty {
+            return recipes[0]
         }
-        let question: FinderQuestion = if !workflows.isEmpty {
-            .run(photos: photos, workflows: workflows, recipes: recipes, chosen: exportWorkflow)
-        } else if !recipes.isEmpty {
-            .newWorkflow(photos: photos, recipes: recipes)
-        } else {
-            .noRecipe(photos: photos)
-        }
+        let question: FinderQuestion = recipes.isEmpty
+            ? .noRecipe(photos: photos)
+            : .run(photos: photos, recipes: recipes, chosen: exportRecipe)
         switch await askAboutFinderPhotos(question) {
-        case let .run(workflow):
-            await remember(workflow)
-            return workflow
-        case let .newWorkflow(workflow):
-            await save(workflow)
-            exportWorkflow = workflow.id
-            return workflows.first { $0.id == workflow.id }
+        case let .run(recipe):
+            await remember(recipe)
+            return recipe
         case .openApp:
             showApp()
             return nil
@@ -143,32 +134,30 @@ extension AppModel {
 
     // MARK: - From Shortcuts
 
-    /// The workflows as the Shortcuts action offers them, by name.
-    public func workflowChoices() async -> [WorkflowChoice] {
+    /// The recipes as the Shortcuts action offers them, by name.
+    public func recipeChoices() async -> [RecipeChoice] {
         await loadRecipes()
-        await loadWorkflows()
-        return workflows.map { WorkflowChoice(id: $0.id, name: $0.name, summary: summary(of: $0)) }
+        return recipes.map { RecipeChoice(id: $0.id, name: $0.name, summary: Self.summary(of: $0.files)) }
     }
 
-    /// Develops `photos` with a workflow for the Shortcuts action, and gives back the files
-    /// written. A workflow that writes into a folder of its own writes there; one that writes
+    /// Develops `photos` with a recipe for the Shortcuts action, and gives back the files
+    /// written. A recipe that writes into a folder of its own writes there; one that writes
     /// beside the originals writes into `scratch`, because what Shortcuts hands over is often a
     /// copy of the photo, and the shortcut takes the files on from there. A file already there
     /// is kept, and the new one takes the next free name.
-    public func developForShortcut(_ photos: [URL], workflow id: UUID, scratch: URL) async throws -> [DevelopedFile] {
+    public func developForShortcut(_ photos: [URL], recipe id: UUID, scratch: URL) async throws -> [DevelopedFile] {
         await start()
         await loadRecipes()
-        await loadWorkflows()
         guard let renderer else { throw HandedOverError.engineUnavailable }
-        guard let workflow = workflows.first(where: { $0.id == id }) else { throw HandedOverError.workflowMissing }
-        guard let recipe = recipe(of: workflow) else { throw HandedOverError.recipeMissing(workflow.name) }
+        guard let recipe = recipes.first(where: { $0.id == id }) else { throw HandedOverError.recipeMissing }
+        let options = recipe.files.options
         let folder: URL
-        switch workflow.destination {
+        switch recipe.files.destination {
         case .sameFolder, .besideOriginals:
             folder = scratch
         case let .folder(bookmark):
             guard let chosen = bookmark.resolve() else {
-                throw HandedOverError.folderMissing(bookmark.name, workflow: workflow.name)
+                throw HandedOverError.folderMissing(bookmark.name, recipe: recipe.name)
             }
             folder = chosen
         }
@@ -179,12 +168,12 @@ extension AppModel {
             }
         }
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        let jobs = exportJobs(photos.filter(Self.isPhoto), options: workflow.options, workflow: WorkflowUse(workflow: workflow, recipe: recipe))
+        let jobs = exportJobs(photos.filter(Self.isPhoto), options: options, recipe: recipe)
         guard !jobs.isEmpty else { throw HandedOverError.noPhotos }
         let results = await BatchExporter(renderer: renderer, lenses: lenses)
-            .export(jobs, to: .folder(folder), options: workflow.options, existing: .keepBoth)
+            .export(jobs, to: .folder(folder), options: options, existing: .keepBoth)
         // Read while the folder can be reached: Shortcuts takes the files as data.
-        let type = workflow.options.format.contentType
+        let type = options.format.contentType
         let files = results.compactMap { result in
             result.destination.flatMap { url in
                 (try? Data(contentsOf: url)).map { DevelopedFile(name: url.lastPathComponent, data: $0, type: type) }
@@ -197,13 +186,11 @@ extension AppModel {
     }
 }
 
-/// What the app asks about photos sent from the Finder, when the workflows do not say it alone.
+/// What the app asks about photos sent from the Finder, when the recipes do not say it alone.
 public enum FinderQuestion: Equatable, Sendable {
-    /// Which workflow, among several, and what the one chosen leaves open; `chosen` is the one
+    /// Which recipe, among several, and what the one chosen leaves open; `chosen` is the one
     /// shown first.
-    case run(photos: Int, workflows: [Workflow], recipes: [Recipe], chosen: Workflow.ID?)
-    /// How to develop them, with no workflow yet: the answer is kept as one.
-    case newWorkflow(photos: Int, recipes: [Recipe])
+    case run(photos: Int, recipes: [Recipe], chosen: Recipe.ID?)
     /// Nothing to develop them with: there is no recipe yet.
     case noRecipe(photos: Int)
     /// Something that went wrong, to say.
@@ -212,22 +199,21 @@ public enum FinderQuestion: Equatable, Sendable {
 
 /// The answer to a `FinderQuestion`.
 public enum FinderAnswer: Equatable, Sendable {
-    /// The workflow chosen, with the answers to what it asks.
-    case run(Workflow)
-    case newWorkflow(Workflow)
+    /// The recipe chosen, with the answers to what it asks.
+    case run(Recipe)
     case openApp
     case cancel
 }
 
-/// A workflow as the Shortcuts action offers it.
-public struct WorkflowChoice: Sendable, Identifiable, Equatable {
+/// A recipe as the Shortcuts action offers it.
+public struct RecipeChoice: Sendable, Identifiable, Equatable {
     public let id: UUID
     public let name: String
     /// What it writes, in a line: "JPEG · 2048 px · in “Developed” beside the originals".
     public let summary: String
 }
 
-/// A file a workflow wrote, as the Shortcuts action gives it back.
+/// A file a recipe wrote, as the Shortcuts action gives it back.
 public struct DevelopedFile: Sendable {
     public let name: String
     public let data: Data
@@ -237,9 +223,8 @@ public struct DevelopedFile: Sendable {
 /// Why photos handed over to the app could not be developed.
 public enum HandedOverError: LocalizedError, Equatable {
     case engineUnavailable
-    case workflowMissing
-    case recipeMissing(String)
-    case folderMissing(String, workflow: String)
+    case recipeMissing
+    case folderMissing(String, recipe: String)
     case noPhotos
     case nothingDeveloped(String)
 
@@ -247,12 +232,10 @@ public enum HandedOverError: LocalizedError, Equatable {
         switch self {
         case .engineUnavailable:
             String(localized: "alteralux could not start its film engine.")
-        case .workflowMissing:
-            String(localized: "The workflow is no longer in alteralux.")
-        case let .recipeMissing(workflow):
-            String(localized: "The recipe of the workflow “\(workflow)” is no longer in alteralux.")
-        case let .folderMissing(folder, workflow):
-            String(localized: "The folder “\(folder)” of the workflow “\(workflow)” cannot be found.")
+        case .recipeMissing:
+            String(localized: "The recipe is no longer in alteralux.")
+        case let .folderMissing(folder, recipe):
+            String(localized: "The folder “\(folder)” of the recipe “\(recipe)” cannot be found.")
         case .noPhotos:
             String(localized: "None of these files is a photo alteralux can develop.")
         case let .nothingDeveloped(message):

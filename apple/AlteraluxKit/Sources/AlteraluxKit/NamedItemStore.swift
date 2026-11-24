@@ -1,6 +1,6 @@
 import Foundation
 
-/// Something the app keeps under a name of the user's, one file each: a recipe, a workflow.
+/// Something the app keeps under a name of the user's, one file each: a recipe.
 public protocol NamedItem: Codable, Sendable, Identifiable where ID == UUID {
     var name: String { get }
     /// The key the item is written under in its file, beside the format's version ("recipe").
@@ -9,8 +9,6 @@ public protocol NamedItem: Codable, Sendable, Identifiable where ID == UUID {
 
 /// The recipes, kept between launches one file each.
 public typealias RecipeStore = NamedItemStore<Recipe>
-/// The workflows, kept between launches one file each.
-public typealias WorkflowStore = NamedItemStore<Workflow>
 
 /// Keeps named items between launches, one file each, in a folder of the app's.
 ///

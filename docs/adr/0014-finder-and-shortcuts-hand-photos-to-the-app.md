@@ -1,6 +1,6 @@
 # ADR-0014: A workflow is how a recipe is used, run from the Finder's right-click menu and from Shortcuts
 
-- Status: Accepted
+- Status: Accepted; what it calls a workflow is the recipe and its files since [ADR-0021](0021-a-recipe-holds-its-files.md), and the panel no longer makes one
 - Date: 2026-11-21
 
 ## Context

@@ -47,8 +47,8 @@ and do not want another library to maintain.
 - **Recipes.** A set of adjustments saved under a name ("Recipe" in the interface, in every language),
   applied to one photo or to many, copied from one photo to others. Applying a recipe is one edit: one
   undo takes it back whole.
-- **Adaptive recipes.** A recipe can be made adaptive, with two options under it: adapt to the exposure
-  and adapt to the temperature. Before the recipe is applied, a photo that starts too far off is
+- **Adaptive recipes.** A recipe adapts to each photo in what was automatic when it was saved: the
+  exposure, the white balance, or both ([ADR 0021](adr/0021-a-recipe-holds-its-files.md)). Before the recipe is applied, a photo that starts too far off is
   corrected, so a bright frame and a dark one, a warm one and a cold one, land where the recipe
   intends. Exposure starts from the engine's automatic metering; temperature from an automatic white
   balance computed on the Mac. The interface says "adaptive": it does not promise AI while there is no
@@ -66,8 +66,8 @@ and do not want another library to maintain.
   Trash only when the user empties the discarded ones. There are no albums or collections that exist
   only in the app. Opening single files stays possible: the library is never a requirement for
   developing a photo.
-- **From the Finder.** Select photos, choose a workflow the user has defined (a look, the automatic
-  corrections, an export format, a destination such as a subfolder beside the originals), and get the
+- **From the Finder.** Select photos, choose a recipe (a look, what is automatic in it, and the files
+  it writes: a format, a destination such as a subfolder beside the originals), and get the
   developed files without opening the app. The app provides the actions for Shortcuts; the shortcut the
   user builds from them saves the files, so the app needs no access to the folder.
 - **With Photos.** For people whose archive is the Photos library: developing photos from it and saving
@@ -87,7 +87,7 @@ What the first public version needs on top of what exists today:
 6. Recipes: save, apply, copy between photos, export several photos at once, adaptive.
 7. Crop and straighten.
 8. Camera and lens corrections.
-9. Workflows from the Finder: actions for Shortcuts that develop the selected photos with a recipe and
+9. Recipes from the Finder: actions for Shortcuts that develop the selected photos with a recipe and
    hand the results back for saving.
 10. An icon and the notarized release.
 

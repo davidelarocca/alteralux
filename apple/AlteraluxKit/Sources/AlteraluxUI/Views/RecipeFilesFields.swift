@@ -2,23 +2,23 @@ import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
-/// The rows that name a workflow's files: the photo's name and the film, the photo's name, or the
+/// The rows that name a recipe's files: the photo's name and the film, the photo's name, or the
 /// photo's name and a text. In the editor the choice can be left open, to be asked each time.
-struct WorkflowNamingFields: View {
-    @Binding var workflow: Workflow
+struct RecipeNamingFields: View {
+    @Binding var files: RecipeFiles
     /// Whether the choice can be left open: in the editor, not when it is being asked.
     let allowsAsking: Bool
 
     var body: some View {
         if allowsAsking {
             WindowPopUp(
-                "File name", selection: ExportOptionsFields.asking(.naming, $workflow.asks, kind),
+                "File name", selection: ExportOptionsFields.asking(.naming, $files.asks, kind),
                 options: ExportOptionsFields.askingOptions(Self.kinds),
             )
         } else {
             WindowPopUp("File name", selection: kind, options: Self.kinds)
         }
-        if case .nameAndText = workflow.naming {
+        if case .nameAndText = files.naming {
             TextField("Text", text: text)
         }
     }
@@ -38,7 +38,7 @@ struct WorkflowNamingFields: View {
     private var kind: Binding<Kind> {
         Binding(
             get: {
-                switch workflow.naming {
+                switch files.naming {
                 case .nameAndFilm: .nameAndFilm
                 case .name: .name
                 case .nameAndText: .nameAndText
@@ -46,11 +46,11 @@ struct WorkflowNamingFields: View {
             },
             set: { kind in
                 switch kind {
-                case .nameAndFilm: workflow.naming = .nameAndFilm
-                case .name: workflow.naming = .name
+                case .nameAndFilm: files.naming = .nameAndFilm
+                case .name: files.naming = .name
                 case .nameAndText:
-                    if case .nameAndText = workflow.naming {} else {
-                        workflow.naming = .nameAndText(String(localized: "developed"))
+                    if case .nameAndText = files.naming {} else {
+                        files.naming = .nameAndText(String(localized: "developed"))
                     }
                 }
             },
@@ -60,35 +60,35 @@ struct WorkflowNamingFields: View {
     private var text: Binding<String> {
         Binding(
             get: {
-                if case let .nameAndText(text) = workflow.naming {
+                if case let .nameAndText(text) = files.naming {
                     text
                 } else {
                     ""
                 }
             },
-            set: { workflow.naming = .nameAndText($0) },
+            set: { files.naming = .nameAndText($0) },
         )
     }
 }
 
-/// The rows that say where a workflow writes: beside the photos, in a folder of a name beside
+/// The rows that say where a recipe writes: beside the photos, in a folder of a name beside
 /// them, or in one folder, chosen with the system's panel as Save As does. In the editor the
 /// choice can be left open, to be asked each time.
-struct WorkflowDestinationFields: View {
-    @Binding var workflow: Workflow
+struct RecipeDestinationFields: View {
+    @Binding var files: RecipeFiles
     /// Whether the choice can be left open: in the editor, not when it is being asked.
     let allowsAsking: Bool
 
     var body: some View {
         if allowsAsking {
             WindowPopUp(
-                "Destination", selection: ExportOptionsFields.asking(.destination, $workflow.asks, kind),
+                "Destination", selection: ExportOptionsFields.asking(.destination, $files.asks, kind),
                 options: ExportOptionsFields.askingOptions(Self.kinds),
             )
         } else {
             WindowPopUp("Destination", selection: kind, options: Self.kinds)
         }
-        switch workflow.destination {
+        switch files.destination {
         case .sameFolder:
             EmptyView()
         case .besideOriginals:
@@ -122,7 +122,7 @@ struct WorkflowDestinationFields: View {
     private var kind: Binding<Kind> {
         Binding(
             get: {
-                switch workflow.destination {
+                switch files.destination {
                 case .sameFolder: .sameFolder
                 case .besideOriginals: .subfolder
                 case .folder: .folder
@@ -130,10 +130,10 @@ struct WorkflowDestinationFields: View {
             },
             set: { kind in
                 switch kind {
-                case .sameFolder: workflow.destination = .sameFolder
+                case .sameFolder: files.destination = .sameFolder
                 case .subfolder:
-                    if case .besideOriginals = workflow.destination {} else {
-                        workflow.destination = .besideOriginals(folderName: AppModel.developedFolderName)
+                    if case .besideOriginals = files.destination {} else {
+                        files.destination = .besideOriginals(folderName: AppModel.developedFolderName)
                     }
                 case .folder: chooseFolder()
                 }
@@ -144,58 +144,58 @@ struct WorkflowDestinationFields: View {
     private var folderName: Binding<String> {
         Binding(
             get: {
-                if case let .besideOriginals(name) = workflow.destination {
+                if case let .besideOriginals(name) = files.destination {
                     name
                 } else {
                     ""
                 }
             },
-            set: { workflow.destination = .besideOriginals(folderName: $0) },
+            set: { files.destination = .besideOriginals(folderName: $0) },
         )
     }
 
     private func chooseFolder() {
         Task {
             if let bookmark = try? await AppModel.askForFolder() {
-                workflow.destination = .folder(bookmark)
+                files.destination = .folder(bookmark)
             }
         }
     }
 }
 
-/// The section that runs a workflow on some photos: which workflow, when there are several, its
-/// recipe, and the settings it leaves open; under it, what the workflow settles for the rest.
-/// The same in the library's sheet and in the panel the Finder's photos bring.
-struct WorkflowRunSection: View {
-    let workflows: [Workflow]
+/// The section that develops some photos with a recipe: which recipe, when there are several,
+/// and the settings it leaves open; under it, what the recipe settles for the rest. The same in
+/// the library's sheet and in the panel the Finder's photos bring.
+struct RecipeRunSection: View {
     let recipes: [Recipe]
-    /// The workflow chosen, with the answers to what it asks.
-    @Binding var run: Workflow
+    /// The recipe chosen, with the answers to what it asks.
+    @Binding var run: Recipe
 
     var body: some View {
         Section {
-            if workflows.count > 1 {
-                WindowPopUp("Workflow", selection: chosen, options: workflows.map { WindowPopUpOption($0.id, title: $0.name) })
+            if recipes.count > 1 {
+                WindowPopUp("Recipe", selection: chosen, options: recipes.map { WindowPopUpOption($0.id, title: $0.name) })
+            } else {
+                LabeledContent("Recipe") {
+                    Text(verbatim: run.name)
+                }
             }
-            LabeledContent("Recipe") {
-                Text(verbatim: recipes.first { $0.id == run.recipeID }?.name ?? "")
+            if run.files.asks.contains(.format) {
+                WindowPopUp("Format", selection: $run.files.options.format, options: ExportOptionsFields.formats)
             }
-            if run.asks.contains(.format) {
-                WindowPopUp("Format", selection: $run.options.format, options: ExportOptionsFields.formats)
+            if run.files.asks.contains(.size) {
+                WindowPopUp("Size", selection: $run.files.options.longSide, options: ExportOptionsFields.sizes)
             }
-            if run.asks.contains(.size) {
-                WindowPopUp("Size", selection: $run.options.longSide, options: ExportOptionsFields.sizes)
+            if run.files.asks.contains(.naming) {
+                RecipeNamingFields(files: $run.files, allowsAsking: false)
             }
-            if run.asks.contains(.naming) {
-                WorkflowNamingFields(workflow: $run, allowsAsking: false)
-            }
-            if run.asks.contains(.destination) {
-                WorkflowDestinationFields(workflow: $run, allowsAsking: false)
+            if run.files.asks.contains(.destination) {
+                RecipeDestinationFields(files: $run.files, allowsAsking: false)
             }
         } footer: {
-            let settled = AppModel.settledSettings(of: run)
+            let settled = AppModel.settledSettings(of: run.files)
             if !settled.isEmpty {
-                Text("The rest as the workflow says: \(settled)")
+                Text("The rest as the recipe says: \(settled)")
                     .font(Typography.caption)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -203,13 +203,13 @@ struct WorkflowRunSection: View {
         }
     }
 
-    /// The workflow; choosing another starts from its own settings.
-    private var chosen: Binding<Workflow.ID> {
+    /// The recipe; choosing another starts from its own settings.
+    private var chosen: Binding<Recipe.ID> {
         Binding(
             get: { run.id },
             set: { id in
-                if let workflow = workflows.first(where: { $0.id == id }) {
-                    run = workflow
+                if let recipe = recipes.first(where: { $0.id == id }) {
+                    run = recipe
                 }
             },
         )

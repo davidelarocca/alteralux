@@ -1,7 +1,7 @@
 import AlteraluxKit
 import Foundation
 
-// Recipes, and giving the look of one photo to others: saving, renaming, adapting and deleting recipes,
+// Recipes, and giving the look of one photo to others: saving, changing and deleting recipes,
 // applying one to the photo on screen or to the selection of the library, copying and pasting
 // adjustments. A look is every adjustment but the white balance, which stays each photo's own
 // (ADR 0009).
@@ -16,8 +16,13 @@ struct PhotoAdjustments: Equatable {
 extension AppModel {
     // MARK: - Recipes
 
-    /// Reads the recipes again from where they are kept.
+    /// Reads the recipes again from where they are kept. The first time, the workflows kept
+    /// before recipes wrote files become recipes (ADR 0021).
     func loadRecipes() async {
+        if !hasMigratedWorkflows {
+            hasMigratedWorkflows = true
+            await WorkflowMigration.run(workflows: workflowsDirectory, into: recipeStore)
+        }
         recipes = await recipeStore.all()
     }
 
@@ -26,41 +31,55 @@ extension AppModel {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    /// Saves the look of the photo on screen as a new recipe.
-    func saveRecipe(named name: String) async {
-        guard hasPhoto, Self.isRecipeName(name) else { return }
-        await keep(Recipe(name: name.trimmingCharacters(in: .whitespacesAndNewlines), from: settings))
+    /// A recipe with the look of the photo on screen, not kept yet: the save sheet names it and
+    /// may change the files it writes.
+    func newRecipe(named name: String = "") -> Recipe {
+        Recipe(name: name, from: settings)
     }
 
-    /// Gives a recipe another name. The photos that received it are not touched.
-    func rename(_ recipe: Recipe, to name: String) async {
-        guard Self.isRecipeName(name) else { return }
-        var renamed = recipe
-        renamed.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
-        await keep(renamed)
+    /// A copy of `recipe`, not kept yet: the same look under a name that says so, with the same
+    /// files, to change into another way of writing the look (ADR 0021).
+    func copy(of recipe: Recipe) -> Recipe {
+        Recipe(
+            name: String(localized: "\(recipe.name) copy", comment: "The name of a duplicated recipe"),
+            from: recipe.look, filmModel: recipe.filmModel, files: recipe.files,
+        )
     }
 
-    /// Deletes a recipe and the workflows that use it. The photos that received it keep their
-    /// adjustments.
+    /// Keeps a recipe, new or changed: its name and the files it writes. The name, the name of a
+    /// folder beside the originals and the text added to the files' names are trimmed; a recipe
+    /// that lacks one of them is not kept. The photos that received it are not touched.
+    func save(_ recipe: Recipe) async {
+        var recipe = recipe
+        recipe.name = recipe.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if case let .besideOriginals(folderName) = recipe.files.destination {
+            recipe.files.destination = .besideOriginals(folderName: folderName.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        if case let .nameAndText(text) = recipe.files.naming {
+            recipe.files.naming = .nameAndText(text.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        guard Self.canSave(recipe) else { return }
+        do {
+            try await recipeStore.save(recipe)
+        } catch {
+            alertMessage = String(localized: "The recipe “\(recipe.name)” could not be saved.")
+        }
+        await loadRecipes()
+    }
+
+    /// Whether a recipe can be kept as it is: it has a name, a folder to write to, and a text
+    /// for the files' names when it adds one.
+    static func canSave(_ recipe: Recipe) -> Bool {
+        isRecipeName(recipe.name) && canWrite(recipe.files)
+    }
+
+    /// Deletes a recipe. The photos that received it keep their adjustments, and the files it
+    /// wrote stay where they are.
     func delete(_ recipe: Recipe) async {
         do {
             try await recipeStore.delete(recipe.id)
         } catch {
             alertMessage = String(localized: "The recipe “\(recipe.name)” could not be deleted.")
-            await loadRecipes()
-            return
-        }
-        await loadRecipes()
-        for workflow in workflows(using: recipe) {
-            await delete(workflow)
-        }
-    }
-
-    private func keep(_ recipe: Recipe) async {
-        do {
-            try await recipeStore.save(recipe)
-        } catch {
-            alertMessage = String(localized: "The recipe “\(recipe.name)” could not be saved.")
         }
         await loadRecipes()
     }

@@ -48,9 +48,14 @@ Hub: [ARCHITECTURE.md](ARCHITECTURE.md).
     tells an earlier look apart. Nothing reads it yet; what was saved before
     has none.
   - `Recipe` is a look under a name: every value of `DevelopSettings` but
-    the white balance. `RecipeStore` keeps the recipes in a folder of the
+    the white balance, of which it keeps only whether it was automatic.
+    It also holds the files it writes when photos are developed with it
+    (`RecipeFiles`: format, size, names, destination, and what is asked
+    each time). `RecipeStore` keeps the recipes in a folder of the
     app's, one JSON file each
-    ([ADR 0009](adr/0009-recipes-are-looks-kept-by-the-app.md)).
+    ([ADR 0009](adr/0009-recipes-are-looks-kept-by-the-app.md),
+    [ADR 0021](adr/0021-a-recipe-holds-its-files.md)). `WorkflowMigration`
+    turns the workflows kept before into recipes, once.
   - The library, in `Library/`: `LibraryFolders` remembers the folders the user
     added (security-scoped bookmarks in a property list) and holds their
     access; `FolderContents` reads a folder's tree and its photos, in the
@@ -152,7 +157,12 @@ open photos, the settings of the selected one and its preview.
 - **Recipes.** `AppModel` holds the recipes. In the toolbar, while
   developing, they are a menu (`RecipeMenu`): choosing a recipe gives it to
   the photo on screen, as one step of undo kept at once; the look on screen
-  can be saved as a new one, and recipes are renamed and deleted there. In the bar of the library's selection a list gives a recipe to
+  can be saved as a new one, in a sheet that asks its name and shows the
+  files it writes (`RecipeEditor`). Recipes are changed, duplicated and
+  deleted in their window (`RecipesWindow`). Developing photos with a
+  recipe writes its files and leaves their adjustments alone
+  (`AppModel+RecipeFiles.swift`): from the library's selection, from the
+  Finder and from Shortcuts (`AppModel+HandedOver.swift`). In the bar of the library's selection a list gives a recipe to
   every selected photo, in the strip or not, as one step of undo for all:
   `EditHistory.keep` writes them, and forgets the adjustments of a photo
   that had none when the step is undone. Copy Adjustments and Paste
