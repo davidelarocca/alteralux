@@ -49,14 +49,17 @@ private func whole(_ value: Binding<Int>) -> Binding<Double> {
     Binding(get: { Double(value.wrappedValue) }, set: { value.wrappedValue = Int($0.rounded()) })
 }
 
-/// The shot's groups: the scene's highlights and shadows, the lens's blur with the diffusion
-/// filter, and what Apple's RAW decoder offers for the photo's camera.
+/// The shot's groups: the meter, the scene's highlights and shadows, the lens's blur with the
+/// diffusion filter, and what Apple's RAW decoder offers for the photo's camera.
 struct ShotDetails: View {
     @Environment(AppModel.self) private var model
     @Binding var settings: DevelopSettings
 
     var body: some View {
         @Bindable var model = model
+        DetailGroup("meter", title: "Meter") {
+            MeterDetails(settings: $settings)
+        }
         DetailGroup("tone", title: "Highlights and shadows") {
             SceneToneControls(tone: $settings.sceneTone)
         }

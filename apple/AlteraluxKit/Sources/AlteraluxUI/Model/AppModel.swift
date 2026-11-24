@@ -28,6 +28,9 @@ public final class AppModel {
     private(set) var sources: PhotoSources?
     /// The automatic white balance of the selected photo, once it was measured.
     var automaticWhiteBalance: WhiteBalance?
+    /// What the engine's meter adds to a photo, in stops, once it was read, and the photo it was
+    /// read for (see `meteredExposure`). Not watched by the views.
+    @ObservationIgnored var meterReading: (sources: PhotoSources, stops: Double)?
     /// The selected photo as the system renders it, for the comparison.
     private(set) var original: CGImage?
     /// The selected photo developed with `settings`.
@@ -543,6 +546,7 @@ public final class AppModel {
                     previewCrop = settings.crop
                     previewIsDraft = isDraft
                     Self.renderLog.debug("\(self.renderSummary, privacy: .public)")
+                    refreshMeteredExposure(for: settings, isSettled: isSettled)
                     if isSettled, holdsSlowPreview {
                         releaseSlowPreviewLater()
                     }

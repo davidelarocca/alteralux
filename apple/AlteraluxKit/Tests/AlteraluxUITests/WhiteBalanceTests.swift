@@ -127,10 +127,16 @@ struct WhiteBalanceTests {
         #expect(!model.settings.autoWhiteBalance)
         #expect(model.temperature == automatic.temperature && model.tint == automatic.tint + 10)
 
-        // Turned on again and off: back to the camera's.
+        // Turned on again, it lets go of the hand's choice; turned off, what it gave stays, as
+        // chosen by hand: the photo does not change until a slider moves.
         model.isWhiteBalanceAutomatic = true
         #expect(model.settings.temperature == nil && model.settings.tint == nil)
         model.isWhiteBalanceAutomatic = false
+        #expect(!model.settings.autoWhiteBalance)
+        #expect(model.temperature == automatic.temperature && model.tint == automatic.tint)
+        #expect(model.settings.temperature == automatic.temperature)
+        // Reset goes back to the camera's.
+        model.reset(.shot)
         #expect(model.temperature == asShot.temperature && model.tint == asShot.tint)
         #expect(model.alertMessage == nil)
     }

@@ -821,16 +821,6 @@
         }
       }
     },
-    "Automatic metering" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esposimetro automatico"
-          }
-        }
-      }
-    },
     "Automatic white balance" : {
       "localizations" : {
         "it" : {
@@ -4365,16 +4355,6 @@
         }
       }
     },
-    "Meters the scene as a camera would; the exposure below is then added to what it measured." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Misura la scena come una fotocamera; l'esposizione qui sotto si somma alla misura."
-          }
-        }
-      }
-    },
     "How the meter weighs the scene: the center, the whole frame, the highlights." : {
       "localizations" : {
         "it" : {
@@ -4401,16 +4381,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il laboratorio la compensa in stampa: cambia il negativo, non la luminosità."
-          }
-        }
-      }
-    },
-    "Starts from the light measured in the photo where the camera's white balance is far from it." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Parte dalla luce misurata nella foto quando il bilanciamento della fotocamera se ne discosta."
           }
         }
       }
@@ -4461,16 +4431,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Più magenta"
-          }
-        }
-      }
-    },
-    "Set by the automatic white balance." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Temperatura e tinta le sceglie il bianco automatico."
           }
         }
       }
@@ -4781,6 +4741,86 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chiude o apre le parti più scure della scena prima che la pellicola le veda."
+          }
+        }
+      }
+    },
+    "Auto" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto"
+          }
+        }
+      }
+    },
+    "Automatic exposure" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esposizione automatica"
+          }
+        }
+      }
+    },
+    "White balance" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bilanciamento del bianco"
+          }
+        }
+      }
+    },
+    "Meter" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esposimetro"
+          }
+        }
+      }
+    },
+    "On, the scene is metered as a camera would. Off, the exposure is yours, from where the meter left it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Accesa, la scena è misurata come farebbe una fotocamera. Spenta, l'esposizione la scegli tu, da dove l'esposimetro l'ha lasciata."
+          }
+        }
+      }
+    },
+    "Off: switch the automatic exposure on to use the meter." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spento: accendi l'esposizione automatica per usare l'esposimetro."
+          }
+        }
+      }
+    },
+    "Added to what the meter measured, in stops: for a look that is brighter or darker on every photo." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si aggiunge a quanto misurato dall'esposimetro, in stop: per un aspetto più chiaro o più scuro su ogni foto."
+          }
+        }
+      }
+    },
+    "On, it starts from the light measured in the photo where the camera's white balance is far from it." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acceso, parte dalla luce misurata nella foto dove il bianco della fotocamera ne è lontano."
           }
         }
       }

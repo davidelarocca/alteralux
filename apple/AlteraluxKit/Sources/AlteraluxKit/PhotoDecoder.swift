@@ -232,6 +232,16 @@ public actor PhotoDecoder {
         return crop.map { ImageLoader.framed(image, by: $0) } ?? image
     }
 
+    /// The stops the engine's meter adds to the photo decoded as `settings` say, read by the
+    /// engine itself on the photo decoded small: what a render with the meter on adds before the
+    /// film, whatever the exposure compensation.
+    public func meteredExposure(settings: DevelopSettings) throws -> Double {
+        try meteredStops(MeteringKey(
+            whiteBalance: whiteBalance(for: settings), lensCorrection: settings.lensCorrection, crop: settings.crop,
+            rawDecoding: settings.rawDecoding, method: settings.meteringMethod,
+        ))
+    }
+
     /// What tells one metering of the photo from another: how it is decoded and how it is read.
     private struct MeteringKey: Equatable {
         var whiteBalance: WhiteBalance?
