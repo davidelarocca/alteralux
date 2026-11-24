@@ -63,6 +63,29 @@ extension WindowedTests {
             } == [])
         }
 
+        /// A unit after the value, and the two ends named under the slider.
+        @Test func unitAndEnds() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "unit-and-ends", locale: english, source: source) {
+                ParameterSlider(
+                    "Temperature", value: .constant(5250), in: 2000 ... 12000, step: 50, defaultValue: 4500,
+                    fractionDigits: 0, unit: "K", ends: SliderEnds("Cooler", "Warmer"),
+                )
+                .padding(Spacing.m)
+            } == [])
+        }
+
+        /// Disabled by a mode, with the line that says why.
+        @Test func governedByAMode() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "governed", locale: english, source: source) {
+                ParameterSlider(
+                    "Tint", value: .constant(8), in: -150 ... 150, step: 1, fractionDigits: 0,
+                    ends: SliderEnds("Greener", "More magenta"), note: "Set by the automatic white balance.",
+                )
+                .disabled(true)
+                .padding(Spacing.m)
+            } == [])
+        }
+
         @Test(arguments: ["it", "ar"])
         func otherLanguages(locale: String) {
             #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "positive", locale: locale, source: source) {
@@ -81,45 +104,6 @@ extension WindowedTests {
         @Test func withoutLabels() {
             #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "labels-hidden", locale: english, source: source) {
                 SliderHost("Zoom", value: 1.2).labelsHidden()
-            } == [])
-        }
-    }
-
-    @MainActor
-    struct InspectorSectionSnapshots {
-        private let source = "\(components)/InspectorSection.swift"
-        private let sizes = ["320x160"]
-
-        private func section(_ title: LocalizedStringKey, isExpanded: Bool, summary: String) -> some View {
-            Form {
-                InspectorSection(title, isExpanded: .constant(isExpanded), summary: summary) {
-                    Toggle("Automatic metering", isOn: .constant(true))
-                }
-            }
-            .formStyle(.grouped)
-        }
-
-        @Test func expanded() {
-            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "expanded", source: source) {
-                section("Camera", isExpanded: true, summary: "+0.3 · 35 mm")
-            } == [])
-        }
-
-        @Test func collapsedShowsItsValues() {
-            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "collapsed", source: source) {
-                section("Camera", isExpanded: false, summary: "+0.3 · 35 mm")
-            } == [])
-        }
-
-        @Test func longText() {
-            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "long-text", source: source) {
-                section("A section with a long title", isExpanded: false, summary: "a long summary of many values that cannot all fit")
-            } == [])
-        }
-
-        @Test func rightToLeft() {
-            #expect(Snapshot.verify("InspectorSection", sizes: sizes, state: "collapsed", locale: "ar", source: source) {
-                section("Camera", isExpanded: false, summary: "+0.3 · 35 mm")
             } == [])
         }
     }

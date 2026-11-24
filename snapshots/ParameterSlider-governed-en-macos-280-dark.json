@@ -1,0 +1,17 @@
+{
+  "appearance": "dark",
+  "captured": "2026-11-23T07:46:11Z",
+  "contractSize": "280",
+  "locale": "en",
+  "os": "27.2",
+  "osBuild": "Version 27.2.1 (Build 26B131)",
+  "platform": "macos",
+  "scale": 2,
+  "screen": "ParameterSlider",
+  "size": "280x90",
+  "source": "apple/DesignSystem/Sources/DesignSystem/Components/ParameterSlider.swift",
+  "state": "governed",
+  "test": "apple/AlteraluxKit/Tests/AlteraluxUITests/ComponentSnapshotTests.swift",
+  "approved": "2026-11-23T07:50:25Z",
+  "approvedFrom": "missing"
+}
