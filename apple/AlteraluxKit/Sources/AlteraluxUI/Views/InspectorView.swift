@@ -31,6 +31,7 @@ struct InspectorView: View {
                 isModified: model.isModified(.shot), reset: model.resetter(.shot),
             ) {
                 ExposureControls()
+                SceneToneControls(tone: $model.settings.sceneTone)
                 WhiteBalanceControls()
                 LensControls(settings: $model.settings)
             }
