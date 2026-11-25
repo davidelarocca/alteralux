@@ -75,6 +75,23 @@ struct AutomaticWhiteBalanceTests {
         #expect(abs(before.x - after.x) < 0.001 && abs(before.z - after.z) < 0.001)
     }
 
+    /// The automatic white balance is the photo's as it was shot (ADR 0022): measured after a
+    /// decode that set the decoder for other adjustments, it is what a decoder just opened finds.
+    @Test func whatWasDecodedBeforeDoesNotChangeIt() async throws {
+        let url = try TestDNG.writeGrayScene(asShotNeutral: [1, 1, 0.6])
+        defer { try? FileManager.default.removeItem(at: url) }
+        let fresh = try #require(await PhotoDecoder(url: url).automaticWhiteBalance())
+
+        let decoder = try PhotoDecoder(url: url)
+        _ = try await decoder.pixels(
+            maxDimension: 64, whiteBalance: WhiteBalance(temperature: 3000, tint: 40), lensCorrection: false,
+            rawDecoding: RawDecodingOptions(
+                highlightRecovery: false, luminanceNoiseReduction: 1, colorNoiseReduction: 1, moireReduction: 1,
+            ),
+        )
+        #expect(await decoder.automaticWhiteBalance() == fresh)
+    }
+
     @Test func pixelsTooDarkOrClippedAreNotMeasured() {
         let clipped = [Float](repeating: 1, count: 400)
         #expect(AutomaticWhiteBalance.shadesOfGray(clipped, count: 100) == nil)

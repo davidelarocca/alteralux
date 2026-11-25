@@ -16,7 +16,7 @@ struct ExposureControls: View {
         InspectorSubheading(
             "Exposure", isOn: $model.isExposureAutomatic, switchTitle: "Auto", switchLabel: "Automatic exposure",
         )
-        .help("On, the scene is metered as a camera would. Off, the exposure is yours, from where the meter left it.")
+        .help("On, the photo is metered as it was shot: no adjustment changes it. Off, the exposure is yours, from where the meter left it.")
         if !model.settings.autoExposure {
             ParameterSlider(
                 "Exposure", value: $model.settings.exposureEV, in: AppModel.exposureRange,

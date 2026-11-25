@@ -42,9 +42,9 @@ public actor PhotoDecoder {
     private let standardImage: CIImage?
     /// The white balance measured in the photo, once it was: `.some(nil)` when it could not be.
     private var measuredWhiteBalance: WhiteBalance??
-    /// The exposure the engine's meter reads for the photo, kept for the last way it was
-    /// decoded and metered: a control that changes the scene's light moves many times over it.
-    private var metered: (key: MeteringKey, stops: Double)?
+    /// The exposure the engine's meter reads for the photo as it was shot, kept for the last
+    /// way it was metered: every decode with the exposure automatic asks for it.
+    private var metered: (method: MeteringMethod, stops: Double)?
 
     /// Opens `url`. Reads what the file says about itself, not its pixels.
     ///
@@ -109,13 +109,19 @@ public actor PhotoDecoder {
 
     /// The white balance an automatic choice gives this RAW: the camera's when the camera chose
     /// it itself, or when the light measured in the photo is close to it (see
-    /// `AutomaticWhiteBalance`). Measured once, at the first call. `nil` for a file that is not a
-    /// RAW.
+    /// `AutomaticWhiteBalance`). Measured once, at the first call, on the photo as it was shot
+    /// (ADR 0022): whatever was decoded before it. `nil` for a file that is not a RAW.
     public func automaticWhiteBalance() -> WhiteBalance? {
         guard let rawFilter, let asShotWhiteBalance else { return nil }
         guard !cameraChoseWhiteBalance else { return asShotWhiteBalance }
         if let measuredWhiteBalance {
             return measuredWhiteBalance ?? asShotWhiteBalance
+        }
+        // The decoder is kept between decodes: the last one may have left it with the
+        // adjustments' own highlight recovery, noise reduction and lens correction.
+        rawDefaults?.apply(RawDecodingOptions(), to: rawFilter)
+        if rawFilter.isLensCorrectionSupported {
+            rawFilter.isLensCorrectionEnabled = correctsLensByDefault
         }
         let measured = AutomaticWhiteBalance.whiteBalance(of: rawFilter, asShot: asShotWhiteBalance)
         measuredWhiteBalance = .some(measured)
@@ -154,9 +160,9 @@ public actor PhotoDecoder {
     ///     is then the long side of the framed picture.
     ///   - rawDecoding: the RAW decoder's highlight recovery and noise reduction. Ignored for other
     ///     files.
-    ///   - sceneTone: the scene's highlights and shadows, and the exposure they are measured
-    ///     from; `nil` to leave the scene as it is. With the meter on, the result holds the
-    ///     meter's exposure (`LoadedImage.isMetered`).
+    ///   - sceneTone: the meter's exposure and the scene's highlights and shadows, to put into
+    ///     the pixels; `nil` to leave the scene as it is. With the meter on, the result holds the
+    ///     exposure the meter reads for the photo as it was shot (`LoadedImage.isMetered`).
     public nonisolated func decode(
         maxDimension: Int? = nil, whiteBalance: WhiteBalance? = nil, lensCorrection: Bool? = nil,
         crop: PhotoCrop? = nil, rawDecoding: RawDecodingOptions = .init(), sceneTone: SceneToneRequest? = nil,
@@ -175,14 +181,11 @@ public actor PhotoDecoder {
         maxDimension: Int?, whiteBalance: WhiteBalance?, lensCorrection: Bool? = nil, crop: PhotoCrop? = nil,
         rawDecoding: RawDecodingOptions = .init(), sceneTone: SceneToneRequest? = nil,
     ) throws -> DecodedPixels {
-        // The meter reads the photo as it is decoded without the change of light, so it comes
-        // first: it decodes the photo small, with the same decoder.
+        // The meter reads the photo as it was shot, so it comes first: it decodes the photo
+        // small, with the same decoder, which the decode after it sets as the adjustments ask.
         var meteredStops: Double?
         if let sceneTone, SceneToneKernel.isAvailable, let method = sceneTone.meteringMethod {
-            meteredStops = try self.meteredStops(MeteringKey(
-                whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop, rawDecoding: rawDecoding,
-                method: method,
-            ))
+            meteredStops = try self.meteredStops(method)
         }
         let image = try image(
             maxDimension: maxDimension, whiteBalance: whiteBalance, lensCorrection: lensCorrection, crop: crop,
@@ -232,44 +235,34 @@ public actor PhotoDecoder {
         return crop.map { ImageLoader.framed(image, by: $0) } ?? image
     }
 
-    /// The stops the engine's meter adds to the photo decoded as `settings` say, read by the
-    /// engine itself on the photo decoded small: what a render with the meter on adds before the
-    /// film, whatever the exposure compensation.
+    /// The stops the engine's meter adds to the photo, read by the engine itself on the photo
+    /// decoded small: what a render with the meter on adds before the film, whatever the exposure
+    /// compensation. Of `settings` only the metering method counts: the meter reads the photo as
+    /// it was shot, not as they frame it or balance it (ADR 0022).
     public func meteredExposure(settings: DevelopSettings) throws -> Double {
-        try meteredStops(MeteringKey(
-            whiteBalance: whiteBalance(for: settings), lensCorrection: settings.lensCorrection, crop: settings.crop,
-            rawDecoding: settings.rawDecoding, method: settings.meteringMethod,
-        ))
-    }
-
-    /// What tells one metering of the photo from another: how it is decoded and how it is read.
-    private struct MeteringKey: Equatable {
-        var whiteBalance: WhiteBalance?
-        var lensCorrection: Bool?
-        var crop: PhotoCrop?
-        var rawDecoding: RawDecodingOptions
-        var method: MeteringMethod
+        try meteredStops(settings.meteringMethod)
     }
 
     /// The long side the photo is decoded at to be metered: the engine's meter reads a picture
     /// no larger than this, taking one pixel in so many of a larger one.
     static let meteringSide = 256
 
-    /// The stops the engine's meter adds to the photo decoded as `key` says, read by the engine
-    /// itself on the photo decoded small.
-    private func meteredStops(_ key: MeteringKey) throws -> Double {
-        if let metered, metered.key == key {
+    /// The stops the engine's meter adds to the photo as it was shot, read by the engine itself
+    /// on the photo decoded small: whole, with the camera's white balance, the lens corrected as
+    /// it is when nothing was chosen, and the RAW decoder's own choices.
+    private func meteredStops(_ method: MeteringMethod) throws -> Double {
+        if let metered, metered.method == method {
             return metered.stops
         }
         let small = try ImageLoader.pixels(
             of: image(
-                maxDimension: Self.meteringSide, whiteBalance: key.whiteBalance, lensCorrection: key.lensCorrection,
-                crop: key.crop, rawDecoding: key.rawDecoding,
+                maxDimension: Self.meteringSide, whiteBalance: nil, lensCorrection: nil, crop: nil,
+                rawDecoding: RawDecodingOptions(),
             ),
             url: url,
         )
-        let stops = try Double(small.loaded(from: url, isRaw: isRaw).source.meteredEv(method: key.method.rawValue, input: .rec2020))
-        metered = (key, stops)
+        let stops = try Double(small.loaded(from: url, isRaw: isRaw).source.meteredEv(method: method.rawValue, input: .rec2020))
+        metered = (method, stops)
         return stops
     }
 }

@@ -449,6 +449,11 @@ branch of its own. What was said, in the order to take it:
   the same row; on, nothing else is shown; off, the sliders appear, starting from what the automatic
   had chosen, so the photo does not jump. The metering method and the exposure compensation are in a
   closed group, "Meter". Not yet seen in the built app.
+  Done, the eighth ([ADR 0022](adr/0022-the-automatic-modes-read-the-photo-as-shot.md)), asked by
+  the user on 2026-11-25: the automatic exposure and the automatic white balance read the photo as
+  it was shot, whole and with the camera's white balance, so no adjustment changes what they find:
+  before, a frame or a white balance by hand moved the exposure (0.73 and 0.22 of a stop on a test
+  RAW). Not yet seen in the built app.
 
 After 1.0, in an order still to decide: the Photos integration, more of the engine's parameters behind
 an "advanced" section.

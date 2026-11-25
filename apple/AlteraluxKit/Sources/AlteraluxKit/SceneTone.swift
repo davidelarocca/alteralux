@@ -54,21 +54,24 @@ extension SceneTone {
     }
 }
 
-/// What a decode needs to change the scene's highlights and shadows: how, and the exposure they
-/// are measured from. `nil` from adjustments that leave the scene as it is.
+/// What a decode needs to put the scene's light into the pixels: the meter's exposure, read on
+/// the photo as it was shot (ADR 0022), and the highlights and shadows with the exposure they are
+/// measured from (ADR 0019). `nil` from adjustments that leave the scene as it is: the exposure
+/// by hand, and no change of highlights or shadows.
 public struct SceneToneRequest: Equatable, Sendable {
     public let tone: SceneTone
     /// The exposure compensation, in stops: the highlights and the shadows are those of the scene
-    /// once exposed.
+    /// once exposed. 0 while they are left alone: it then changes nothing of what is decoded.
     public let exposureEV: Double
     /// How the scene is metered; `nil` with the meter off.
     public let meteringMethod: MeteringMethod?
 
-    /// What `settings` ask; `nil` when they leave the highlights and the shadows alone.
+    /// What `settings` ask; `nil` when the exposure is by hand and they leave the highlights and
+    /// the shadows alone.
     public init?(_ settings: DevelopSettings) {
-        guard !settings.sceneTone.isNeutral else { return nil }
+        guard settings.autoExposure || !settings.sceneTone.isNeutral else { return nil }
         tone = settings.sceneTone
-        exposureEV = settings.exposureEV
+        exposureEV = settings.sceneTone.isNeutral ? 0 : settings.exposureEV
         meteringMethod = settings.autoExposure ? settings.meteringMethod : nil
     }
 }

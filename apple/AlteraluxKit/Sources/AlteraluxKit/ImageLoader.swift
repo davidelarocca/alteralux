@@ -17,9 +17,9 @@ public struct LoadedImage: Sendable {
     public let height: Int
     /// `true` when the file was a camera RAW decoded with Apple's RAW engine.
     public let isRaw: Bool
-    /// `true` when the pixels already hold the exposure the engine's meter reads for the photo,
-    /// because the scene's highlights and shadows were changed after it (ADR 0019): the film is
-    /// then exposed with the meter off, whatever the adjustments say.
+    /// `true` when the pixels already hold the exposure the engine's meter reads for the photo
+    /// as it was shot (ADR 0022), with the highlights and shadows changed after it (ADR 0019):
+    /// the film is then exposed with the meter off, whatever the adjustments say.
     public let isMetered: Bool
 }
 

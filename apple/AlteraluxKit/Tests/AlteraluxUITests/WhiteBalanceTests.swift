@@ -277,13 +277,16 @@ struct PhotoSourcesTests {
     }
 
     /// The scene's highlights and shadows are in the pixels, measured from the exposure: once
-    /// they are changed, another exposure decodes again; while they are not, it does not.
+    /// they are changed, another exposure decodes again; while they are not, it does not. The
+    /// meter's exposure is in the pixels whenever the exposure is automatic (ADR 0022).
     @Test func theScenesLightDecodesAgainAndThenSoDoesTheExposure() async throws {
         let (sources, folder) = try sources()
         defer { try? FileManager.default.removeItem(at: folder) }
         var settings = DevelopSettings()
         let plain = try await sources.source(dimension: 120, settings: settings)
-        #expect(!plain.isMetered)
+        #expect(plain.isMetered)
+        settings.exposureEV = 0.5
+        #expect(try await sources.source(dimension: 120, settings: settings).source === plain.source)
         settings.sceneTone.shadows = 0.5
         let lifted = try await sources.source(dimension: 120, settings: settings)
         #expect(lifted.source !== plain.source && lifted.isMetered)
