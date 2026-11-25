@@ -100,10 +100,22 @@ extension AppModel {
         }
     }
 
-    /// Whether a photo of the strip can be discarded: discarding hides a photo in the library,
-    /// so it is for the photos of the folder on screen.
-    func canDiscard(_ item: PhotoItem) -> Bool {
-        library.photos.contains(item.url)
+    /// What Discard does to a photo of the strip, and so what its command is called.
+    enum StripDiscard {
+        /// The photo is marked and leaves the strip, as a discarded photo leaves the grid.
+        case discard
+        /// A discarded photo, in the strip because it was opened from the discarded ones, loses
+        /// its mark and stays.
+        case takeBack
+        /// A photo that is not of the folder on screen has no grid to be hidden from: it only
+        /// leaves the strip.
+        case remove
+    }
+
+    /// What Discard does to `item`.
+    func discardKind(of item: PhotoItem) -> StripDiscard {
+        guard library.photos.contains(item.url) else { return .remove }
+        return isDiscarded(item) ? .takeBack : .discard
     }
 
     /// Whether a photo of the strip is discarded.
@@ -111,9 +123,54 @@ extension AppModel {
         library.discarded.contains(item.url)
     }
 
-    /// Discards a photo of the strip, or takes it back. It stays in the strip, with its mark,
-    /// until the folder is developed again.
-    func toggleDiscarded(_ item: PhotoItem) {
-        setDiscarded(!isDiscarded(item), for: [item.url])
+    /// Discards a photo of the strip, in the way `discardKind(of:)` says.
+    func discard(_ item: PhotoItem) {
+        switch discardKind(of: item) {
+        case .discard: discardFromStrip(item)
+        case .takeBack: setDiscarded(false, for: [item.url])
+        case .remove: remove(item)
+        }
+    }
+
+    /// Discards the photo on screen: the next one of the strip takes its place.
+    func discardPhotoOnScreen() {
+        if let selection {
+            discard(selection)
+        }
+    }
+
+    /// Marks a photo as discarded and takes it out of the strip. One undo takes the mark away
+    /// and puts the photo back in its place.
+    private func discardFromStrip(_ item: PhotoItem) {
+        guard let index = photos.firstIndex(where: { $0.id == item.id }) else { return }
+        let (url, wasOnScreen) = (item.url, isOnScreen(item))
+        guard !library.setDiscarded(true, for: [url]).isEmpty else { return }
+        remove(item)
+        guard let undoManager = history.undoManager else { return }
+        undoManager.beginUndoGrouping()
+        undoManager.registerUndo(withTarget: self) { model in
+            model.takeBack(url, toStripAt: index, onScreen: wasOnScreen)
+        }
+        undoManager.endUndoGrouping()
+    }
+
+    /// Undoes a discard made from the strip; undone in its turn, the photo is discarded again.
+    private func takeBack(_ url: URL, toStripAt index: Int, onScreen: Bool) {
+        library.setDiscarded(false, for: [url])
+        // The strip may hold another folder's photos by now: the photo then only loses its mark.
+        let folder = url.deletingLastPathComponent()
+        if photos.allSatisfy({ $0.url.deletingLastPathComponent() == folder }), let item = insert(url, at: index), onScreen {
+            select(item)
+        }
+        guard let undoManager = history.undoManager else { return }
+        undoManager.beginUndoGrouping()
+        undoManager.registerUndo(withTarget: self) { model in
+            if let item = model.photos.first(where: { $0.url == url }) {
+                model.discard(item)
+            } else {
+                model.setDiscarded(true, for: [url])
+            }
+        }
+        undoManager.endUndoGrouping()
     }
 }

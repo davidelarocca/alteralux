@@ -581,3 +581,13 @@ public final class AppModel {
         return dimension
     }
 }
+
+extension AppModel {
+    /// Puts a photo in the strip at `index`, with the adjustments it keeps.
+    func insert(_ url: URL, at index: Int) -> PhotoItem? {
+        guard let item = add([url]), let from = photos.firstIndex(where: { $0.id == item.id }) else { return nil }
+        let moved = photos.remove(at: from)
+        photos.insert(moved, at: min(index, photos.count))
+        return item
+    }
+}

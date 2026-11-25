@@ -218,7 +218,9 @@ open photos, the settings of the selected one and its preview.
   for a photo of its folder, the photo's own otherwise (`AppModel.tags(of:)`).
   A thumbnail's menu (`StripPhotoMenu`, `AppModel+Strip.swift`) acts on its
   photo and leaves the one on screen where it is: a photo discarded there
-  stays in the strip with its mark, one moved to the Trash leaves it. The photo is
+  leaves the strip, as it leaves the grid, and undo puts it back in its
+  place (`AppModel.discard(_:)`, which the View menu's command uses for the
+  photo on screen); one moved to the Trash leaves it too. The photo is
   decoded for the 1024 px preview as soon as it is on screen (see Sources),
   so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the

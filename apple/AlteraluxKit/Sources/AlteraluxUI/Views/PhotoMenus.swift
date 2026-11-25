@@ -155,8 +155,9 @@ private struct PhotoTagMenu: View {
 
 /// The menu of a photo of the strip, opened with a secondary click: what is done to a photo
 /// while a series is developed, in the order of the library's menu. It acts on the photo it was
-/// opened on, and the photo on screen stays. What arranges the files (Open With, Move to, Copy
-/// to, Duplicate, Rename), turning and developing with a recipe stay in the library.
+/// opened on, and the photo on screen stays. Discard takes the photo out of the strip, as it
+/// takes it out of the grid. What arranges the files (Open With, Move to, Copy to, Duplicate,
+/// Rename), turning and developing with a recipe stay in the library.
 struct StripPhotoMenu: View {
     @Environment(AppModel.self) private var model
     let item: PhotoItem
@@ -184,13 +185,19 @@ struct StripPhotoMenu: View {
         Button("Reset Adjustments") { model.resetAdjustments(of: item) }
             .disabled(!model.canResetAdjustments(of: item))
         Divider()
-        Button { model.toggleDiscarded(item) } label: {
-            model.isDiscarded(item) ? Text("Take Back") : Text("Discard")
-        }
-        .disabled(!model.canDiscard(item))
+        Button(model.discardKind(of: item).title) { model.discard(item) }
         Button("Move to Trash") { ask(.trash([item.url])) }
-        Divider()
-        Button("Remove from Strip") { model.remove(item) }
+    }
+}
+
+extension AppModel.StripDiscard {
+    /// What the command is called: what it does to the photo.
+    var title: LocalizedStringKey {
+        switch self {
+        case .discard: "Discard"
+        case .takeBack: "Take Back"
+        case .remove: "Remove from Strip"
+        }
     }
 }
 
