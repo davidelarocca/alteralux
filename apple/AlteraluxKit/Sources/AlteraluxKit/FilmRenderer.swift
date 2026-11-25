@@ -50,32 +50,44 @@ public final class FilmRenderer: Sendable {
     /// Develops `image` with `settings`. An image that already holds the meter's exposure
     /// (`LoadedImage.isMetered`) is exposed with the meter off.
     public func render(
-        _ image: LoadedImage, settings: DevelopSettings, quality: RenderQuality,
+        _ image: LoadedImage, settings: DevelopSettings, quality: RenderQuality, photoLongSide: Int? = nil,
     ) async throws -> DevelopedImage {
         var settings = settings
         if image.isMetered {
             settings.autoExposure = false
         }
-        return try await render(image.source, settings: settings, quality: quality)
+        return try await render(image.source, settings: settings, quality: quality, photoLongSide: photoLongSide)
     }
 
     /// Develops an engine source image with `settings`.
+    ///
+    /// - Parameter photoLongSide: the long side, in pixels, of the photo this render stands for,
+    ///   when it is rendered smaller: what the engine measures in pixels is scaled to look as it
+    ///   does on the photo seen at this render's size (`DevelopSettings.enginePatchJSON`). `nil`
+    ///   renders the source as the photo itself.
     public func render(
-        _ source: SourceImage, settings: DevelopSettings, quality: RenderQuality,
+        _ source: SourceImage, settings: DevelopSettings, quality: RenderQuality, photoLongSide: Int? = nil,
     ) async throws -> DevelopedImage {
         let engine = engine
         return try await withCheckedThrowingContinuation { continuation in
             queue.async {
                 continuation.resume(
-                    with: Result { try Self.render(engine, source, settings, quality) },
+                    with: Result { try Self.render(engine, source, settings, quality, photoLongSide) },
                 )
             }
         }
     }
 
+    /// The render's long side over the photo's, at most 1: by how much the render is smaller.
+    static func pixelScale(sourceLongSide: Int, maxDimension: Int, photoLongSide: Int?) -> Double {
+        guard let photoLongSide, photoLongSide > 0, sourceLongSide > 0 else { return 1 }
+        let rendered = maxDimension > 0 ? min(maxDimension, sourceLongSide) : sourceLongSide
+        return min(1, Double(rendered) / Double(photoLongSide))
+    }
+
     private static func render(
         _ engine: Engine, _ source: SourceImage, _ settings: DevelopSettings,
-        _ quality: RenderQuality,
+        _ quality: RenderQuality, _ photoLongSide: Int?,
     ) throws -> DevelopedImage {
         let maxDimension: Int
         let format: PixelFormat
@@ -90,7 +102,10 @@ public final class FilmRenderer: Sendable {
         let request = try RenderRequest(
             film: settings.filmID,
             print: settings.paperID,
-            paramsJson: settings.enginePatchJSON(),
+            paramsJson: settings.enginePatchJSON(pixelScale: pixelScale(
+                sourceLongSide: Int(max(source.width(), source.height())), maxDimension: maxDimension,
+                photoLongSide: photoLongSide,
+            )),
             color: RenderColor(input: .rec2020, output: .srgb),
             maxDimension: UInt32(maxDimension),
         )

@@ -18,11 +18,12 @@ private let fidelityDataDirectory = URL(fileURLWithPath: #filePath)
 /// The app develops a preview from the photo decoded small (ADR 0007), and the engine sizes
 /// grain and halation from the film format, so a pixel of a preview stands for more film. What
 /// the engine cannot resolve at a size it loses, and what it measures in pixels does not follow
-/// the size: the grain is softened by a blur given in pixels (`grain.blur`, 0.65), which takes as
-/// much from a small picture as from a large one, where it no longer shows once the picture is
-/// seen smaller, and the scan is sharpened over a radius in pixels. These tests keep what was
-/// measured on 2026-11-24 from getting worse: a submodule update or a smaller preview that
-/// moves the numbers fails here and is looked at, not found by eye.
+/// the size: the grain is softened by a blur given in pixels (`grain.blur`, 0.65) and the scan
+/// is sharpened in pixels too. The renderer changes those for a render smaller than the photo
+/// (`PixelScaling`, ADR 0023): every render here is told it stands for the export's size, as
+/// the app's preview is. These tests keep what was measured from getting worse: a submodule
+/// update or a smaller preview that moves the numbers fails here and is looked at, not found by
+/// eye.
 ///
 /// The pictures are strips sixteen times wider than tall: the engine takes the size of a pixel
 /// from the long side, so a strip costs a sixteenth of the whole frame.
@@ -115,14 +116,15 @@ struct PreviewFidelityTests {
         try await developed(renderer, strip(side: side, lit: lit), change)
     }
 
-    /// `source` developed whole, with the meter off.
+    /// `source` developed whole, with the meter off, as a render of a photo `exportSide` pixels
+    /// long: the export itself at that size, a preview below it.
     private static func developed(
         _ renderer: FilmRenderer, _ source: SourceImage, _ change: (inout DevelopSettings) -> Void,
     ) async throws -> Frame {
         var settings = DevelopSettings()
         settings.autoExposure = false
         change(&settings)
-        let image = try await renderer.render(source, settings: settings, quality: .full)
+        let image = try await renderer.render(source, settings: settings, quality: .full, photoLongSide: Self.exportSide)
         let data = try #require(image.cgImage.dataProvider?.data) as Data
         return Frame(
             width: image.width, height: image.height,
@@ -146,11 +148,11 @@ struct PreviewFidelityTests {
         return mean(with.channel(0)) - mean(without.channel(0))
     }
 
-    /// Measured on 2026-11-24 (Apple M5, GPU; the CPU gives the same): a preview shown pixel for
-    /// pixel has about two thirds of the grain of the export seen at that size, 0.66 for the
-    /// standard preview and 0.62 for the lighter one; the standard preview shown at half its
-    /// size, 0.87. The 100% view is the export's own render.
-    @Test func aPreviewShowsTwoThirdsOfTheExportsGrain() async throws {
+    /// Measured on 2026-11-25 (Apple M5, GPU; the CPU gives the same within 0.01): a preview
+    /// shown pixel for pixel has 1.03 of the grain of the export seen at that size for the
+    /// standard preview and 0.98 for the lighter one; the standard preview shown at half its size,
+    /// 1.03. Before `PixelScaling`, 0.66, 0.62 and 0.87. The 100% view is the export's own render.
+    @Test func aPreviewShowsTheExportsGrain() async throws {
         let renderer = try FilmRenderer(dataDirectory: fidelityDataDirectory, backend: .automatic)
         let export = try await Self.grainy(renderer, side: Self.exportSide)
         let standard = try await Self.grainy(renderer, side: Self.standardSide)
@@ -162,16 +164,16 @@ struct PreviewFidelityTests {
         #expect(grain(export, at: Self.lighterSide) > 0.005, "No grain to compare.")
 
         let standardShare = grain(standard, at: Self.standardSide) / grain(export, at: Self.standardSide)
-        #expect((0.55 ... 1.05).contains(standardShare), "The standard preview has \(standardShare) of the export's grain.")
+        #expect((0.85 ... 1.15).contains(standardShare), "The standard preview has \(standardShare) of the export's grain.")
         let lighterShare = grain(lighter, at: Self.lighterSide) / grain(export, at: Self.lighterSide)
-        #expect((0.55 ... 1.05).contains(lighterShare), "The lighter preview has \(lighterShare) of the export's grain.")
-        // Shown smaller than it is, as in a window narrower than the preview, it is closer.
+        #expect((0.85 ... 1.15).contains(lighterShare), "The lighter preview has \(lighterShare) of the export's grain.")
+        // Shown smaller than it is, as in a window narrower than the preview.
         let halvedShare = grain(standard, at: Self.lighterSide) / grain(export, at: Self.lighterSide)
-        #expect((0.8 ... 1.05).contains(halvedShare), "Halved, the standard preview has \(halvedShare).")
+        #expect((0.85 ... 1.15).contains(halvedShare), "Halved, the standard preview has \(halvedShare).")
     }
 
-    /// Measured on 2026-11-24 (Apple M5, GPU): the standard preview has 0.96 of the export's red
-    /// halation, the lighter one 0.87. On the CPU, 0.97 and 0.92.
+    /// Measured on 2026-11-25 (Apple M5, GPU): the standard preview has 1.00 of the export's red
+    /// halation, the lighter one 0.87. On the CPU, 0.99 and 0.93.
     @Test func aPreviewShowsTheExportsHalation() async throws {
         let renderer = try FilmRenderer(dataDirectory: fidelityDataDirectory, backend: .automatic)
         let export = try await Self.halation(renderer, side: Self.exportSide)
@@ -200,11 +202,11 @@ struct PreviewFidelityTests {
         return (sharpened, plain)
     }
 
-    /// Measured on 2026-11-24 (Apple M5, GPU): the scan's sharpening changes the standard preview
-    /// 3.0 times as much as it changes the export seen at that size, and the lighter preview 5.7
-    /// times. Its radius is in pixels (0.7), as the grain's blur: on the export it is finer than
-    /// what a fitted photo shows.
-    @Test func aPreviewIsSharpenedMoreThanTheExportSeenAtItsSize() async throws {
+    /// Measured on 2026-11-25 (Apple M5, GPU; the CPU the same within 0.01): the scan's
+    /// sharpening changes the standard preview 1.24 times as much as it changes the export seen at
+    /// that size, and the lighter preview 1.09 times. Before `PixelScaling`, 3.0 and 5.7 times: its
+    /// radius is in pixels (0.7), and on the export it is finer than what a fitted photo shows.
+    @Test func aPreviewIsSharpenedAsTheExportSeenAtItsSize() async throws {
         let renderer = try FilmRenderer(dataDirectory: fidelityDataDirectory, backend: .automatic)
         let export = try await Self.fences(renderer, side: Self.exportSide)
         // How far the sharpened fence is from the plain one, both seen `side` pixels wide.
@@ -218,9 +220,9 @@ struct PreviewFidelityTests {
 
         let standard = try await Self.fences(renderer, side: Self.standardSide)
         let standardShare = change(standard, at: Self.standardSide) / change(export, at: Self.standardSide)
-        #expect((0.8 ... 4).contains(standardShare), "The standard preview is sharpened \(standardShare) times the export.")
+        #expect((0.8 ... 1.5).contains(standardShare), "The standard preview is sharpened \(standardShare) times the export.")
         let lighter = try await Self.fences(renderer, side: Self.lighterSide)
         let lighterShare = change(lighter, at: Self.lighterSide) / change(export, at: Self.lighterSide)
-        #expect((0.8 ... 7.5).contains(lighterShare), "The lighter preview is sharpened \(lighterShare) times the export.")
+        #expect((0.8 ... 1.5).contains(lighterShare), "The lighter preview is sharpened \(lighterShare) times the export.")
     }
 }

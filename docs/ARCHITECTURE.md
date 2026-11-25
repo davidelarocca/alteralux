@@ -103,3 +103,4 @@ defaults, and unknown keys are errors.
 | [0020](adr/0020-automatic-means-automatic.md) | Automatic means automatic: a mode's switch on its title, its sliders out of view | Accepted |
 | [0021](adr/0021-a-recipe-holds-its-files.md) | A recipe holds the look and the files it writes; workflows go | Accepted |
 | [0022](adr/0022-the-automatic-modes-read-the-photo-as-shot.md) | The automatic exposure and white balance read the photo as it was shot | Accepted |
+| [0023](adr/0023-a-preview-looks-like-the-photo-seen-at-its-size.md) | A preview looks like the developed photo seen at its size | Accepted |
