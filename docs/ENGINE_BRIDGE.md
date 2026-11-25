@@ -124,7 +124,10 @@ for a picture, in stops: the upstream function a render calls when
 `camera.auto_exposure` is on. Pixels scaled by two to that power and rendered
 with the meter off are the photo the engine would have exposed itself (a test
 compares the two). The app uses it to change the scene's light after the meter
-has read it ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)).
+has read it ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)),
+and to meter the photo as it was shot whatever the frame and the white balance
+it is then developed with
+([ADR 0022](adr/0022-the-automatic-modes-read-the-photo-as-shot.md)).
 
 ### Pixels and safety
 

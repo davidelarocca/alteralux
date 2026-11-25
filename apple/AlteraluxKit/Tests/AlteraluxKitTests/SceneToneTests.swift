@@ -174,9 +174,14 @@ struct SceneToneTests {
         Double(colors(of: pixels)[place.row * pixels.width + place.column].y)
     }
 
+    /// The exposure by hand and the highlights and shadows left alone ask nothing of the decode.
+    /// The automatic exposure asks for the meter's, and its compensation changes nothing of what
+    /// is decoded until the highlights or the shadows are measured from it.
     @Test func adjustmentsThatLeaveTheSceneAloneAskNothing() async throws {
-        #expect(SceneToneRequest(DevelopSettings()) == nil)
+        #expect(SceneToneRequest(DevelopSettings(exposureEV: 1, autoExposure: false)) == nil)
         var settings = DevelopSettings(exposureEV: 1)
+        let automatic = try #require(SceneToneRequest(settings))
+        #expect(automatic.tone.isNeutral && automatic.exposureEV == 0 && automatic.meteringMethod == .centerWeighted)
         settings.sceneTone.shadows = 0.5
         let request = try #require(SceneToneRequest(settings))
         #expect(request.exposureEV == 1 && request.meteringMethod == .centerWeighted)
@@ -186,8 +191,37 @@ struct SceneToneTests {
         let url = try writeScene()
         defer { try? FileManager.default.removeItem(at: url) }
         let decoder = try PhotoDecoder(url: url)
-        let loaded = try await decoder.decode(settings: DevelopSettings())
+        let loaded = try await decoder.decode(settings: DevelopSettings(autoExposure: false))
         #expect(!loaded.isMetered)
+    }
+
+    /// The meter reads the whole photo as it was shot (ADR 0022). Framed on the lamp alone, the
+    /// photo keeps the exposure metered on the dim evening: the engine left to meter the frame
+    /// would read stops less, and a frame would change the exposure of what is left in it.
+    @Test func theMeterReadsThePhotoAsItWasShot() async throws {
+        try #require(SceneToneKernel.isAvailable)
+        let url = try writeScene()
+        defer { try? FileManager.default.removeItem(at: url) }
+        let decoder = try PhotoDecoder(url: url)
+        var settings = DevelopSettings(meteringMethod: .average)
+        let whole = try await decoder.meteredExposure(settings: settings)
+        let plain = try await decoder.pixels(maxDimension: nil, whiteBalance: nil)
+
+        // The lamp alone: the top right of the scene.
+        let frame = PhotoCrop(left: 0.75, top: 0, width: 0.25, height: 0.3125)
+        settings.crop = frame
+        #expect(try await decoder.meteredExposure(settings: settings) == whole)
+        let framed = try await decoder.pixels(
+            maxDimension: nil, whiteBalance: nil, crop: frame, sceneTone: SceneToneRequest(settings),
+        )
+        #expect(framed.isMetered)
+        let lamp = level(framed, at: (column: framed.width / 2, row: framed.height / 2))
+        let expected = level(plain, at: Place.lamp) * pow(2, whole)
+        #expect(abs(lamp - expected) <= 0.003 * expected, "The lamp is \(lamp), and \(expected) with the whole photo's exposure.")
+
+        let alone = try await decoder.pixels(maxDimension: nil, whiteBalance: nil, crop: frame)
+        let ofTheFrame = try Double(alone.loaded(from: url, isRaw: false).source.meteredEv(method: "average", input: .rec2020))
+        #expect(ofTheFrame < whole - 2, "The frame alone reads \(ofTheFrame), the whole photo \(whole).")
     }
 
     /// With the meter off the pixels keep their exposure: the corner is lifted, the lamp dimmed,
@@ -300,22 +334,35 @@ struct SceneToneTests {
         #expect(try developedLevel(answered, at: Place.field) > 1.5 * field)
     }
 
-    /// A change of light too small to see develops the photo as it is without it: putting the
-    /// meter's exposure into the pixels is what the engine does with it.
-    @Test func theSmallestChangeDevelopsThePhotoAsItWas() async throws {
+    /// Putting the meter's exposure into the pixels is what the engine does with it: the photo
+    /// the decoder metered develops as the one the engine is left to meter itself, with no
+    /// change of light and with one too small to see.
+    @Test func theDecodersMeteringDevelopsThePhotoAsTheEnginesOwn() async throws {
         try #require(SceneToneKernel.isAvailable)
         let url = try writeScene()
         defer { try? FileManager.default.removeItem(at: url) }
         let decoder = try PhotoDecoder(url: url)
         let renderer = try FilmRenderer(dataDirectory: toneDataDirectory, backend: .cpu)
+
+        var settings = DevelopSettings(exposureEV: 0.5, autoExposure: false, meteringMethod: .average)
+        settings.grainEnabled = false
+        settings.halationEnabled = false
+        let unmetered = try await decoder.decode(settings: settings)
+        #expect(!unmetered.isMetered)
+        settings.autoExposure = true
+        let engines = try await renderer.render(unmetered.source, settings: settings, quality: .full)
+
         let plain = try await develop(decoder, renderer) { $0.exposureEV = 0.5 }
         let barely = try await develop(decoder, renderer) {
             $0.exposureEV = 0.5
             $0.sceneTone.shadows = 1e-6
         }
         for place in [Place.field, Place.lamp, Place.corner] {
-            let (before, after) = try (developedLevel(plain, at: place), developedLevel(barely, at: place))
-            #expect(abs(after - before) <= 0.002, "\(place): \(before) became \(after)")
+            let before = try developedLevel(engines, at: place)
+            for (name, developed) in [("metered by the decoder", plain), ("with the smallest change", barely)] {
+                let after = try developedLevel(developed, at: place)
+                #expect(abs(after - before) <= 0.002, "\(place), \(name): \(before) became \(after)")
+            }
         }
     }
 

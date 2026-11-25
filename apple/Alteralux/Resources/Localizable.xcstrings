@@ -4675,12 +4675,12 @@
         }
       }
     },
-    "On, the scene is metered as a camera would. Off, the exposure is yours, from where the meter left it." : {
+    "On, the photo is metered as it was shot: no adjustment changes it. Off, the exposure is yours, from where the meter left it." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Accesa, la scena è misurata come farebbe una fotocamera. Spenta, l'esposizione la scegli tu, da dove l'esposimetro l'ha lasciata."
+            "value" : "Accesa, la foto è misurata com'è stata scattata: nessuna regolazione cambia la lettura. Spenta, l'esposizione la scegli tu, da dove l'esposimetro l'ha lasciata."
           }
         }
       }

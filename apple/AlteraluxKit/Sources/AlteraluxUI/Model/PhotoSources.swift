@@ -24,8 +24,9 @@ final class PhotoSources {
         var lensCorrection: Bool?
         var crop: PhotoCrop?
         var rawDecoding = RawDecodingOptions()
-        /// The scene's highlights and shadows with the exposure they are measured from; `nil`
-        /// when they are left alone, and the exposure then changes nothing of what is decoded.
+        /// How the scene is metered, and its highlights and shadows with the exposure they are
+        /// measured from; `nil` with the exposure by hand and the two left alone. While they are
+        /// left alone the exposure changes nothing of what is decoded.
         var sceneTone: SceneToneRequest?
     }
 
