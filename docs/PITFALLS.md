@@ -162,3 +162,9 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   click nor an accessibility press reaches it, and its binding is never set (seen on 2026-11-22 with
   "More adjustments" in the inspector). Use another collapsible section right under it
   (an `InspectorSection`, as the inspector's detail groups are: `DetailGroup`).
+- **Reading `UndoManager.canRedo` posts a checkpoint notification.** An observer of
+  `NSUndoManagerCheckpoint` that reads it asks for the next checkpoint without end: the app looked
+  fine and kept its main thread busy from the first undoable step until it was quit (sampled on
+  2026-11-25; in the code since the first undo). Follow the group, undo and redo notifications,
+  and refresh by hand where the undo manager posts nothing (`removeAllActions(withTarget:)`).
+  Caught by `theUndoManagerIsLeftAloneOnceAStepIsDone`.

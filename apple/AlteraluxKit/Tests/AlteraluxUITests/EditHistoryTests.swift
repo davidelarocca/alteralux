@@ -1,5 +1,6 @@
 import AlteraluxKit
 import Foundation
+import Synchronization
 import Testing
 @testable import AlteraluxUI
 
@@ -285,5 +286,25 @@ struct EditHistoryTests {
         // What was done to it stays with the photo.
         await model.history.waitUntilSaved()
         #expect(model.history.kept(for: fixture.photos[0])?.exposureEV == 0.9)
+    }
+
+    /// Reading whether there is something to redo makes the undo manager post a checkpoint. A
+    /// history that refreshed on every checkpoint asked for the next one without end: after the
+    /// first step the app kept a core busy until it was quit.
+    @Test func theUndoManagerIsLeftAloneOnceAStepIsDone() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        model.open(fixture.photos)
+        try await change(model) { $0.exposureEV = 0.5 }
+        try await wait("something to undo") { model.canUndo }
+
+        let checkpoints = Mutex(0)
+        let observer = NotificationCenter.default.addObserver(
+            forName: .NSUndoManagerCheckpoint, object: model.history.undoManager, queue: nil,
+        ) { _ in checkpoints.withLock { $0 += 1 } }
+        defer { NotificationCenter.default.removeObserver(observer) }
+        try await Task.sleep(for: .milliseconds(200))
+        #expect(checkpoints.withLock { $0 } == 0)
     }
 }
