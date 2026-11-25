@@ -16,6 +16,9 @@ final class PhotoItem: Identifiable {
     /// library's grid says it. A photo that was only opened and looked at has none.
     var hasAdjustments: Bool
     var thumbnail: CGImage?
+    /// The photo's Finder tags, for a photo the library does not list: the library reads the
+    /// tags of its own (`AppModel.tags(of:)`).
+    var tags: [FinderTag] = []
     /// Whether the app holds a security-scoped access on `url` to release.
     let isScoped: Bool
 

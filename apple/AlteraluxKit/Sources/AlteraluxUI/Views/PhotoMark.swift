@@ -1,3 +1,4 @@
+import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
@@ -26,11 +27,37 @@ struct PhotoMark: View {
     }
 }
 
+/// A photo's colored Finder tags as a mark in a corner of its thumbnail: a dot for each, three
+/// at most, as the Finder shows them. For the strip, which has no line under its thumbnails
+/// where the grid draws them. Nothing for a photo without a colored tag.
+struct TagMark: View {
+    private let dots: TagDots
+
+    init(_ tags: [FinderTag]) {
+        dots = TagDots(tags, limit: 3)
+    }
+
+    var body: some View {
+        if !dots.isEmpty {
+            dots
+                .padding(Spacing.xs)
+                .background(.regularMaterial, in: .capsule)
+                .padding(Spacing.xs)
+        }
+    }
+}
+
 #Preview("On a thumbnail") {
     HStack(spacing: Spacing.m) {
         ThumbnailCell(image: nil, isSelected: false)
             .overlay(alignment: .bottomTrailing) { PhotoMark.adjusted }
         ThumbnailCell(image: nil, isSelected: true)
+            .overlay(alignment: .bottomLeading) { PhotoMark.discarded }
+        ThumbnailCell(image: nil, isSelected: false)
+            .overlay(alignment: .topLeading) {
+                TagMark([FinderTag(name: "Red", color: .red), FinderTag(name: "Blue", color: .blue)])
+            }
+            .overlay(alignment: .bottomTrailing) { PhotoMark.adjusted }
             .overlay(alignment: .bottomLeading) { PhotoMark.discarded }
     }
     .padding()

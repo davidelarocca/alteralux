@@ -90,9 +90,13 @@ extension AppModel {
     /// Discards the selected photos: they are marked and hidden, and stay on disk. Under the
     /// filter of the discarded photos it takes them back instead.
     func discardSelection() {
-        let discarding = library.filter != .discarded
-        let changed = library.setDiscarded(discarding, for: selectedPhotos)
-        registerUndo(ofDiscarding: changed, wasDiscarded: !discarding)
+        setDiscarded(library.filter != .discarded, for: selectedPhotos)
+    }
+
+    /// Discards photos, or takes them back. One undo puts their mark back as it was.
+    func setDiscarded(_ isDiscarded: Bool, for photos: [URL]) {
+        let changed = library.setDiscarded(isDiscarded, for: photos)
+        registerUndo(ofDiscarding: changed, wasDiscarded: !isDiscarded)
     }
 
     /// Registers the way back from a discard, or from taking one back, as one step of undo.
@@ -181,28 +185,38 @@ extension AppModel {
     ///
     /// - Parameter color: the color a tag takes on the photos that did not have it.
     func toggleTag(_ tag: String, color: FinderTagColor? = nil) {
-        let photos = selectedPhotos
-        let carried = library.tagsOfSelection()[tag] ?? 0
-        setTag(FinderTag(name: tag, color: color), isOn: carried < photos.count)
+        toggleTag(tag, color: color, on: selectedPhotos)
+    }
+
+    /// Puts a tag on photos, or takes it off when all of them have it.
+    func toggleTag(_ tag: String, color: FinderTagColor? = nil, on photos: [URL]) {
+        let carried = library.tags(of: photos)[tag] ?? 0
+        setTag(FinderTag(name: tag, color: color), isOn: carried < photos.count, for: photos)
     }
 
     /// Puts a tag typed by the user on the selected photos. A name a tag already has, whatever
     /// its case, puts that tag on with its own color; a new one takes the color chosen, if any.
     func addTag(named name: String, color: FinderTagColor?) {
+        addTag(named: name, color: color, to: selectedPhotos)
+    }
+
+    /// Puts a tag typed by the user on photos, as `addTag(named:color:)` does on the selection.
+    func addTag(named name: String, color: FinderTagColor?, to photos: [URL]) {
         let name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        if let existing = tagChoices.named(name) {
-            setTag(FinderTag(name: existing.name, color: existing.color), isOn: true)
+        if let existing = tagChoices(for: photos).named(name) {
+            setTag(FinderTag(name: existing.name, color: existing.color), isOn: true, for: photos)
         } else {
-            setTag(FinderTag(name: name, color: color), isOn: true)
+            setTag(FinderTag(name: name, color: color), isOn: true, for: photos)
         }
     }
 
-    private func setTag(_ tag: FinderTag, isOn: Bool) {
-        let failed = library.setTag(tag, isOn: isOn, for: selectedPhotos).count { !$0.succeeded }
+    private func setTag(_ tag: FinderTag, isOn: Bool, for photos: [URL]) {
+        let failed = library.setTag(tag, isOn: isOn, for: photos).count { !$0.succeeded }
         if failed > 0 {
             alertMessage = String(localized: "\(failed) photos could not be tagged.")
         }
+        readTags(ofStripPhotosAmong: photos)
     }
 
     /// Tells the library a photo's adjustments were kept, so its mark in the grid follows.

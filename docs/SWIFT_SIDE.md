@@ -213,7 +213,12 @@ open photos, the settings of the selected one and its preview.
   settings still. A zoom made while the settings are still is not held back.
   The strip's thumbnail follows the settled preview only, and carries the
   library's mark (`PhotoMark`) once adjustments are kept with the photo
-  (`PhotoItem.hasAdjustments`). The photo is
+  (`PhotoItem.hasAdjustments`), the mark of a discarded photo, and a dot for
+  each colored Finder tag (`TagMark`): the tags as the library reads them
+  for a photo of its folder, the photo's own otherwise (`AppModel.tags(of:)`).
+  A thumbnail's menu (`StripPhotoMenu`, `AppModel+Strip.swift`) acts on its
+  photo and leaves the one on screen where it is: a photo discarded there
+  stays in the strip with its mark, one moved to the Trash leaves it. The photo is
   decoded for the 1024 px preview as soon as it is on screen (see Sources),
   so the first move does not wait.
 - **Viewer.** An `NSScrollView` (pinch, smart zoom, scroll) showing the

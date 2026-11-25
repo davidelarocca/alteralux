@@ -357,9 +357,6 @@ private struct LibraryTile: View {
     let ask: (PhotoQuestion) -> Void
     @State private var image: CGImage?
 
-    /// The diameter of a tag's dot, in points.
-    private static let dotSize: CGFloat = 8
-
     /// Thumbnails are asked for in two sizes, in pixels, so the ones kept can be used again
     /// whatever the slider says: enough for the smaller tiles, and for the larger ones.
     private var pixels: Int {
@@ -380,14 +377,7 @@ private struct LibraryTile: View {
                     }
                 }
             HStack(spacing: Spacing.xs) {
-                HStack(spacing: Spacing.xxs) {
-                    ForEach(tags.compactMap(\.color), id: \.self) { color in
-                        Circle()
-                            .fill(color.swatch)
-                            .frame(width: Self.dotSize, height: Self.dotSize)
-                    }
-                }
-                .accessibilityHidden(true)
+                TagDots(tags)
                 Text(photo.lastPathComponent)
                     .font(Typography.caption)
                     .foregroundStyle(isSelected ? .primary : .secondary)

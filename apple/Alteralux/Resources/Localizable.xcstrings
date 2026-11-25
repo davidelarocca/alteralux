@@ -3355,6 +3355,16 @@
         }
       }
     },
+    "The tag is put on “%@”, as in the Finder." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il tag viene messo su “%@”, come nel Finder."
+          }
+        }
+      }
+    },
     "The tag is put on the selected photos, as in the Finder." : {
       "localizations" : {
         "it" : {

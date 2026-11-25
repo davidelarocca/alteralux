@@ -40,7 +40,21 @@ extension AppModel {
 
     /// Moves the selected photos to the Trash, where the Finder can put them back.
     func trashSelection() async {
-        let failed = await library.trash(selectedPhotos).count { !$0.succeeded }
+        await trash(selectedPhotos)
+    }
+
+    /// Moves photos to the Trash, where the Finder can put them back. Those in the strip leave
+    /// it: what was changed on them is kept with the files first, so a photo put back comes
+    /// back as it was left.
+    func trash(_ files: [URL]) async {
+        closeChange()
+        await history.waitUntilSaved()
+        let results = await library.trash(files)
+        let gone = Set(results.filter(\.succeeded).map(\.source))
+        for item in photos where gone.contains(item.url) {
+            remove(item)
+        }
+        let failed = results.count - gone.count
         if failed > 0 {
             alertMessage = String(localized: "\(failed) photos could not be moved to the Trash.")
         }

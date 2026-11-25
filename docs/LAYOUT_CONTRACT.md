@@ -57,7 +57,7 @@ click) are the system's and open at the pointer: they are the one exception.
 
 | Element | Opened from | Kind | Size | At the minimum size |
 |---|---|---|---|---|
-| `ExportSheet` | Main window, Export; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
+| `ExportSheet` | Main window, Export, and Export… in the menu of a thumbnail of the strip; Library, Export… of the selection's bar | sheet | 420 wide | fits inside the 900 pt window |
 | Filter and Sort | Library, the trailing side of the toolbar | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window (measured at 900 pt) |
 | `RecipeMenu` | Main window, the toolbar's Recipe button | system menu, no submenus (`WindowMenuButton`) | system | under the button, moved toward the leading side to stay inside the window |
 | `RecipesWindow` | `RecipeMenu`, Manage Recipes…; the Window menu | a window of its own | 780x640, down to 640x480 | on screen, where the system opens a new window |
@@ -68,9 +68,9 @@ click) are the system's and open at the pointer: they are the one exception.
 | `RecipeRunForm` | Library, Develop with… of the selection's bar; Develop with Recipe in a photo's menu | the export sheet (`FormSheet`) | 420 wide | fits inside the 900 pt window |
 | Lists of the selection's bar | Library, Recipe, Develop with…, Move to…, Copy to… and Tag of the bar | popover above the button | 260 wide, up to 320 tall | opens upward, inside the window |
 | Shape of the frame | Main window, the crop's controls under the photo | popover above the button (`ChoiceListButton`) | 260 wide, up to 320 tall | opens upward, inside the window |
-| `NewTagSheet` | `LibraryPhotoMenu`, Tags, New Tag… | sheet (`FormSheet`): the name and the color | 420 wide | fits inside the 900 pt window |
+| `NewTagSheet` | `LibraryPhotoMenu` and `StripPhotoMenu`, Tags, New Tag… | sheet (`FormSheet`): the name and the color | 420 wide | fits inside the 900 pt window |
 | New name of a photo | `LibraryPhotoMenu`, Rename… | system alert with a text field | system | centered in the window |
-| Moving photos to the Trash | `LibraryPhotoMenu`, Move to Trash | system confirmation dialog | system | centered in the window |
+| Moving photos to the Trash | `LibraryPhotoMenu` and `StripPhotoMenu`, Move to Trash | system confirmation dialog | system | centered in the window |
 | Deleting a recipe | `RecipesWindow`, Delete… | system confirmation dialog | system | centered in the window |
 | Files already exported | `ExportSheet`, Export when files of an earlier export are in the destination | system alert | system | centered in the window |
 | Folder panel | `ExportSheet`, Export with "Another folder…" | system open panel | system | separate window |
