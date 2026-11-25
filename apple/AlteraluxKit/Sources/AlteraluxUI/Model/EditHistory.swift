@@ -141,6 +141,8 @@ final class EditHistory {
     /// Lets go of a photo that leaves the strip: its steps can no longer be undone.
     func forget(_ item: PhotoItem) {
         undoManager?.removeAllActions(withTarget: item)
+        // The undo manager posts nothing when steps are removed.
+        refresh()
         if item === current {
             follow(nil)
         }
@@ -181,6 +183,9 @@ final class EditHistory {
     }
 
     /// Follows the undo manager, which says nothing to SwiftUI when its stacks change.
+    ///
+    /// Not its checkpoints: `canRedo` posts one each time it is read, so a refresh on every
+    /// checkpoint asks for the next one, and the main thread never rests again after the first step.
     private func observe() {
         let center = NotificationCenter.default
         observers.forEach(center.removeObserver)
@@ -189,7 +194,6 @@ final class EditHistory {
         guard let undoManager else { return }
         let names: [Notification.Name] = [
             .NSUndoManagerDidCloseUndoGroup, .NSUndoManagerDidUndoChange, .NSUndoManagerDidRedoChange,
-            .NSUndoManagerCheckpoint,
         ]
         observers = names.map { name in
             center.addObserver(forName: name, object: undoManager, queue: .main) { [weak self] _ in
