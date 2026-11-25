@@ -65,7 +65,7 @@ extension WindowedTests {
             model.toggleTag("Red", color: .red, on: [photos[1]])
             model.toggleTag("Blue", color: .blue, on: [photos[1]])
             model.toggleTag("Green", color: .green, on: [photos[2]])
-            model.toggleDiscarded(model.photos[2])
+            model.library.setDiscarded(true, for: [model.photos[2].url])
             let deadline = ContinuousClock.now + .seconds(30)
             func isReady() -> Bool {
                 model.preview != nil && !model.isRendering && model.photos.allSatisfy { $0.thumbnail != nil }

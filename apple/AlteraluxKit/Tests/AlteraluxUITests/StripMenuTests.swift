@@ -88,28 +88,62 @@ struct StripMenuTests {
         #expect(model.settings.exposureEV == 0.5)
     }
 
-    @Test func aPhotoDiscardedFromTheStripStaysThereWithItsMark() async throws {
+    @Test func aPhotoDiscardedFromTheStripLeavesItAndUndoPutsItBack() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }
         let model = try await fixture.model()
-        let second = model.photos[1]
+        let (first, second) = (model.photos[0], model.photos[1])
+        let urls = model.photos.map(\.url)
 
-        #expect(model.canDiscard(second) && !model.isDiscarded(second))
-        model.toggleDiscarded(second)
-        #expect(model.isDiscarded(second))
+        #expect(model.discardKind(of: second) == .discard)
+        model.discard(second)
         #expect(model.library.discarded == [second.url])
-        #expect(model.photos.count == 4 && model.selection === model.photos[0])
+        #expect(model.photos.map(\.url) == [urls[0], urls[2], urls[3]] && model.selection === first)
 
-        // Taken back from the same menu, and by undo.
-        model.toggleDiscarded(second)
-        #expect(!model.isDiscarded(second))
+        // Undo takes the mark away and puts the photo back where it was; redo discards it again.
         model.undo()
-        #expect(model.isDiscarded(second))
+        #expect(model.library.discarded.isEmpty)
+        #expect(model.photos.map(\.url) == urls && model.selection === first)
+        model.redo()
+        #expect(model.library.discarded == [second.url])
+        #expect(model.photos.map(\.url) == [urls[0], urls[2], urls[3]] && model.selection === first)
+    }
+
+    @Test func discardingThePhotoOnScreenShowsTheNextAndUndoShowsItAgain() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = try await fixture.model()
+        let urls = model.photos.map(\.url)
+
+        model.discardPhotoOnScreen()
+        #expect(model.library.discarded == [urls[0]])
+        #expect(model.photos.map(\.url) == Array(urls.dropFirst()) && model.selection?.url == urls[1])
+
+        model.undo()
+        #expect(model.library.discarded.isEmpty)
+        #expect(model.photos.map(\.url) == urls && model.selection?.url == urls[0])
+    }
+
+    @Test func aDiscardedPhotoIsTakenBackAndOneFromOutsideOnlyLeavesTheStrip() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = try await fixture.model()
+        let third = model.photos[2]
+
+        // Discarded in the library, as a photo opened from the discarded ones is: the strip shows
+        // its mark, and the command takes it back without moving it.
+        model.library.setDiscarded(true, for: [third.url])
+        #expect(model.isDiscarded(third) && model.discardKind(of: third) == .takeBack)
+        model.discard(third)
+        #expect(!model.isDiscarded(third) && model.photos.count == 4)
 
         // A photo opened from outside the library is not in a folder to be hidden from.
         model.open([fixture.outside])
         let outside = try #require(model.photos.last)
-        #expect(outside.url == fixture.outside && !model.canDiscard(outside))
+        #expect(outside.url == fixture.outside && model.discardKind(of: outside) == .remove)
+        model.discard(outside)
+        #expect(model.photos.count == 4 && model.library.discarded.isEmpty)
+        #expect(!model.photos.contains { $0.url == fixture.outside })
     }
 
     @Test func aPhotoMovedToTheTrashLeavesTheStrip() async throws {

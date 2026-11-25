@@ -103,7 +103,9 @@ public struct AlteraluxCommands: Commands {
                     .keyboardShortcut(.rightArrow)
             }
             .disabled(!model.canStepThroughPhotos || model.showsLibrary)
-            Button("Remove from Strip") { model.removeSelection() }
+            // Discards the photo on screen, as the Delete key does in the library; a photo that
+            // cannot be discarded only leaves the strip, and the command says so.
+            Button(model.selection.map { model.discardKind(of: $0).title } ?? "Discard") { model.discardPhotoOnScreen() }
                 .keyboardShortcut(.delete)
                 .disabled(!model.hasPhoto || model.showsLibrary)
             Divider()

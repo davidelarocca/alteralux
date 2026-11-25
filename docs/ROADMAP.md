@@ -242,6 +242,11 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      Share, Tags, Copy, Paste and Reset Adjustments, Discard, Move to Trash. It acts on that
      photo, and the one on screen stays. The strip shows a photo's colored tags as dots in a
      corner of its thumbnail (`TagMark`), and the mark of a discarded photo.
+   - Done on 2026-11-25, asked by the user: "Remove from Strip" leaves the thumbnail's menu, and
+     Discard is what takes a photo out of the strip, as it takes it out of the grid; undo puts it
+     back in its place. The View menu's command (Command-Delete) discards the photo on screen. A
+     photo that is not of the folder on screen cannot be discarded: for it alone the command is
+     still "Remove from Strip".
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
