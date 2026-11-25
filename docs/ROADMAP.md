@@ -237,6 +237,11 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      says why, and the thumbnails kept on disk are pruned at launch to 512 MB, oldest first.
    - Done on 2026-11-24, asked by the user: the strip marks the photos that have adjustments, with
      the grid's own mark (`PhotoMark`), so one that was touched is told from one that was not.
+   - Done on 2026-11-25, asked by the user: a thumbnail of the strip has a menu of its own
+     (`StripPhotoMenu`), where it had "Remove from Strip" alone: Show in Finder, Recipe, Export,
+     Share, Tags, Copy, Paste and Reset Adjustments, Discard, Move to Trash. It acts on that
+     photo, and the one on screen stays. The strip shows a photo's colored tags as dots in a
+     corner of its thumbnail (`TagMark`), and the mark of a discarded photo.
    - A sidebar entry for photos opened one by one, outside any folder.
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several

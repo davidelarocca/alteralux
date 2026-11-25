@@ -1,3 +1,4 @@
+import AlteraluxKit
 import DesignSystem
 import SwiftUI
 
@@ -5,6 +6,8 @@ import SwiftUI
 struct FilmstripView: View {
     @Environment(AppModel.self) private var model
     @ReduceMotion private var reduceMotion
+    /// What a photo's menu asks before it acts: a new tag's name, whether to trash the photo.
+    @State private var question: PhotoQuestion?
 
     /// Width of the "add photos" button, in points (its height follows the thumbnails).
     private static let addButtonWidth: CGFloat = 44
@@ -14,6 +17,7 @@ struct FilmstripView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .frame(height: ThumbnailCell.size.height + 2 * Spacing.s)
             .background(.bar)
+            .modifier(PhotoQuestionAlerts(question: $question))
     }
 
     private var thumbnails: some View {
@@ -21,25 +25,8 @@ struct FilmstripView: View {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: Spacing.s) {
                     ForEach(model.photos) { item in
-                        Button {
-                            model.select(item)
-                        } label: {
-                            ThumbnailCell(image: item.thumbnail, isSelected: item.id == model.selectedID)
-                                // The library's mark: a photo with adjustments is told from one not touched.
-                                .overlay(alignment: .bottomTrailing) {
-                                    if item.hasAdjustments {
-                                        PhotoMark.adjusted
-                                    }
-                                }
-                        }
-                        .buttonStyle(.plain)
-                        .id(item.id)
-                        .help(item.name)
-                        .accessibilityLabel(item.hasAdjustments ? Text("\(item.name), with adjustments") : Text(verbatim: item.name))
-                        .accessibilityAddTraits(item.id == model.selectedID ? .isSelected : [])
-                        .contextMenu {
-                            Button("Remove from Strip") { model.remove(item) }
-                        }
+                        StripThumbnail(item: item) { question = $0 }
+                            .id(item.id)
                     }
 
                     Button {
@@ -69,5 +56,50 @@ struct FilmstripView: View {
                 }
             }
         }
+    }
+}
+
+/// One photo of the strip: its thumbnail, with the library's marks in its corners (adjusted,
+/// discarded) and its colored Finder tags as dots. A click shows the photo; its menu acts on it
+/// without showing it.
+private struct StripThumbnail: View {
+    @Environment(AppModel.self) private var model
+    let item: PhotoItem
+    /// Asks before one of the menu's actions.
+    let ask: (PhotoQuestion) -> Void
+
+    var body: some View {
+        let tags = model.tags(of: item)
+        let isDiscarded = model.isDiscarded(item)
+        Button {
+            model.select(item)
+        } label: {
+            ThumbnailCell(image: item.thumbnail, isSelected: model.isOnScreen(item))
+                .overlay(alignment: .topLeading) { TagMark(tags) }
+                .overlay(alignment: .bottomTrailing) {
+                    if item.hasAdjustments {
+                        PhotoMark.adjusted
+                    }
+                }
+                .overlay(alignment: .bottomLeading) {
+                    if isDiscarded {
+                        PhotoMark.discarded
+                    }
+                }
+        }
+        .buttonStyle(.plain)
+        .help(item.name)
+        .accessibilityLabel(label(isDiscarded: isDiscarded))
+        .accessibilityValue(Text(verbatim: tags.map(\.name).joined(separator: ", ")))
+        .accessibilityAddTraits(model.isOnScreen(item) ? .isSelected : [])
+        .contextMenu { StripPhotoMenu(item: item, ask: ask) }
+    }
+
+    /// The photo's name, and what its marks say, as the library's grid says it.
+    private func label(isDiscarded: Bool) -> Text {
+        if isDiscarded {
+            return Text("\(item.name), discarded")
+        }
+        return item.hasAdjustments ? Text("\(item.name), with adjustments") : Text(verbatim: item.name)
     }
 }

@@ -46,6 +46,39 @@ extension WindowedTests {
             #expect(model.alertMessage == nil)
             #expect(Screenshot.capture("MainWindow", state: "photo") { MainWindow().environment(model) } == [])
         }
+
+        /// The strip with what its thumbnails say of a photo: colored tags as dots, the mark
+        /// of adjustments, the mark of a discarded photo.
+        @Test func stripWithMarks() async throws {
+            let pictures = try WindowedTests.writeTestPictures(count: 4)
+            let folder = pictures[0].deletingLastPathComponent()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let model = AppModel(dataDirectory: WindowedTests.engineData, editsDirectory: folder.appendingPathComponent("support"))
+            await model.start()
+            await model.addFolder(folder)
+            let photos = model.library.photos
+            try #require(photos.count == 4)
+
+            model.develop(photos[0])
+            model.settings.exposureEV = 0.5
+            model.settingsDidChange()
+            model.toggleTag("Red", color: .red, on: [photos[1]])
+            model.toggleTag("Blue", color: .blue, on: [photos[1]])
+            model.toggleTag("Green", color: .green, on: [photos[2]])
+            model.toggleDiscarded(model.photos[2])
+            let deadline = ContinuousClock.now + .seconds(30)
+            func isReady() -> Bool {
+                model.preview != nil && !model.isRendering && model.photos.allSatisfy { $0.thumbnail != nil }
+                    && model.photos[0].hasAdjustments && model.tags(of: model.photos[1]).count == 2
+                    && !model.tags(of: model.photos[2]).isEmpty
+            }
+            while !isReady() {
+                try #require(ContinuousClock.now < deadline, "The strip was not ready in 30 seconds.")
+                try await Task.sleep(for: .milliseconds(50))
+            }
+            #expect(model.alertMessage == nil)
+            #expect(Screenshot.capture("MainWindow", state: "strip-marks") { MainWindow().environment(model) } == [])
+        }
     }
 }
 

@@ -3,14 +3,14 @@ import AppKit
 import DesignSystem
 import SwiftUI
 
-/// What a photo's menu asks before it acts: a name, with the system's alert.
+/// What a photo's menu asks before it acts, with the photos it then acts on.
 enum PhotoQuestion: Equatable {
-    /// The name of a new tag for the selected photos.
-    case newTag
+    /// The name of a new tag for these photos.
+    case newTag([URL])
     /// A new name for this photo.
     case rename(URL)
-    /// Whether to move the selected photos to the Trash: one click must not empty a folder.
-    case trash
+    /// Whether to move these photos to the Trash: one click must not empty a folder.
+    case trash([URL])
 }
 
 /// The menu of a photo of the library's grid, opened with a secondary click: what the bar of
@@ -66,7 +66,7 @@ struct LibraryPhotoMenu: View {
             Button("Rename…") { act { ask(.rename(photo)) } }
         }
         Divider()
-        tagMenu
+        PhotoTagMenu(photos: targets, act: act, ask: ask)
         Divider()
         Button("Copy Adjustments") { act { model.copyAdjustments() } }
             .disabled(count != 1)
@@ -80,33 +80,8 @@ struct LibraryPhotoMenu: View {
         Button("Rotate Right") { act { model.turnSelection(clockwise: true) } }
         Divider()
         discardButton(count: count)
-        Button { act { ask(.trash) } } label: {
+        Button { act { ask(.trash(targets)) } } label: {
             count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
-        }
-    }
-
-    /// The tags, as the Finder lists them, each with its dot and a check when every photo
-    /// carries it: choosing one puts it on or takes it off. Under them, a new tag by its name.
-    private var tagMenu: some View {
-        let choices = model.tagChoices(for: targets)
-        let count = targets.count
-        return Menu("Tags") {
-            ForEach(choices, id: \.name) { choice in
-                Toggle(isOn: Binding(
-                    get: { choice.carriedBy == count },
-                    set: { _ in act { model.toggleTag(choice.name, color: choice.color) } },
-                )) {
-                    Label {
-                        Text(verbatim: choice.name)
-                    } icon: {
-                        FinderTag(name: choice.name, color: choice.color).menuDot
-                    }
-                }
-                // A toggle in a menu draws its title alone unless asked for the icon too.
-                .labelStyle(.titleAndIcon)
-            }
-            Divider()
-            Button("New Tag…") { act { ask(.newTag) } }
         }
     }
 
@@ -140,6 +115,82 @@ struct LibraryPhotoMenu: View {
             model.library.click(photo)
         }
         action()
+    }
+}
+
+/// The Tags submenu of a photo's menu: the tags, as the Finder lists them, each with its dot and
+/// a check when every photo carries it: choosing one puts it on or takes it off. Under them, a
+/// new tag by its name.
+private struct PhotoTagMenu: View {
+    @Environment(AppModel.self) private var model
+    /// The photos the tags are put on.
+    let photos: [URL]
+    /// What an action goes through: the library's menu makes its photo the selection first.
+    var act: (() -> Void) -> Void = { $0() }
+    /// Asks for the name of a new tag.
+    let ask: (PhotoQuestion) -> Void
+
+    var body: some View {
+        let choices = model.tagChoices(for: photos)
+        Menu("Tags") {
+            ForEach(choices, id: \.name) { choice in
+                Toggle(isOn: Binding(
+                    get: { choice.carriedBy == photos.count },
+                    set: { _ in act { model.toggleTag(choice.name, color: choice.color, on: photos) } },
+                )) {
+                    Label {
+                        Text(verbatim: choice.name)
+                    } icon: {
+                        FinderTag(name: choice.name, color: choice.color).menuDot
+                    }
+                }
+                // A toggle in a menu draws its title alone unless asked for the icon too.
+                .labelStyle(.titleAndIcon)
+            }
+            Divider()
+            Button("New Tag…") { act { ask(.newTag(photos)) } }
+        }
+    }
+}
+
+/// The menu of a photo of the strip, opened with a secondary click: what is done to a photo
+/// while a series is developed, in the order of the library's menu. It acts on the photo it was
+/// opened on, and the photo on screen stays. What arranges the files (Open With, Move to, Copy
+/// to, Duplicate, Rename), turning and developing with a recipe stay in the library.
+struct StripPhotoMenu: View {
+    @Environment(AppModel.self) private var model
+    let item: PhotoItem
+    /// Asks before acting: the name of a new tag, whether to move the photo to the Trash.
+    let ask: (PhotoQuestion) -> Void
+
+    var body: some View {
+        Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
+        Divider()
+        Menu("Recipe") {
+            ForEach(model.recipes) { recipe in
+                Button(recipe.name) { model.apply(recipe, to: item) }
+            }
+        }
+        .disabled(model.recipes.isEmpty)
+        Button("Export…") { model.presentExport(of: item) }
+            .disabled(!model.canPresentExport(of: item))
+        ShareLink(item: item.url)
+        Divider()
+        PhotoTagMenu(photos: [item.url], ask: ask)
+        Divider()
+        Button("Copy Adjustments") { model.copyAdjustments(of: item) }
+        Button("Paste Adjustments") { model.pasteAdjustments(on: item) }
+            .disabled(model.copiedAdjustments == nil)
+        Button("Reset Adjustments") { model.resetAdjustments(of: item) }
+            .disabled(!model.canResetAdjustments(of: item))
+        Divider()
+        Button { model.toggleDiscarded(item) } label: {
+            model.isDiscarded(item) ? Text("Take Back") : Text("Discard")
+        }
+        .disabled(!model.canDiscard(item))
+        Button("Move to Trash") { ask(.trash([item.url])) }
+        Divider()
+        Button("Remove from Strip") { model.remove(item) }
     }
 }
 
@@ -179,19 +230,21 @@ private struct OpenWithMenu: View {
     }
 }
 
-/// What a photo's menu asks before it acts: a new tag for the selection, with its name and color,
-/// in a sheet; a new name for a photo, in the system's alert; whether to move the selected photos
+/// What a photo's menu asks before it acts: a new tag for its photos, with its name and color,
+/// in a sheet; a new name for a photo, in the system's alert; whether to move its photos
 /// to the Trash, in the system's confirmation. The field starts with the photo's
 /// name, its extension left out: it stays.
 struct PhotoQuestionAlerts: ViewModifier {
     @Environment(AppModel.self) private var model
     @Binding var question: PhotoQuestion?
     @State private var name = ""
+    /// The photos of the last question: what it shows while it closes, the question gone.
+    @State private var asked: [URL] = []
 
     func body(content: Content) -> some View {
         content
-            .sheet(isPresented: isAsking(.newTag)) {
-                NewTagSheet()
+            .sheet(isPresented: isTagging) {
+                NewTagSheet(photos: tagged)
                     .environment(model)
             }
             .alert("Rename Photo", isPresented: isRenaming) {
@@ -209,21 +262,26 @@ struct PhotoQuestionAlerts: ViewModifier {
                     Text("The photo keeps its kind: “.\(photo.pathExtension)” stays at the end of its name.")
                 }
             }
-            .confirmationDialog(trashQuestion, isPresented: isAsking(.trash)) {
+            .confirmationDialog(trashQuestion, isPresented: isTrashing) {
                 Button("Move to Trash", role: .destructive) {
-                    Task { await model.trashSelection() }
+                    let photos = trashed
+                    Task { await model.trash(photos) }
                 }
             } message: {
-                if model.selectedPhotos.count == 1 {
+                if trashed.count == 1 {
                     Text("You can put it back from the Trash in the Finder.")
                 } else {
                     Text("You can put them back from the Trash in the Finder.")
                 }
             }
-            .onChange(of: question) { _, asked in
-                if case let .rename(photo) = asked {
+            .onChange(of: question) { _, question in
+                switch question {
+                case let .rename(photo):
                     name = photo.deletingPathExtension().lastPathComponent
-                } else {
+                case let .newTag(photos), let .trash(photos):
+                    name = ""
+                    asked = photos
+                case nil:
                     name = ""
                 }
             }
@@ -231,36 +289,68 @@ struct PhotoQuestionAlerts: ViewModifier {
 
     /// The question before the Trash: the photo by its name, or how many.
     private var trashQuestion: Text {
-        let photos = model.selectedPhotos
+        let photos = trashed
         if photos.count == 1, let photo = photos.first {
             return Text("Move “\(photo.lastPathComponent)” to the Trash?")
         }
         return Text("Move \(photos.count) photos to the Trash?")
     }
 
-    private func isAsking(_ asked: PhotoQuestion) -> Binding<Bool> {
-        Binding(get: { question == asked }, set: {
+    /// The photos a new tag is asked for.
+    private var tagged: [URL] {
+        if case let .newTag(photos) = question {
+            photos
+        } else {
+            asked
+        }
+    }
+
+    /// The photos asked about before the Trash.
+    private var trashed: [URL] {
+        if case let .trash(photos) = question {
+            photos
+        } else {
+            asked
+        }
+    }
+
+    private var isTagging: Binding<Bool> {
+        isAsking {
+            if case .newTag = $0 {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private var isTrashing: Binding<Bool> {
+        isAsking {
+            if case .trash = $0 {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    private var isRenaming: Binding<Bool> {
+        isAsking {
+            if case .rename = $0 {
+                true
+            } else {
+                false
+            }
+        }
+    }
+
+    /// Whether the question on screen is of one kind; closing it takes the question away.
+    private func isAsking(_ isKind: @escaping (PhotoQuestion) -> Bool) -> Binding<Bool> {
+        Binding(get: { question.map(isKind) ?? false }, set: {
             if !$0 {
                 question = nil
             }
         })
-    }
-
-    private var isRenaming: Binding<Bool> {
-        Binding(
-            get: {
-                if case .rename = question {
-                    true
-                } else {
-                    false
-                }
-            },
-            set: {
-                if !$0 {
-                    question = nil
-                }
-            },
-        )
     }
 }
 
@@ -291,10 +381,12 @@ struct DevelopPhotoMenu: View {
     }
 }
 
-/// A new tag for the selected photos: its name, and its color as the Finder offers it. A name a
-/// tag already has puts that tag on, with its own color.
+/// A new tag for photos: its name, and its color as the Finder offers it. A name a tag already
+/// has puts that tag on, with its own color.
 private struct NewTagSheet: View {
     @Environment(AppModel.self) private var model
+    /// The photos the tag is put on.
+    let photos: [URL]
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var color: FinderTagColor?
@@ -303,9 +395,11 @@ private struct NewTagSheet: View {
         let isNamed = !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         FormSheet(
             Text("New Tag"),
-            message: Text("The tag is put on the selected photos, as in the Finder."),
+            message: photos.count == 1
+                ? Text("The tag is put on “\(photos[0].lastPathComponent)”, as in the Finder.")
+                : Text("The tag is put on the selected photos, as in the Finder."),
             confirm: SheetAction(Text("Add"), isEnabled: isNamed) {
-                model.addTag(named: name, color: color)
+                model.addTag(named: name, color: color, to: photos)
                 dismiss()
             },
             cancel: SheetAction(Text("Cancel")) { dismiss() },

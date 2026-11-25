@@ -269,6 +269,7 @@ public final class AppModel {
             first = first ?? item
             loadThumbnail(for: item)
         }
+        readTags(ofStripPhotosAmong: urls.filter { library.infos[$0] == nil })
         return first
     }
 

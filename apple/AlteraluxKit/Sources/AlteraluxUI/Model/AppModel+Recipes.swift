@@ -93,7 +93,13 @@ extension AppModel {
 
     /// Gives a recipe to the selected photos of the library. One undo takes it back from all.
     func applyToSelection(_ recipe: Recipe) {
-        give({ recipe.applied(to: $0) }, to: selectedPhotos)
+        apply(recipe, to: selectedPhotos)
+    }
+
+    /// Gives a recipe to photos, whether they are in the strip or not. One undo takes it back
+    /// from all.
+    func apply(_ recipe: Recipe, to photos: [URL]) {
+        give({ recipe.applied(to: $0) }, to: photos)
     }
 
     /// Whether the selected photos of the library can receive a look: discarded photos are
