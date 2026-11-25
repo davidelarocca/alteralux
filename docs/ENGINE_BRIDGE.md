@@ -102,15 +102,17 @@ when it stops, and scaling a 24 MP photo takes about 250 ms, far more than
 rendering the preview. `SourceImage.preparePreview(maxDimension:)` scales ahead
 of time. The simulation scales
 grain and halation from the physical film format, so a preview looks like the
-full render, as far as its pixels can show it. Measured on 2026-11-24 against a
-6144 px render seen at the preview's size (`PreviewFidelityTests`): the
-halation is within a tenth at 2048 px; the grain of a preview shown pixel for
-pixel is about two thirds as strong, at any size, because upstream blurs the
-grain by a number of pixels (`grain.blur`, 0.65) and not by a length on the
-film, so the blur weighs the same on a preview and vanishes from the full
-render once it is seen smaller. The scan's sharpening has its radius in pixels
-too: it changes a 2048 px preview three times as much as the full render seen
-at that size.
+full render, as far as its pixels can show it. Three parameters are lengths in
+pixels and do not follow the size: the grain's blur (`grain.blur`, 0.65), the
+scan's sharpening and its lens blur. Without a change a preview had two thirds
+of the grain of the full render seen at its size and three times its
+sharpening. So a render that stands for a larger photo is given other values
+for those three, in Swift, before the patch crosses the bridge
+(`FilmRenderer.render(…, photoLongSide:)`, `PixelScaling`,
+[ADR 0023](adr/0023-a-preview-looks-like-the-photo-seen-at-its-size.md)); the
+bridge passes what it is given. Measured on 2026-11-25 against a 6144 px render
+seen at the preview's size (`PreviewFidelityTests`): the halation within a tenth
+at 2048 px, the grain 1.03, the sharpening 1.24 times.
 
 Since [ADR 0007](adr/0007-decode-each-preview-at-its-size.md) the app no longer
 uses this: it hands the engine a source already decoded at the size of the

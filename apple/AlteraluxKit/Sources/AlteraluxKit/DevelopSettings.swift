@@ -286,7 +286,11 @@ extension DevelopSettings {
     ///
     /// The engine deep-merges it over its defaults and rejects unknown keys,
     /// so a mismatch with an updated engine fails loudly (and in the tests).
-    public func enginePatchJSON() throws -> String {
+    ///
+    /// - Parameter pixelScale: the render's size over the size of the photo it stands for. What
+    ///   the engine takes in pixels is changed for it (`PixelScaling`), so a preview is softened
+    ///   and sharpened as the photo is, seen at the preview's size. 1 for an export.
+    public func enginePatchJSON(pixelScale: Double = 1) throws -> String {
         var patch: [String: Any] = [
             "camera": [
                 "exposure_compensation_ev": exposureEV,
@@ -337,6 +341,9 @@ extension DevelopSettings {
                 throw AlteraluxError.invalidAdvancedParameters
             }
             patch = Self.deepMerge(patch, advanced)
+        }
+        if pixelScale != 1 {
+            patch = Self.scalingPixelLengths(of: patch, by: pixelScale)
         }
         let data = try JSONSerialization.data(withJSONObject: patch, options: [.sortedKeys])
         guard let json = String(data: data, encoding: .utf8) else {
@@ -392,6 +399,30 @@ extension DevelopSettings {
                 "rgb_to_raw_method": color.upsampling.rawValue,
             ],
         ]
+    }
+
+    /// The lengths the engine takes in pixels, for a render `scale` times the photo's size (see
+    /// `PixelScaling`): the grain's blur, the scan's sharpening strength and its lens blur. The
+    /// glare's blur is in pixels too, but it softens a noise drawn per pixel, the same at every
+    /// size: it is left as it is.
+    static func scalingPixelLengths(of patch: [String: Any], by scale: Double) -> [String: Any] {
+        var patch = patch
+        if var film = patch["film_render"] as? [String: Any], var grain = film["grain"] as? [String: Any],
+           let blur = grain["blur"] as? Double {
+            grain["blur"] = PixelScaling.grainBlur(blur, scale: scale)
+            film["grain"] = grain
+            patch["film_render"] = film
+        }
+        if var scanner = patch["scanner"] as? [String: Any] {
+            if let blur = scanner["lens_blur"] as? Double {
+                scanner["lens_blur"] = blur * scale
+            }
+            if let mask = scanner["unsharp_mask"] as? [Double], mask.count == 2 {
+                scanner["unsharp_mask"] = [mask[0], PixelScaling.sharpenAmount(mask[1], scale: scale)]
+            }
+            patch["scanner"] = scanner
+        }
+        return patch
     }
 
     private static func deepMerge(_ base: [String: Any], _ overlay: [String: Any]) -> [String: Any] {

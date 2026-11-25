@@ -27,7 +27,10 @@ extension AppModel {
             let developed = await Task.detached(priority: .utility) { () -> SendableImage in
                 guard let decoder = try? PhotoDecoder(url: url, lenses: lenses),
                       let loaded = try? await decoder.decode(maxDimension: dimension, settings: settings),
-                      let image = try? await renderer.render(loaded, settings: settings, quality: .preview(maxDimension: dimension))
+                      let image = try? await renderer.render(
+                          loaded, settings: settings, quality: .preview(maxDimension: dimension),
+                          photoLongSide: decoder.longSide(framedBy: settings.crop),
+                      )
                 else { return SendableImage(nil) }
                 return SendableImage(image.cgImage)
             }.value

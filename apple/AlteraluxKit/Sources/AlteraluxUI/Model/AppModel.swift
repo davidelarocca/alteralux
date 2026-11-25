@@ -535,10 +535,11 @@ public final class AppModel {
             let dimension = nextRenderDimension(photoLongSide: longSide)
             let isDraft = dimension != previewDimension(photoLongSide: longSide)
             do {
-                // The photo is decoded at the size of the preview: the engine scales nothing.
+                // The photo is decoded at the size of the preview: the engine scales nothing, and
+                // softens and sharpens it as the photo seen at that size (ADR 0023).
                 let source = try await sources.source(dimension: dimension, settings: settings)
                 let developed = try await renderer.render(
-                    source, settings: settings, quality: .preview(maxDimension: 0),
+                    source, settings: settings, quality: .preview(maxDimension: 0), photoLongSide: longSide,
                 )
                 // Drop the frame if another photo was selected meanwhile.
                 if generation == loadGeneration {
