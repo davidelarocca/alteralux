@@ -16,7 +16,7 @@ public struct Choice: Identifiable {
     let action: () -> Void
 
     /// - Parameters:
-    ///   - subtitle: a line of context under the title.
+    ///   - subtitle: context under the title, on two lines at most.
     ///   - color: a dot of this color before the title: the color of a tag.
     ///   - symbol: a system symbol before the title, when there is no color.
     public init(
@@ -49,6 +49,9 @@ public struct ChoiceListButton<Header: View>: View {
 
     @State private var isOpen = false
     @State private var highlightedID: Choice.ID?
+    /// The height each row's content was laid out at, once drawn: a line of context that wraps
+    /// makes its row taller than the others.
+    @State private var rowHeights: [Choice.ID: CGFloat] = [:]
 
     /// - Parameters:
     ///   - symbol: shown alone, with the title as its accessible name, where there is no room
@@ -149,14 +152,18 @@ public struct ChoiceListButton<Header: View>: View {
                 Text(verbatim: choice.title)
                     .lineLimit(1)
                 if let subtitle = choice.subtitle {
+                    // Where a recipe writes its files comes last in its line: let it wrap
+                    // rather than cut it.
                     Text(verbatim: subtitle)
                         .font(Typography.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 0)
         }
+        .onGeometryChange(for: CGFloat.self, of: \.size.height) { rowHeights[choice.id] = $0 }
         .contentShape(.rect)
         // A click takes the choice; the arrow keys only move the highlight.
         .onTapGesture { take(choice) }
@@ -181,10 +188,18 @@ public struct ChoiceListButton<Header: View>: View {
         260
     }
 
-    /// The height the list needs to show every choice: a row with a line of context under its
-    /// title is taller.
+    /// The height the list needs to show every choice: each row as tall as its content was
+    /// laid out, and until then as tall as a row of its kind usually is.
     private var listHeight: CGFloat {
-        choices.reduce(Spacing.xl) { $0 + ($1.subtitle == nil ? Self.rowHeight : Self.tallRowHeight) }
+        choices.reduce(Spacing.xl) { total, choice in
+            if let content = rowHeights[choice.id] { return total + content + Self.rowPadding }
+            return total + (choice.subtitle == nil ? Self.rowHeight : Self.tallRowHeight)
+        }
+    }
+
+    /// What the list adds above and below a row's content.
+    private static var rowPadding: CGFloat {
+        8
     }
 
     private static var rowHeight: CGFloat {
@@ -224,7 +239,10 @@ public extension ChoiceListButton where Header == EmptyView {
         )
         ChoiceListButton(
             Text("Move to…"), symbol: "folder",
-            choices: [Choice(id: "a", title: "A folder with a name long enough to be cut", subtitle: "Inside another", symbol: "folder") {}],
+            choices: [
+                Choice(id: "a", title: "A folder with a name long enough to be cut", subtitle: "Inside another", symbol: "folder") {},
+                Choice(id: "b", title: "Evening", subtitle: "JPEG · 2048 px · in “Developed” beside the photos · the rest asked each time") {},
+            ],
             empty: Text("No Other Folder"),
         )
         ChoiceListButton(Text("Recipe"), choices: [], empty: Text("No Recipes"))
