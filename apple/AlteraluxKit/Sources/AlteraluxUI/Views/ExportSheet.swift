@@ -3,7 +3,7 @@ import DesignSystem
 import SwiftUI
 
 /// Export options: for the photo on screen, shown before the save panel; for the selected photos
-/// of the library, with where they go, or the workflow they are developed with; and then the one
+/// of the library, with where they go, or the recipe they are developed with; and then the one
 /// progress of the whole export.
 struct ExportSheet: View {
     @Environment(AppModel.self) private var model
@@ -24,8 +24,8 @@ struct ExportSheet: View {
                             .truncationMode(.middle)
                     }
                 }
-            } else if model.exportsWithWorkflow {
-                WorkflowRunForm()
+            } else if model.exportsWithRecipe {
+                RecipeRunForm()
             } else {
                 options
             }

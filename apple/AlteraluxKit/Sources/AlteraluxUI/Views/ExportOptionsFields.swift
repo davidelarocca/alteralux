@@ -3,12 +3,12 @@ import DesignSystem
 import SwiftUI
 
 /// The rows of a form that choose how developed photos are written: format, color profile,
-/// quality, size and metadata. The same in the export sheet and in a workflow, where the format
+/// quality, size and metadata. The same in the export sheet and in a recipe, where the format
 /// and the size can also be left open, to be asked each time.
 struct ExportOptionsFields: View {
     @Binding var options: ExportOptions
-    /// For a workflow, the settings it asks each time it runs; `nil` for the export sheet.
-    var asks: Binding<Set<Workflow.Setting>>?
+    /// For a recipe, the settings it asks each time it develops photos; `nil` for the export sheet.
+    var asks: Binding<Set<RecipeFiles.Setting>>?
 
     /// The long sides offered for the exported photo, in pixels, after the original size.
     static let longSides = [4096, 3072, 2048, 1600]
@@ -61,9 +61,9 @@ struct ExportOptionsFields: View {
     }
 
     /// A setting's value, or "Ask Each Time": choosing a value keeps it, choosing to ask keeps
-    /// the value too, offered first when the workflow asks.
+    /// the value too, offered first when the recipe asks.
     static func asking<Value>(
-        _ setting: Workflow.Setting, _ asks: Binding<Set<Workflow.Setting>>, _ value: Binding<Value>,
+        _ setting: RecipeFiles.Setting, _ asks: Binding<Set<RecipeFiles.Setting>>, _ value: Binding<Value>,
     ) -> Binding<Asked<Value>> {
         Binding(
             get: { asks.wrappedValue.contains(setting) ? .ask : .value(value.wrappedValue) },
@@ -80,7 +80,7 @@ struct ExportOptionsFields: View {
     }
 }
 
-/// A setting chosen in a workflow, or left open to be asked each time.
+/// A setting chosen in a recipe, or left open to be asked each time.
 enum Asked<Value: Hashable>: Hashable {
     case ask
     case value(Value)

@@ -81,11 +81,11 @@ public final class AppModel {
     var photosToExport: [URL] = []
     /// Whether several photos go to a folder beside each original, or to one folder to choose.
     var exportsBesideOriginals = true
-    /// Whether the export sheet develops the photos with a workflow, and not with their own
-    /// adjustments and the options it shows.
-    var exportsWithWorkflow = false
-    /// The workflow chosen in the export sheet, kept for the next time.
-    var exportWorkflow: Workflow.ID?
+    /// Whether the export sheet develops the photos with a recipe and writes its files, and not
+    /// with their own adjustments and the options it shows.
+    var exportsWithRecipe = false
+    /// The recipe chosen in the export sheet, kept for the next time.
+    var exportRecipe: Recipe.ID?
     /// An export that found files of an earlier one, and waits to be told what to do with them.
     var exportWaiting: WaitingExport?
     /// Takes away an exported file that a new export replaces. `nil` moves it to the Trash;
@@ -138,17 +138,17 @@ public final class AppModel {
     /// The recipes, by name, and where they are kept.
     var recipes: [Recipe] = []
     let recipeStore: RecipeStore
-    /// The workflows, by name, and where they are kept.
-    var workflows: [Workflow] = []
-    let workflowStore: WorkflowStore
-    /// The folders outside the library the user let the app write into, for workflows that
+    /// Where workflows were kept before recipes wrote files: read once, to make recipes of them.
+    let workflowsDirectory: URL
+    @ObservationIgnored var hasMigratedWorkflows = false
+    /// The folders outside the library the user let the app write into, for recipes that
     /// write beside the originals of photos handed over by the Finder. Kept between launches.
     let writableFolders: LibraryFolders
     /// Opens the main window, with the app's Dock icon, in front: set by the menu commands, which
     /// are there from launch.
     @ObservationIgnored var openMainWindow: (() -> Void)?
     /// Asks, in a small panel at the center of the screen, what to do with photos sent from the
-    /// Finder when the workflows do not say it alone.
+    /// Finder when the recipes do not say it alone.
     @ObservationIgnored var askAboutFinderPhotos: @MainActor (FinderQuestion) async -> FinderAnswer = FinderPanel.ask
     /// The start of the engine, once it is asked for: later callers wait for the same one.
     @ObservationIgnored private var starting: Task<Void, Never>?
@@ -194,9 +194,7 @@ public final class AppModel {
         recipeStore = RecipeStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Recipes") : beside.appending(path: "recipes"),
         )
-        workflowStore = WorkflowStore(
-            directory: isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows"),
-        )
+        workflowsDirectory = isApp ? URL.applicationSupportDirectory.appending(path: "Workflows") : beside.appending(path: "workflows")
         writableFolders = LibraryFolders(storeURL: Self.writableFoldersStore(isApp: isApp, beside: beside))
         history.restore = { [weak self] item, settings in self?.restore(settings, to: item) }
         history.report = { [weak self] error in self?.alertMessage = error.localizedDescription }
@@ -204,7 +202,7 @@ public final class AppModel {
 
     // MARK: - Startup
 
-    /// Creates the engine and reads the recipes, the workflows and the library. Called when the
+    /// Creates the engine and reads the recipes and the library. Called when the
     /// window appears, and by the Shortcuts action, which can run with no window: whoever comes
     /// second waits for the first.
     func start() async {

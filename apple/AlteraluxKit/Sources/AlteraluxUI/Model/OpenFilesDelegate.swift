@@ -20,7 +20,7 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     /// Whether the app's window was opened since launch.
     private var hasShownTheApp = false
     /// The latest photos sent to "Develop with alteralux…", being developed.
-    private(set) var workflowRequest: Task<Void, Never>?
+    private(set) var finderRequest: Task<Void, Never>?
 
     /// The app's delegate, with the app's model, which the Shortcuts action uses too.
     override public init() {
@@ -45,7 +45,7 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
     /// from the Finder, it stays out of sight, without a Dock icon: their request arrives before
     /// launching ends. Photos opened from the Finder have already shown it.
     public func applicationDidFinishLaunching(_: Notification) {
-        guard workflowRequest == nil else {
+        guard finderRequest == nil else {
             isOutOfSight = !hasShownTheApp
             if isOutOfSight {
                 NSApplication.shared.setActivationPolicy(.accessory)
@@ -69,17 +69,18 @@ public final class OpenFilesDelegate: NSObject, NSApplicationDelegate {
         model.take(urls)
     }
 
-    /// "Develop with alteralux…": the photos selected in the Finder, developed with a workflow,
-    /// out of sight. The name is the `NSMessage` of the entry in Info.plist.
+    /// "Develop with alteralux…": the photos selected in the Finder, developed with a recipe,
+    /// out of sight. The name is the `NSMessage` of the entry in Info.plist, given when recipes
+    /// and workflows were two things.
     @objc public func developWithWorkflow(
         _ pasteboard: NSPasteboard, userData _: String?, error _: AutoreleasingUnsafeMutablePointer<NSString?>,
     ) {
         let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
         guard !urls.isEmpty else { return }
-        let previous = workflowRequest
-        workflowRequest = Task {
+        let previous = finderRequest
+        finderRequest = Task {
             await previous?.value
-            await model.developWithWorkflow(handedOver: urls)
+            await model.developWithRecipe(handedOver: urls)
             quitIfOutOfSight()
         }
     }

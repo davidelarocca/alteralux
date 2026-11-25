@@ -1,6 +1,6 @@
 # ADR-0013: A workflow is a recipe and the files it writes, kept beside the recipes
 
-- Status: Accepted
+- Status: Superseded by [ADR-0021](0021-a-recipe-holds-its-files.md): the recipe holds the files, and there are no workflows. Developing with a recipe still only writes files
 - Date: 2026-11-21
 
 ## Context

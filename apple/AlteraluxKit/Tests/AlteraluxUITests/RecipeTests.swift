@@ -70,10 +70,10 @@ struct RecipeTests {
         model.settings = warmSlide()
 
         // A name is needed, and the spaces around it are not part of it.
-        await model.saveRecipe(named: "   ")
+        await model.save(model.newRecipe(named: "   "))
         #expect(model.recipes.isEmpty)
-        await model.saveRecipe(named: " Warm slide ")
-        await model.saveRecipe(named: "Another")
+        await model.save(model.newRecipe(named: " Warm slide "))
+        await model.save(model.newRecipe(named: "Another"))
         #expect(model.recipes.map(\.name) == ["Another", "Warm slide"])
         let recipe = try #require(model.recipes.last)
         // The look, and not the light of the photo it was saved from.
@@ -86,10 +86,13 @@ struct RecipeTests {
         await next.loadRecipes()
         #expect(next.recipes == model.recipes)
 
-        await next.rename(recipe, to: "Evening")
+        var renamed = recipe
+        renamed.name = "Evening"
+        await next.save(renamed)
         #expect(next.recipes.map(\.name) == ["Another", "Evening"])
         #expect(next.recipes.last?.id == recipe.id)
-        await next.rename(recipe, to: " ")
+        renamed.name = " "
+        await next.save(renamed)
         #expect(next.recipes.map(\.name) == ["Another", "Evening"])
 
         await next.delete(recipe)
@@ -366,7 +369,7 @@ struct ExportAgainTests {
         // The second finds one file there: it writes nothing and waits.
         await model.export(photos, to: .subfolder(AppModel.developedFolderName))
         #expect(model.exportWaiting == WaitingExport(
-            photos: photos, destination: .subfolder(AppModel.developedFolderName), options: model.exportOptions, workflow: nil, existing: 1,
+            photos: photos, destination: .subfolder(AppModel.developedFolderName), options: model.exportOptions, recipe: nil, existing: 1,
         ))
         #expect(try files() == first && !model.isExporting)
 

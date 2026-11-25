@@ -36,18 +36,20 @@ struct LayoutTests {
         #expect(LayoutContract.check("RecipesWindow") { RecipesWindow().environment(AppModel()) } == [])
     }
 
-    /// A recipe with two workflows, one of them with a long name, at the width the detail
-    /// column has beside the list of recipes.
-    @Test func aRecipeAndItsWorkflowsFitTheirColumn() {
+    /// A recipe whose files go into a folder with a long name, at the width the detail column
+    /// has beside the list of recipes.
+    @Test func aRecipeAndItsFilesFitTheirColumn() {
         let model = AppModel()
-        let recipe = Recipe(name: "Evening slide with a long name", from: DevelopSettings())
+        let recipe = Recipe(
+            name: "Evening slide with a long name", from: DevelopSettings(),
+            files: RecipeFiles(
+                options: ExportOptions(longSide: 2048),
+                destination: .besideOriginals(folderName: "Prints for the exhibition in the autumn"), asks: [.format],
+            ),
+        )
         model.recipes = [recipe]
-        model.workflows = [
-            Workflow(name: "Web", recipeID: recipe.id, options: ExportOptions(longSide: 2048), destination: .besideOriginals(folderName: "Web")),
-            Workflow(name: "Prints for the exhibition in the autumn", recipeID: recipe.id, destination: .besideOriginals(folderName: "Developed")),
-        ]
         #expect(LayoutContract.check("RecipeDetail") {
-            RecipeDetail(recipe: recipe, rename: {}, delete: {}).environment(model)
+            RecipeDetail(recipe: recipe, edit: {}, duplicate: {}, delete: {}).environment(model)
         } == [])
     }
 }

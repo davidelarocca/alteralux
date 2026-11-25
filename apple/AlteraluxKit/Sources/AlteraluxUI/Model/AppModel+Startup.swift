@@ -1,7 +1,7 @@
 import AlteraluxKit
 import Foundation
 
-// What the app reads at launch besides the engine: the recipes, the workflows, the library and
+// What the app reads at launch besides the engine: the recipes, the library and
 // the folders the user let it write into.
 
 extension AppModel {
@@ -16,11 +16,10 @@ extension AppModel {
             : beside.appending(path: "writable-folders.plist")
     }
 
-    /// Reads the recipes, the workflows and the library, and shows the library unless the app
+    /// Reads the recipes and the library, and shows the library unless the app
     /// was started on a photo.
     func loadKeptState() async {
         await loadRecipes()
-        await loadWorkflows()
         await library.load()
         _ = await writableFolders.load()
         Task.detached(priority: .background) { [thumbnails = library.thumbnails] in

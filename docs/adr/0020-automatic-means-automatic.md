@@ -50,5 +50,5 @@ every photo, they chose to keep the compensation in a closed group.
   method moves to the meter's group.
 - With the automatic on, the inspector does not show the values it chose; the collapsed section's
   summary still does.
-- A recipe carries whether the exposure is automatic, as before. Whether it also carries the
-  automatic white balance is the next decision (recipes and workflows as one).
+- A recipe carries whether the exposure is automatic, as before, and since
+  [ADR 0021](0021-a-recipe-holds-its-files.md) whether the white balance is.

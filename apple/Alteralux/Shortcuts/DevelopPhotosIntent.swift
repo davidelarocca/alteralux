@@ -2,25 +2,25 @@ import AlteraluxUI
 import AppIntents
 import Foundation
 
-/// "Develop Photos" in Shortcuts: photos developed with a workflow of the app, and the files it
+/// "Develop Photos" in Shortcuts: photos developed with a recipe of the app, and the files it
 /// writes given back to the shortcut. It runs in the app, which starts without coming to the
 /// front when it is not running.
 struct DevelopPhotosIntent: AppIntent {
     static let title: LocalizedStringResource = "Develop Photos"
     static let description = IntentDescription(
-        "Develops photos with a workflow of alteralux and gives back the files it writes. A workflow with a folder of its own also leaves them there.",
+        "Develops photos with a recipe of alteralux and gives back the files it writes. A recipe with a folder of its own also leaves them there.",
     )
 
     @Parameter(title: "Photos", supportedContentTypes: [.image])
     var photos: [IntentFile]
 
-    @Parameter(title: "Workflow")
-    var workflow: WorkflowEntity
+    @Parameter(title: "Recipe")
+    var recipe: RecipeEntity
 
     @Dependency private var model: AppModel
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Develop \(\.$photos) with \(\.$workflow)")
+        Summary("Develop \(\.$photos) with \(\.$recipe)")
     }
 
     @MainActor
@@ -57,17 +57,17 @@ struct DevelopPhotosIntent: AppIntent {
         }
 
         let files = try await model.developForShortcut(
-            urls, workflow: workflow.id, scratch: run.appending(path: "Developed", directoryHint: .isDirectory),
+            urls, recipe: recipe.id, scratch: run.appending(path: "Developed", directoryHint: .isDirectory),
         )
         return .result(value: files.map { IntentFile(data: $0.data, filename: $0.name, type: $0.type) })
     }
 }
 
-/// A workflow of the app as Shortcuts shows it: chosen by name, kept by id, so a workflow
-/// renamed in the app stays chosen in the shortcut.
-struct WorkflowEntity: AppEntity {
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Workflow"
-    static let defaultQuery = WorkflowQuery()
+/// A recipe of the app as Shortcuts shows it: chosen by name, kept by id, so a recipe renamed
+/// in the app stays chosen in the shortcut.
+struct RecipeEntity: AppEntity {
+    static let typeDisplayRepresentation: TypeDisplayRepresentation = "Recipe"
+    static let defaultQuery = RecipeQuery()
 
     let id: UUID
     let name: String
@@ -78,24 +78,24 @@ struct WorkflowEntity: AppEntity {
         DisplayRepresentation(title: "\(name)", subtitle: "\(summary)")
     }
 
-    init(_ choice: WorkflowChoice) {
+    init(_ choice: RecipeChoice) {
         id = choice.id
         name = choice.name
         summary = choice.summary
     }
 }
 
-/// The workflows the app keeps, read when Shortcuts asks.
-struct WorkflowQuery: EntityQuery {
+/// The recipes the app keeps, read when Shortcuts asks.
+struct RecipeQuery: EntityQuery {
     @Dependency private var model: AppModel
 
     @MainActor
-    func entities(for identifiers: [WorkflowEntity.ID]) async throws -> [WorkflowEntity] {
-        await model.workflowChoices().filter { identifiers.contains($0.id) }.map(WorkflowEntity.init)
+    func entities(for identifiers: [RecipeEntity.ID]) async throws -> [RecipeEntity] {
+        await model.recipeChoices().filter { identifiers.contains($0.id) }.map(RecipeEntity.init)
     }
 
     @MainActor
-    func suggestedEntities() async throws -> [WorkflowEntity] {
-        await model.workflowChoices().map(WorkflowEntity.init)
+    func suggestedEntities() async throws -> [RecipeEntity] {
+        await model.recipeChoices().map(RecipeEntity.init)
     }
 }

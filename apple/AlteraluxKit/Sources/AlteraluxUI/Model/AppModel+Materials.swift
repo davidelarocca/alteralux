@@ -94,18 +94,18 @@ extension AppModel {
     }
 
     /// The name of an exported file without its extension: the photo's name and the film, or
-    /// what `workflow` names its files.
+    /// what a recipe's `files` name them.
     ///
     /// - Parameter namesKind: put the kind of the original after its name ("IMG_0042 CR3 Kodak
     ///   Portra 400"): for a photo with a twin of another kind beside it, as a camera that
     ///   saves RAW and JPEG leaves, whose exports would otherwise take the same name.
-    nonisolated static func exportName(source: URL, film: String, namesKind: Bool = false, workflow: Workflow? = nil) -> String {
+    nonisolated static func exportName(source: URL, film: String, namesKind: Bool = false, files: RecipeFiles? = nil) -> String {
         var baseName = source.deletingPathExtension().lastPathComponent
         if namesKind, !source.pathExtension.isEmpty {
             baseName += " \(source.pathExtension.uppercased())"
         }
         // A film's name must not read as a path in the save panel.
         let filmName = film.replacing("/", with: "-").replacing(":", with: "-")
-        return workflow?.fileName(photoName: baseName, film: filmName) ?? "\(baseName) \(filmName)"
+        return files?.fileName(photoName: baseName, film: filmName) ?? "\(baseName) \(filmName)"
     }
 }

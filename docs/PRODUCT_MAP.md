@@ -22,15 +22,13 @@ or adding something the user creates or organizes.
 | Entity | Model | Destination (full page) | Opened by |
 |---|---|---|---|
 | | `File.swift:line` | `DetailView` (`File.swift:line`) or none | the navigation call, e.g. `router.open(.entity(id))` |
-| Recipe | `apple/AlteraluxKit/Sources/AlteraluxKit/Recipe.swift` | the recipes and workflows window (`RecipesWindow`, `RecipesWindow.swift`), the recipe chosen in its list | Recipes and Workflows… in the Recipe menu, or the Window menu; the window shows the first recipe until another is chosen |
-| Workflow | `apple/AlteraluxKit/Sources/AlteraluxKit/Workflow.swift` | its recipe's page in `RecipesWindow`, where it is edited in a sheet (`WorkflowEditor`: recipe, adapting, files, names, destination) | Edit… beside it in the recipe's page |
+| Recipe | `apple/AlteraluxKit/Sources/AlteraluxKit/Recipe.swift`, with the files it writes (`RecipeFiles.swift`) | the recipes window (`RecipesWindow`, `RecipesWindow.swift`), the recipe chosen in its list | Manage Recipes… in the Recipe menu, or the Window menu; the window shows the first recipe until another is chosen |
 | Photo | a file of a folder of the library (`apple/AlteraluxKit/Sources/AlteraluxUI/Model/LibraryModel.swift`) | the develop screen (`DevelopScreen`, `MainScreen.swift`) | `AppModel.develop(_:)`: a double-click, Return, or Develop in its menu |
 
 ## Relations
 
 | From | To | Kind (belongs to, author, category, ...) | Shown as link where |
 |---|---|---|---|
-| Workflow | Recipe | is a way of using it, named by id and chosen in the editor: a renamed recipe carries to it, a deleted one deletes it | listed under its recipe in `RecipesWindow`; named as text in the sheet that runs it (see Exceptions) |
 
 ## Appearances
 
@@ -41,13 +39,12 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Recipe | The toolbar's Recipe menu while developing (`RecipeMenu.swift`, from `MainScreen.swift`) | n/a | n/a (its film and paper are shown as text) | ✓ |
 | Recipe | The Recipe list of the library's selection bar (`LibrarySelectionBar.swift`) | n/a | n/a | Give only: see Exceptions |
 | Recipe | The Recipe submenu of a photo's menu in the library (`PhotoMenus.swift`) | n/a | n/a | Give only: see Exceptions |
-| Recipe | The list of `RecipesWindow` (`RecipesWindow.swift`) | ✓ a click shows its page | ✓ its workflows are on its page | ✓ Rename and Delete in its page and its context menu; Give and Save as New from the Recipe menu, see Exceptions |
-| Workflow | A recipe's page in `RecipesWindow` (`RecipeDetail`) | n/a, it is the destination | ✓ its recipe is the page | ✓ Edit, Delete; New Workflow… |
-| Workflow | The Workflow list of the library's selection bar (`LibrarySelectionBar.swift`) | n/a | n/a | Develop only: see Exceptions |
-| Workflow | The Develop with Workflow submenu of a photo's menu in the library (`PhotoMenus.swift`) | n/a | n/a | Develop only: see Exceptions |
-| Workflow | The export sheet's form for a workflow (`WorkflowRunForm.swift`) | n/a | its recipe named as text: see Exceptions | Develop only: see Exceptions |
-| Workflow | The Finder's panel for photos sent from "Develop with alteralux…" (`FinderPanel.swift`, `AppModel+HandedOver.swift`): which workflow, its recipe, and only the settings it leaves open; with none yet, the few choices that make one | n/a | its recipe named as text: see Exceptions | Develop only: see Exceptions |
-| Workflow | The Shortcuts action "Develop Photos" (`apple/Alteralux/Shortcuts/DevelopPhotosIntent.swift`), by name with what it writes | n/a, outside the app | n/a | Develop only: see Exceptions |
+| Recipe | The list of `RecipesWindow` (`RecipesWindow.swift`) | ✓ a click shows its page | n/a (its film and paper are shown as text) | ✓ Edit, Duplicate and Delete in its page and its context menu; Give, Develop with and Save as New where the photos are, see Exceptions |
+| Recipe | The Develop with… list of the library's selection bar (`LibrarySelectionBar.swift`), each with the files it writes | n/a | n/a | Develop with only: see Exceptions |
+| Recipe | The Develop with Recipe submenu of a photo's menu in the library (`PhotoMenus.swift`) | n/a | n/a | Develop with only: see Exceptions |
+| Recipe | The export sheet's form for developing with a recipe (`RecipeRunForm.swift`) | n/a | n/a | Develop with only: see Exceptions |
+| Recipe | The Finder's panel for photos sent from "Develop with alteralux…" (`FinderPanel.swift`, `AppModel+HandedOver.swift`): which recipe, and only the settings it leaves open | n/a | n/a | Develop with only: see Exceptions |
+| Recipe | The Shortcuts action "Develop Photos" (`apple/Alteralux/Shortcuts/DevelopPhotosIntent.swift`), by name with what it writes | n/a, outside the app | n/a | Develop with only: see Exceptions |
 | Photo | A tile of the library's grid (`LibraryGrid.swift`) | ✓ double-click, Return, Develop in its menu | ✓ its folder is the one on screen; Show in Finder | ✓ the bar of the selection and the tile's menu |
 | Photo | The photo being developed (`PhotoStage`, from `MainScreen.swift`) | n/a, it is the destination | ✓ Show in Finder; the way back to the library in the toolbar and Escape | ✓ the photo's menu, the toolbar and the menus |
 
@@ -56,16 +53,14 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Entity | Actions | Shared entry point |
 |---|---|---|
 | | Open, Rename, Delete, ... | the shared menu or command type, with its file |
-| Recipe | Give (to the photo on screen or to the selection, as it is), Save as New, Rename, Delete (with its workflows, named first) | `RecipeMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipeMenu.swift`): give and save from the menu; rename and delete in `RecipesWindow` (`RecipesWindow.swift`), opened with Recipes and Workflows… |
-| Workflow | New (for a recipe), Edit (name, recipe, adapting, format, size, file names, destination, each of the last four can be asked each time), Delete, Develop the selected photos with it, or the photos sent from the Finder | `RecipeDetail` (`RecipesWindow.swift`) and `WorkflowEditor`; developing from the library's selection bar and a photo's menu, through `AppModel.presentWorkflowRun(_:)` |
-| Photo | Develop, Show in Finder, Open With, give a Recipe, Export, Develop with Workflow, Share, Move to, Copy to, Duplicate, Rename (one photo), Tags, Copy, Paste and Reset Adjustments, Rotate Left and Right, Discard or Take Back, Move to Trash; while developing, Crop and Straighten. The bar of the selection has Recipe, Export, Workflow, Move to, Copy to, Tag and Discard; the tile's menu has them all, with the number of photos in their titles when they act on several | `LibrarySelectionBar` and `LibraryPhotoMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/PhotoMenus.swift`) in the library, `DevelopPhotoMenu` while developing |
+| Recipe | Give (to the photo on screen or to the selection: their adjustments change), Develop with (the selected photos, or the photos sent from the Finder: its files are written and the photos keep their adjustments), Save as New (the name, and the files it writes), Edit (name, format, size, file names, destination, each of the last four can be asked each time), Duplicate, Delete | `RecipeMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/RecipeMenu.swift`): give and save from the menu; edit, duplicate and delete in `RecipesWindow` (`RecipesWindow.swift`), opened with Manage Recipes…, through `RecipeEditor`; developing from the library's selection bar and a photo's menu, through `AppModel.presentRecipeRun(_:)` |
+| Photo | Develop, Show in Finder, Open With, give a Recipe, Export, Develop with Recipe, Share, Move to, Copy to, Duplicate, Rename (one photo), Tags, Copy, Paste and Reset Adjustments, Rotate Left and Right, Discard or Take Back, Move to Trash; while developing, Crop and Straighten. The bar of the selection has Recipe, Export, Develop with, Move to, Copy to, Tag and Discard; the tile's menu has them all, with the number of photos in their titles when they act on several | `LibrarySelectionBar` and `LibraryPhotoMenu` (`apple/AlteraluxKit/Sources/AlteraluxUI/Views/PhotoMenus.swift`) in the library, `DevelopPhotoMenu` while developing |
 
 ## User-managed collections
 
 | Collection | Create | Rename | Reorder | Delete | Undo |
 |---|---|---|---|---|---|
-| Recipes | ✓ Save as New Recipe… | ✓ | — see Exceptions | ✓ after a confirmation | — see Exceptions |
-| Workflows | ✓ New Workflow… in a recipe's page | ✓ in Edit… | — see Exceptions | ✓ after a confirmation | — see Exceptions |
+| Recipes | ✓ Save as New Recipe…, Duplicate… | ✓ in Edit… | — see Exceptions | ✓ after a confirmation | — see Exceptions |
 
 ## Exceptions
 
@@ -73,12 +68,12 @@ Deliberate departures from the rules, so they are not reported again.
 
 | Where | Rule not applied | Why |
 |---|---|---|
-| Recipe, in the library's selection bar | Save as New, Rename, Delete | The bar gives a recipe to the selected photos; recipes are made and managed from the toolbar's Recipe menu while developing, where there is a look on screen |
+| Recipe, in the Recipe list of the library's selection bar and of a photo's menu | Save as New, Edit, Duplicate, Delete | The list gives a recipe to the selected photos; recipes are made from the toolbar's Recipe menu while developing, where there is a look on screen, and managed in `RecipesWindow` |
 | Recipes | Reorder | They are listed by name, like the films: an order of one's own waits for people to have many |
-| Recipe, in `RecipesWindow` | Give, Save as New | Giving and saving need a photo: they are in the Recipe menu, where the photo or the selection is |
-| Workflow, in the library's selection bar, a photo's menu and the sheet that runs it | Edit, Delete, opening its page | These lists develop the selected photos; workflows are made and changed in `RecipesWindow`, which the bar's empty list names |
-| Workflow, in the Shortcuts action | Edit, Delete, opening its page | Shortcuts only chooses one, kept by id; workflows are made and changed in the app |
-| Workflows | Reorder, Undo | Listed by name under their recipe, like the recipes; deleting asks first |
+| Recipe, in `RecipesWindow` | Give, Develop with, Save as New | They need photos: they are in the Recipe menu and in the library, where the photo or the selection is |
+| Recipe, in the Develop with… list of the library's selection bar, a photo's menu, the sheet and the Finder's panel that develop with it | Give, Edit, Duplicate, Delete, opening its page | These develop photos with a recipe; what it leaves open is asked there, and the rest is changed in `RecipesWindow` |
+| Recipe, in the toolbar's Recipe menu while developing | Develop with | The photo on screen is exported with its own adjustments (Export…); developing with a recipe is for photos that keep theirs, from the library and the Finder |
+| Recipe, in the Shortcuts action | everything but Develop with | Shortcuts only chooses one, kept by id; recipes are made and changed in the app |
 | Recipes | Undo of create, rename and delete | The window's undo is the history of the photos' adjustments; deleting asks first, and a recipe deleted by mistake is saved again from any photo that has its look |
 
 ## Known gaps

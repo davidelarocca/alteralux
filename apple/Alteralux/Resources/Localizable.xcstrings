@@ -1,6 +1,16 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ copy" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ copia"
+          }
+        }
+      }
+    },
     "%@ · ISO %@" : {
       "localizations" : {
         "it" : {
@@ -461,42 +471,12 @@
         }
       }
     },
-    "A recipe is the look of a photo saved under a name: everything but the white balance. Its workflows use it." : {
+    "A recipe is the look of a photo saved under a name, without its white balance. What was saved on Auto is found again in each photo." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Una ricetta è l’aspetto di una foto salvato con un nome: tutto tranne il bilanciamento del bianco. I suoi flussi la usano."
-          }
-        }
-      }
-    },
-    "A setting asked each time is chosen when the workflow runs: the rest is done alone." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un’impostazione chiesta ogni volta si sceglie quando il flusso parte: il resto va da sé."
-          }
-        }
-      }
-    },
-    "A workflow develops photos with a recipe and writes them as files. In the Finder: Develop with alteralux." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un flusso sviluppa le foto con una ricetta e le scrive come file. Nel Finder: Sviluppa con alteralux."
-          }
-        }
-      }
-    },
-    "A workflow uses this recipe to write developed photos as files, beside them or in a folder. In the Finder: Develop with alteralux." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un flusso usa questa ricetta per scrivere le foto sviluppate come file, accanto a loro o in una cartella. Nel Finder: Sviluppa con alteralux."
+            "value" : "Una ricetta è l’aspetto di una foto salvato con un nome, senza il suo bilanciamento del bianco. Quello che era su Auto viene trovato di nuovo in ogni foto."
           }
         }
       }
@@ -517,26 +497,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dimensioni reali"
-          }
-        }
-      }
-    },
-    "Adapting, each photo starts from its own exposure, and from an automatic white balance where the camera’s is far off." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adattando, ogni foto parte dalla sua esposizione, e da un bilanciamento del bianco automatico dove quello della fotocamera è molto lontano."
-          }
-        }
-      }
-    },
-    "Adapts to each photo" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Si adatta a ogni foto"
           }
         }
       }
@@ -727,6 +687,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qualsiasi tag"
+          }
+        }
+      }
+    },
+    "As saved" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Come salvata"
           }
         }
       }
@@ -941,16 +911,6 @@
         }
       }
     },
-    "Choose how. It is kept as a workflow: next time the photos are developed without asking." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scegli come. Resta come flusso: la prossima volta le foto si sviluppano senza chiedere."
-          }
-        }
-      }
-    },
     "Choose the film" : {
       "localizations" : {
         "it" : {
@@ -1142,32 +1102,12 @@
         }
       }
     },
-    "Delete Recipe…" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elimina ricetta…"
-          }
-        }
-      }
-    },
     "Delete the recipe “%@”?" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminare la ricetta “%@”?"
-          }
-        }
-      }
-    },
-    "Delete the workflow “%@”?" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eliminare il flusso “%@”?"
           }
         }
       }
@@ -1212,12 +1152,12 @@
         }
       }
     },
-    "Develop ${photos} with ${workflow}" : {
+    "Develop ${photos} with ${recipe}" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppa ${photos} con ${workflow}"
+            "value" : "Sviluppa ${photos} con ${recipe}"
           }
         }
       }
@@ -1252,22 +1192,32 @@
         }
       }
     },
-    "Develop the selected photos with a workflow: a recipe, and the files it writes" : {
+    "Develop the selected photos with a recipe and write its files. The photos keep their adjustments." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppa le foto selezionate con un flusso: una ricetta e i file che scrive"
+            "value" : "Sviluppa le foto selezionate con una ricetta e scrive i suoi file. Le foto conservano le loro regolazioni."
           }
         }
       }
     },
-    "Develop with Workflow" : {
+    "Develop with Recipe" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppa con flusso"
+            "value" : "Sviluppa con ricetta"
+          }
+        }
+      }
+    },
+    "Develop with…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppa con…"
           }
         }
       }
@@ -1323,6 +1273,16 @@
         }
       }
     },
+    "Developing photos with the recipe writes these files and leaves their adjustments alone. For other files, duplicate the recipe." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sviluppare le foto con la ricetta scrive questi file e lascia stare le loro regolazioni. Per altri file, duplica la ricetta."
+          }
+        }
+      }
+    },
     "Development" : {
       "localizations" : {
         "it" : {
@@ -1333,12 +1293,12 @@
         }
       }
     },
-    "Develops photos with a workflow of alteralux and gives back the files it writes. A workflow with a folder of its own also leaves them there." : {
+    "Develops photos with a recipe of alteralux and gives back the files it writes. A recipe with a folder of its own also leaves them there." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sviluppa le foto con un flusso di alteralux e restituisce i file che scrive. Un flusso con una cartella sua li lascia anche lì."
+            "value" : "Sviluppa le foto con una ricetta di alteralux e restituisce i file che scrive. Una ricetta con una cartella sua li lascia anche lì."
           }
         }
       }
@@ -1413,22 +1373,52 @@
         }
       }
     },
-    "Each photo is written as a file with the workflow’s recipe, and keeps its own adjustments." : {
+    "Duplicate Recipe" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ogni foto viene scritta come file con la ricetta del flusso, e conserva le sue regolazioni."
+            "value" : "Duplica ricetta"
           }
         }
       }
     },
-    "Edit Workflow" : {
+    "Duplicate…" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifica flusso"
+            "value" : "Duplica…"
+          }
+        }
+      }
+    },
+    "Each photo is written as a file with the recipe’s look, and keeps its own adjustments." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni foto viene scritta come file con l’aspetto della ricetta, e conserva le sue regolazioni."
+          }
+        }
+      }
+    },
+    "Each photo’s own" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quello di ogni foto"
+          }
+        }
+      }
+    },
+    "Edit Recipe" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica ricetta"
           }
         }
       }
@@ -1469,6 +1459,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nome dei file"
+          }
+        }
+      }
+    },
+    "Files" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "File"
           }
         }
       }
@@ -1549,16 +1549,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "in “%@” accanto alle foto"
-          }
-        }
-      }
-    },
-    "Its workflows are deleted too: %@. The photos that received it keep their adjustments." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vengono eliminati anche i suoi flussi: %@. Le foto che l'hanno ricevuta conservano le loro regolazioni."
           }
         }
       }
@@ -1693,52 +1683,12 @@
         }
       }
     },
-    "New Workflow" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuovo flusso"
-          }
-        }
-      }
-    },
-    "New Workflow…" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nuovo flusso…"
-          }
-        }
-      }
-    },
     "No correction is known for this photo's lens." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Per l'obiettivo di questa foto non è nota alcuna correzione."
-          }
-        }
-      }
-    },
-    "No Workflows" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessun flusso"
-          }
-        }
-      }
-    },
-    "No workflows yet. Make one in Recipes and Workflows." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ancora nessun flusso. Creane uno in Ricette e flussi."
           }
         }
       }
@@ -1833,42 +1783,12 @@
         }
       }
     },
-    "Recipes and Workflows" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ricette e flussi"
-          }
-        }
-      }
-    },
-    "Recipes and Workflows…" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ricette e flussi…"
-          }
-        }
-      }
-    },
     "Rename Photo" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rinomina foto"
-          }
-        }
-      }
-    },
-    "Rename Recipe…" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rinomina ricetta…"
           }
         }
       }
@@ -2854,16 +2774,6 @@
         }
       }
     },
-    "Rename Recipe" : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rinomina ricetta"
-          }
-        }
-      }
-    },
     "Replace" : {
       "localizations" : {
         "it" : {
@@ -3315,22 +3225,12 @@
         }
       }
     },
-    "The files it wrote stay where they are." : {
+    "The folder “%@” of the recipe “%@” cannot be found." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I file che ha scritto restano dove sono."
-          }
-        }
-      }
-    },
-    "The folder “%@” of the workflow “%@” cannot be found." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non si trova la cartella “%1$@” del flusso “%2$@”."
+            "value" : "Non si trova la cartella “%1$@” della ricetta “%2$@”."
           }
         }
       }
@@ -3345,6 +3245,16 @@
         }
       }
     },
+    "The look stays as it was saved: the name and the files can change." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’aspetto resta com’è stato salvato: il nome e i file si possono cambiare."
+          }
+        }
+      }
+    },
     "The photo keeps its kind: “.%@” stays at the end of its name." : {
       "localizations" : {
         "it" : {
@@ -3355,12 +3265,22 @@
         }
       }
     },
-    "The photos that received it keep their adjustments." : {
+    "The photos that received it keep their adjustments, and the files it wrote stay where they are." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le foto che l'hanno ricevuta conservano le loro regolazioni."
+            "value" : "Le foto che l’hanno ricevuta conservano le loro regolazioni, e i file che ha scritto restano dove sono."
+          }
+        }
+      }
+    },
+    "The recipe is no longer in alteralux." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ricetta non è più in alteralux."
           }
         }
       }
@@ -3371,16 +3291,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La ricetta conserva l'aspetto di questa foto: tutto tranne il bilanciamento del bianco."
-          }
-        }
-      }
-    },
-    "The recipe of the workflow “%@” is no longer in alteralux." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "La ricetta del flusso “%@” non è più in alteralux."
           }
         }
       }
@@ -3405,12 +3315,12 @@
         }
       }
     },
-    "The rest as the workflow says: %@" : {
+    "The rest as the recipe says: %@" : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il resto come dice il flusso: %@"
+            "value" : "Il resto come dice la ricetta: %@"
           }
         }
       }
@@ -3421,6 +3331,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "il resto chiesto ogni volta"
+          }
+        }
+      }
+    },
+    "The same look under another name, with files of its own." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo stesso aspetto con un altro nome, e con i suoi file."
           }
         }
       }
@@ -3441,36 +3361,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il tag viene messo sulle foto selezionate, come nel Finder."
-          }
-        }
-      }
-    },
-    "The workflow is no longer in alteralux." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Il flusso non è più in alteralux."
-          }
-        }
-      }
-    },
-    "The workflow “%@” could not be deleted." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non è stato possibile eliminare il flusso “%@”."
-          }
-        }
-      }
-    },
-    "The workflow “%@” could not be saved." : {
-      "localizations" : {
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non è stato possibile salvare il flusso “%@”."
           }
         }
       }
@@ -3615,22 +3505,22 @@
         }
       }
     },
-    "Workflow" : {
+    "Written when photos are developed with the recipe. A setting asked each time is chosen then: the rest is done alone." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flusso"
+            "value" : "Scritti quando le foto vengono sviluppate con la ricetta. Un’impostazione chiesta ogni volta si sceglie in quel momento: il resto va da sé."
           }
         }
       }
     },
-    "Workflows" : {
+    "Written when photos are developed with the recipe: from the library, or in the Finder with Develop with alteralux." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Flussi"
+            "value" : "Scritti quando le foto vengono sviluppate con la ricetta: dalla libreria, o nel Finder con Sviluppa con alteralux."
           }
         }
       }

@@ -107,6 +107,12 @@ Where the product is going, and what version 1.0 means, is in [VISION.md](VISION
   the same strips the GPU's halation adds 0.79, 0.56 and 0.39 of the red, green and blue light the
   CPU backend's adds: the two upstream backends do not develop the same halation (see "Export
   precision" below).
+- **Not verified yet, recipes with their files** (2026-11-24, ADR 0021): covered by tests of the
+  model and of the store and drawn by a test in Italian (the save sheet, the editor, the recipe's
+  page, the Finder's panel); not yet seen in the built app: saving a recipe from the toolbar with its
+  files, changing and duplicating one in the Recipes window, "Develop with…" in the library's bar at
+  the window's smallest size in Italian, the Finder's entry with one recipe and with several, and the
+  workflows kept before turning into recipes at the first launch.
 - **Not verified yet**: several photos selected at once in the built app (a recipe and an export for
   many are covered by tests of the app model); the export into a folder chosen in the panel; stopping
   an export halfway; the menus of the bar (Move to, Copy to, Tag) and the emptying into the Trash by
@@ -329,9 +335,20 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    Then, at the user's request, invisible: a workflow can leave its format, size, file names and
    destination open, asked each time; from the Finder, a workflow that settles everything develops
    with no window and no Dock icon, and the app quits after; otherwise a small panel at the center of
-   the screen asks only what is open (or makes the first workflow). Still to be seen by the user: the
-   action in the Shortcuts editor. Later, with a developer team: each workflow as an entry of the
-   Finder's menu, through an extension.
+   the screen asks only what is open (or makes the first workflow).
+   Done, the third part ([ADR 0021](adr/0021-a-recipe-holds-its-files.md)), asked by the user on
+   2026-11-24: recipe and workflow are one thing, the recipe, which holds the look and the files it
+   writes (format, size, names, destination, each of them askable each time), ready from the start:
+   beside the photos, at the original's size. Saving a recipe from the toolbar asks its name and shows
+   the files in a line, with "Edit…"; the Recipes window changes, duplicates (for the same look in
+   other files) and deletes. The library's bar has "Develop with…", the Finder's entry and the
+   Shortcuts action list recipes, and with one recipe that asks nothing the Finder develops at once.
+   "Adapts to each photo" is gone: a recipe saved with the exposure or the white balance on Auto
+   starts each photo from its own, given in the app too. The workflows kept before become recipes at
+   the first launch. Covered by tests of the model and the store; what is to be seen in the built app
+   is under "Verified, and not yet verified".
+   Still to be seen by the user: the action in the Shortcuts editor. Later, with a developer team:
+   each recipe as an entry of the Finder's menu, through an extension.
 11. **The rest of the harness**, spread over the steps above where it helps: a UI test target
    (`AccessibilityAudit`, `LayoutAudit`, `FocusOrder`) that makes the checks of step 1 permanent, then
    `SCHEME_HAS_TESTS=1` in `scripts/verify.sh`; pane measurements for `docs/LAYOUT_CONTRACT.md`;

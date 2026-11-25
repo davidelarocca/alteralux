@@ -24,9 +24,9 @@ the folders you add as they are on disk, where photos are moved, copied,
 tagged with the Finder's tags and discarded, zoom, comparison with the original,
 crop and straighten, lens corrections (Apple's RAW decoder, the corrections
 Sony, Fujifilm, Nikon Z, Olympus and Panasonic cameras record in the RAW, vignetting
-included, or lensfun's profiles), recipes (looks saved under a name), workflows that develop photos
-with a recipe, adapted to each photo, into files beside them or in a folder,
-from the library, from the Finder's right-click menu or from Shortcuts, and
+included, or lensfun's profiles), recipes (looks saved under a name, each with the files it writes) that develop photos,
+starting each from its own light where the recipe was saved on Auto, into files beside
+them or in a folder, from the library, from the Finder's right-click menu or from Shortcuts, and
 export to JPEG, 10-bit HEIC, 16-bit TIFF or PNG with an embedded sRGB or
 Display P3 profile.
 
