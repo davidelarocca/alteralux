@@ -45,7 +45,7 @@ import SwiftUI
 enum Screenshot {
     /// The platform written in file names and metadata.
     static let platform = "macos"
-    /// Time given to the window server to draw the window before it is captured.
+    /// Time given to the window server to draw the window before the first capture.
     static let settle: TimeInterval = 0.3
 
     @MainActor
@@ -179,14 +179,18 @@ enum Screenshot {
 
     @MainActor
     static func render<Content: View>(_ content: Content, size: LayoutContract.Size, dark: Bool) -> Result<(CGImage, CGSize), Failure> {
-        let result = draw(content, size: size, dark: dark)
-        guard case .success(let (image, points)) = result, let color = uniformColor(image) else { return result }
-        // One color: blank only if an empty window of the same size draws the same pixels.
-        let empty = draw(EmptyView(), size: LayoutContract.Size(width: points.width, height: points.height), dark: dark)
-        if case .success(let (reference, _)) = empty, uniformColor(reference) == color {
-            return .failure(Failure("the image is blank, like an empty window: the window server did not draw the view, or this process may not read the window (Screen Recording permission)."))
+        // A window that has not drawn yet stays the same from one capture to the next: when the
+        // image is blank, draw the view again in a new window, twice at most.
+        var result = draw(content, size: size, dark: dark)
+        for attempt in 1 ... 3 {
+            guard case .success(let (image, points)) = result, let color = uniformColor(image) else { return result }
+            // One color: blank only if an empty window of the same size draws the same pixels.
+            let empty = draw(EmptyView(), size: LayoutContract.Size(width: points.width, height: points.height), dark: dark)
+            guard case .success(let (reference, _)) = empty, uniformColor(reference) == color else { return result }
+            if attempt == 3 { break }
+            result = draw(content, size: size, dark: dark)
         }
-        return result
+        return .failure(Failure("the image is blank, like an empty window: the window server did not draw the view, or this process may not read the window (Screen Recording permission)."))
     }
 
     @MainActor
@@ -204,17 +208,46 @@ enum Screenshot {
         window.setFrameOrigin(NSPoint(x: -20_000, y: -20_000))
         window.orderFrontRegardless()
         defer { window.close() }
-        let end = Date().addingTimeInterval(settle)
-        while Date() < end { RunLoop.main.run(until: min(end, Date().addingTimeInterval(0.05))) }
+        spin(settle)
 
         guard let capture = windowImage else {
             return .failure(Failure("CGWindowListCreateImage is not available on this macOS."))
         }
-        guard let image = capture(.null, .optionIncludingWindow, CGWindowID(window.windowNumber), [.boundsIgnoreFraming, .bestResolution])?.takeRetainedValue(),
-              image.width > 0, image.height > 0 else {
+        func shot() -> CGImage? {
+            guard let image = capture(.null, .optionIncludingWindow, CGWindowID(window.windowNumber), [.boundsIgnoreFraming, .bestResolution])?.takeRetainedValue(),
+                  image.width > 0, image.height > 0 else { return nil }
+            return image
+        }
+        // A fixed wait is not enough on a busy machine: other tests' main-actor work runs inside
+        // the wait, and the window may not have finished drawing when it ends. Capture until two
+        // images in a row are the same.
+        var image = shot()
+        let deadline = Date().addingTimeInterval(stableWait)
+        while Date() < deadline {
+            spin(0.1)
+            let next = shot()
+            if let image, let next, samePixels(image, next) { break }
+            image = next
+        }
+        guard let image else {
             return .failure(Failure("the window server returned no image (no logged-in session?)."))
         }
         return .success((image, points))
+    }
+
+    /// Longest wait, after `settle`, for the window's image to stop changing.
+    static let stableWait: TimeInterval = 5
+
+    @MainActor
+    private static func spin(_ duration: TimeInterval) {
+        let end = Date().addingTimeInterval(duration)
+        while Date() < end { RunLoop.main.run(until: min(end, Date().addingTimeInterval(0.05))) }
+    }
+
+    static func samePixels(_ first: CGImage, _ second: CGImage) -> Bool {
+        guard first.width == second.width, first.height == second.height,
+              let left = first.dataProvider?.data, let right = second.dataProvider?.data else { return false }
+        return CFEqual(left, right)
     }
 
     struct Failure: Error, CustomStringConvertible {

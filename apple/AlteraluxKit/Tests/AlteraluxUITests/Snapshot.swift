@@ -115,6 +115,9 @@ enum Snapshot {
                 if outcome.status == .notCompared, let note = outcome.note { print("swift-harness snapshot: \(note)") }
             }
         }
+        // An expectation's message stops at the closure's first line in the test log: print the
+        // problems on lines of their own, so a run's log says why an image failed.
+        for problem in problems { print("swift-harness snapshot problem: \(problem)") }
         return problems
     }
 

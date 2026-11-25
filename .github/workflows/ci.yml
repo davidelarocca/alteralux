@@ -103,6 +103,15 @@ jobs:
       # SwiftLint in strict mode.
       - name: Verify (scripts/verify.sh full)
         run: scripts/verify.sh full
+      # The images a failing snapshot drew, with their diff and reason, for a look without
+      # running the tests again. Before the summary: a rerun that passes removes them.
+      - name: Upload the snapshots that failed
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: failed-snapshots
+          path: .build/swift-harness/snapshots
+          if-no-files-found: ignore
       # verify.sh shows only the end of each test run: list every test here, and
       # what each failing one reported. It runs after a failed verification too:
       # that is when the names are needed.
@@ -111,7 +120,7 @@ jobs:
         run: |
           for package in apple/DesignSystem apple/AlteraluxKit; do
             echo "== $package"
-            swift test --package-path "$package" --skip-build 2>&1 | grep -E "^(✔|✘) (Test|Suite)|recorded an issue|Test run with" || true
+            swift test --package-path "$package" --skip-build 2>&1 | grep -E "^(✔|✘) (Test|Suite)|recorded an issue|^swift-harness snapshot problem:|Test run with" || true
           done
       # Informational: the files SwiftFormat would change. Formatting is applied
       # by the developer's tools, not enforced here.

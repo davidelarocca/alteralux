@@ -194,7 +194,7 @@ for pkg in ${PACKAGES[@]+"${PACKAGES[@]}"}; do
   test_log=$(mktemp)
   swift test --package-path "$pkg" > "$test_log" 2>&1
   test_status=$?
-  grep -E '^✘|recorded an issue|error:' "$test_log" | head -40
+  grep -E '^✘|recorded an issue|error:|^swift-harness snapshot problem:' "$test_log" | head -40
   tail -40 "$test_log"
   rm -f "$test_log"
   [ "$test_status" -eq 0 ] || { fail=1; note_platform failed_on macOS; }

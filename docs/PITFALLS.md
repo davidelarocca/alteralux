@@ -29,6 +29,13 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
 - **Apple's RAW decoder refuses a RAW that is too small, without an error.** For a DNG of 128 × 96 pixels
   `CIRAWFilter` is created, reports a size of zero and gives an empty image; 192 × 128 works. The test
   RAW (`TestDNG`) is 240 × 160, and `PhotoDecoder` reports an image of no size as unreadable.
+- **A fixed wait before a window capture is not enough on a busy runner.** Other suites' main-actor
+  work runs inside the run loop the capture spins, and on CI the `ParameterSlider` `long-text`
+  snapshot failed at random (12 to 16 s for one test, against under 3 s on a rerun). `Screenshot.draw`
+  now captures until two images in a row match, and draws again when the image is blank; a failing
+  snapshot prints its reason on a line of its own (`swift-harness snapshot problem:`), and CI uploads
+  the images as `failed-snapshots`. CI's macOS (27.0) is not the baselines' (27.2), so there images are
+  not compared: a failure there comes from drawing, not from pixels.
 - **A new `CIRAWFilter` for every decode is three times slower.** A 1024 px decode takes 65 ms from a
   filter kept alive and 200 ms from a new one. Go through the photo's `PhotoDecoder`; `ImageLoader.load`
   is for a file decoded once.
