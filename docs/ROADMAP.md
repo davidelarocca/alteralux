@@ -438,10 +438,11 @@ branch of its own. What was said, in the order to take it:
   one level in 255: candidates to remove, if the user says so. Opened for the user in the built app on 2026-11-24.
   Done, the sixth ([ADR 0019](adr/0019-highlights-and-shadows-before-the-film.md)): highlights and
   shadows before the film, as light given to or taken from one end of the scene after the meter and
-  the exposure: two sliders in a group of their own under Shot that starts closed. The meter is
+  the exposure: two sliders in Shot, at first in a group of their own that starts closed. The meter is
   read first, by the engine itself through the bridge, so it does not answer the change: on a test
   scene, dimming a lamp left the rest as it was, where the engine left to meter it doubled its
-  brightness. Tried by the user in the built app on 2026-11-24, who keeps the two in their group.
+  brightness. Tried by the user in the built app on 2026-11-24, who kept the two in their group, and
+  on 2026-11-25 asked for them in view in Shot, under a title of their own after the exposure.
   Retouches after the scan: later.
   Done, the seventh ([ADR 0020](adr/0020-automatic-means-automatic.md)), asked by the user on
   2026-11-24: in Shot the exposure and the white balance are each a title with its "Auto" switch on

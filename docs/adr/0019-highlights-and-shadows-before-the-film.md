@@ -47,10 +47,12 @@ contrast and not the scene.
   new parameter. With both sliders at zero nothing of this runs: the photo is decoded and metered
   exactly as before.
 - They belong to the look: a recipe carries them, as it carries the exposure.
-- In the inspector they are two sliders, from -100 to +100, in a group of their own under Shot that
-  starts closed, "Highlights and shadows" ([ADR 0018](0018-back-to-the-essential-controls.md): a
-  control comes into view only by the user's word). The user tried them in the built app on
-  2026-11-24 and, having first asked for them in view, chose the group.
+- In the inspector they are two sliders, from -100 to +100, in view in Shot under a title of their
+  own, "Highlights and shadows", right after the exposure they are measured from. They first stood
+  in a group of their own under Shot that starts closed
+  ([ADR 0018](0018-back-to-the-essential-controls.md): a control comes into view only by the user's
+  word): the user, who had tried them in the built app on 2026-11-24 and chosen the group, asked on
+  2026-11-25 to have them in the Shot section itself, not in a section apart.
 
 ## Alternatives considered
 

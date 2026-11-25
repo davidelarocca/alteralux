@@ -97,6 +97,6 @@ defaults, and unknown keys are errors.
 | [0016](adr/0016-develop-in-the-order-of-the-analog-process.md) | The adjustments in the order of the analog process, and an exposure that brightens | Accepted; what is in view set by 0018 |
 | [0017](adr/0017-in-view-what-a-photographer-uses.md) | In view what a photographer uses, the rest under the control it belongs to | Accepted; "More … adjustments" removed by 0018; the automatic modes' sliders out of view by 0020 |
 | [0018](adr/0018-back-to-the-essential-controls.md) | The inspector goes back to the essential controls | Accepted |
-| [0019](adr/0019-highlights-and-shadows-before-the-film.md) | Highlights and shadows as light, after the meter and before the film | Accepted |
+| [0019](adr/0019-highlights-and-shadows-before-the-film.md) | Highlights and shadows as light, after the meter and before the film | Accepted; the two sliders in view in Shot since 2026-11-25 |
 | [0020](adr/0020-automatic-means-automatic.md) | Automatic means automatic: a mode's switch on its title, its sliders out of view | Accepted |
 | [0021](adr/0021-a-recipe-holds-its-files.md) | A recipe holds the look and the files it writes; workflows go | Accepted |

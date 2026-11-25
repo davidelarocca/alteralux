@@ -54,11 +54,13 @@ struct MeterDetails: View {
 }
 
 /// The scene's highlights and shadows: light taken from, or given to, one end of the scene after
-/// the exposure and before the film (ADR 0019).
+/// the exposure and before the film (ADR 0019). In view under a title of their own, right after the
+/// exposure they are measured from: they are the hand's whether the exposure is automatic or not.
 struct SceneToneControls: View {
     @Binding var tone: SceneTone
 
     var body: some View {
+        InspectorSubheading("Highlights and shadows")
         ParameterSlider(
             "Highlights", value: percent($tone.highlights), in: -100 ... 100, step: 1, fractionDigits: 0,
             showsSign: true, ends: SliderEnds("Dimmer", "Brighter"),
