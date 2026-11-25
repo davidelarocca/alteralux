@@ -86,6 +86,13 @@ Each entry: what goes wrong, how it shows, and what to do instead. Link the test
   back. Set by name through `URLResourceValues.tagNames`, a tag of the user's own loses its color.
 - **A symbol in a palette picker is drawn white.** In `.pickerStyle(.palette)` neither `.tint` nor
   `.foregroundStyle` colors an `Image`; it takes its color with `.symbolRenderingMode(.palette)`.
+- **A `ShareLink` in a context menu opens its picker at the top of the window.** It has no view to
+  point at once the menu closes. Use `.sharePicker(items:)` on the view the menu belongs to: it shows
+  `NSSharingServicePicker` relative to that view.
+- **`DispatchQueue.main.async` does not run while a test spins the run loop.** A `@MainActor` test is
+  itself a job of the main queue, so blocks queued there wait for it to end, while SwiftUI's updates
+  go on. Work deferred to "after the menu closes" uses `RunLoop.main.perform(inModes: [.default])`,
+  which runs in the spinning loop and only once a menu's tracking is over.
 - **A context menu after a view's tap gestures never opens.** On a tile with `onTapGesture` (single,
   double, with modifiers), `.contextMenu` placed after them showed nothing on a secondary click; placed
   before them it works.
