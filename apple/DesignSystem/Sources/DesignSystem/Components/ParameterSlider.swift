@@ -22,6 +22,10 @@ import SwiftUI
 /// assistive technologies read it after the slider's title. In a group disabled with
 /// `governed(_:reason:)`, a slider with no note of its own is read with the group's reason.
 ///
+/// A slider moves evenly in its value unless it has a `scale`: a color temperature moves evenly in
+/// its reciprocal (mired), as the eye sees a change of light, so 2000 to 3000 K is not squeezed into
+/// as little room as 11000 to 12000 K.
+///
 /// With `.labelsHidden()` only the slider is drawn, for a caller that shows the value itself
 /// (the zoom under the photo). The title is still what assistive technologies read.
 public extension EnvironmentValues {
@@ -44,6 +48,7 @@ public struct ParameterSlider: View {
     private let unit: String?
     private let ends: SliderEnds?
     private let note: LocalizedStringKey?
+    private let scale: SliderScale
 
     @Environment(\.labelsVisibility) private var labelsVisibility
     @Environment(\.slidersTakeKeyboardFocus) private var takesKeyboardFocus
@@ -59,6 +64,7 @@ public struct ParameterSlider: View {
     ///   - unit: written after the value, as it is (a symbol: "EV", "K", "µm", "%").
     ///   - ends: what the two ends of the slider do, under it.
     ///   - note: a line under the slider: why it is disabled, or what it is tied to.
+    ///   - scale: how the value is laid along the slider: evenly, or evenly in its reciprocal.
     public init(
         _ title: LocalizedStringKey,
         value: Binding<Double>,
@@ -71,6 +77,7 @@ public struct ParameterSlider: View {
         unit: String? = nil,
         ends: SliderEnds? = nil,
         note: LocalizedStringKey? = nil,
+        scale: SliderScale = .linear,
     ) {
         self.title = title
         _value = value
@@ -83,6 +90,7 @@ public struct ParameterSlider: View {
         self.unit = unit
         self.ends = ends
         self.note = note
+        self.scale = scale
     }
 
     public var body: some View {
@@ -106,10 +114,15 @@ public struct ParameterSlider: View {
                 }
             }
             // Stepping is done in the binding: a stepped Slider draws a tick mark for every step.
-            Slider(value: steppedValue, in: range, neutralValue: defaultValue) {
+            Slider(
+                value: steppedPosition, in: scale.position(range.lowerBound) ... scale.position(range.upperBound),
+                neutralValue: scale.position(defaultValue),
+            ) {
                 Text(title)
             }
             .labelsHidden()
+            // On a scale of its own the slider's position is not the value: say the value.
+            .spokenValue(scale.isLinear ? nil : formattedValue)
             .disabled(isSwitchedOff)
             .accessibilityLabel(spokenTitle)
             // The keyboard focus is on the whole component, below.
@@ -208,10 +221,14 @@ public struct ParameterSlider: View {
         value = min(max(moved, range.lowerBound), range.upperBound)
     }
 
-    private var steppedValue: Binding<Double> {
+    /// Where the slider stands, on its scale; set, the value snaps to its steps and stays in range.
+    private var steppedPosition: Binding<Double> {
         Binding(
-            get: { value },
-            set: { value = ($0 / step).rounded() * step },
+            get: { scale.position(value) },
+            set: {
+                let stepped = (scale.value(of: $0) / step).rounded() * step
+                value = min(max(stepped, range.lowerBound), range.upperBound)
+            },
         )
     }
 
@@ -227,6 +244,42 @@ public struct ParameterSlider: View {
             // A large value is read as one number: a temperature is "5200", not "5,200".
             .grouping(.never)
             .sign(strategy: showsSign ? .always(includingZero: false) : .automatic)
+    }
+}
+
+/// How a slider lays its values along its track.
+public struct SliderScale: Sendable {
+    private let toPosition: @Sendable (Double) -> Double
+    private let toValue: @Sendable (Double) -> Double
+    fileprivate let isLinear: Bool
+
+    /// The value evenly along the track.
+    public static let linear = SliderScale(toPosition: { $0 }, toValue: { $0 }, isLinear: true)
+
+    /// The reciprocal of the value evenly along the track, larger values still to the right: a
+    /// color temperature moves in mired, as the eye sees a change of light. For values above 0.
+    public static let reciprocal = SliderScale(toPosition: { -1 / $0 }, toValue: { -1 / $0 }, isLinear: false)
+
+    /// Where `value` stands on the track.
+    func position(_ value: Double) -> Double {
+        toPosition(value)
+    }
+
+    /// The value at `position` on the track.
+    func value(of position: Double) -> Double {
+        toValue(position)
+    }
+}
+
+private extension View {
+    /// The value assistive technologies read, in place of the slider's own; `nil` leaves it.
+    @ViewBuilder
+    func spokenValue(_ text: String?) -> some View {
+        if let text {
+            accessibilityValue(Text(verbatim: text))
+        } else {
+            self
+        }
     }
 }
 

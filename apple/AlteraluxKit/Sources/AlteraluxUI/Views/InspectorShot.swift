@@ -100,7 +100,7 @@ struct WhiteBalanceControls: View {
                     ParameterSlider(
                         "Temperature", value: $model.temperature, in: model.temperatureRange,
                         step: AppModel.temperatureStep, defaultValue: neutral.temperature, fractionDigits: 0,
-                        unit: "K", ends: SliderEnds("Cooler", "Warmer"),
+                        unit: "K", ends: SliderEnds("Cooler", "Warmer"), scale: .reciprocal,
                     )
                     .help("The color of the light the photo was taken in, in kelvin.")
                     ParameterSlider(

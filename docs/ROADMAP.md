@@ -193,7 +193,9 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    their place, one line that says so); every preview decoded at its size by a decoder kept for the photo
    ([ADR 0007](adr/0007-decode-each-preview-at-its-size.md)); tests on a RAW the tests write
    themselves. Still open:
-   - The temperature slider is linear in kelvin, so the warm end is cramped: to judge in the app.
+   - Done on 2026-11-26: the temperature slider moves evenly in mired (`SliderScale.reciprocal`), so
+     2000 to 3000 K is no longer squeezed into a few points while 8000 to 12000 K takes a third of
+     the track. To judge in the app by the owner.
    - The original shown for the comparison is the system's rendering, with the camera's white balance
      and at 2048 px at most.
    - Done: the automatic white balance (ADR 0011, 0020, 0022) and, on 2026-11-26, the dropper on the
