@@ -56,12 +56,15 @@ struct LibrarySelectionBar: View {
             empty: Text("No recipes yet. Save one while developing a photo."),
         )
         .help("Develop the selected photos with a recipe and write its files. The photos keep their adjustments.")
-        ChoiceListButton(
-            Text("Move to…"), symbol: isCompact ? "folder" : nil,
-            choices: destinations { folder in Task { await model.moveSelection(to: folder) } },
-            empty: Text("No other folder in the library."),
-        )
-        .help("Move the selected photos to another folder of the library")
+        // Photos opened on their own cannot leave their folder: the app may not write in it.
+        if model.library.arrangesFiles {
+            ChoiceListButton(
+                Text("Move to…"), symbol: isCompact ? "folder" : nil,
+                choices: destinations { folder in Task { await model.moveSelection(to: folder) } },
+                empty: Text("No other folder in the library."),
+            )
+            .help("Move the selected photos to another folder of the library")
+        }
         ChoiceListButton(
             Text("Copy to…"), symbol: isCompact ? "plus.square.on.square" : nil,
             choices: destinations { folder in Task { await model.copySelection(to: folder) } },

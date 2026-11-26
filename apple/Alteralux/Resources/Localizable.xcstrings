@@ -951,6 +951,16 @@
         }
       }
     },
+    "Clear Opened Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svuota Foto aperte"
+          }
+        }
+      }
+    },
     "Clear Selection" : {
       "localizations" : {
         "it" : {
@@ -1723,6 +1733,26 @@
         }
       }
     },
+    "None of the photos opened on their own has adjustments yet." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna delle foto aperte da sole ha ancora regolazioni."
+          }
+        }
+      }
+    },
+    "None of the photos opened on their own is discarded." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna delle foto aperte da sole è scartata."
+          }
+        }
+      }
+    },
     "None of these files is a photo alteralux can develop." : {
       "localizations" : {
         "it" : {
@@ -1749,6 +1779,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apri con"
+          }
+        }
+      }
+    },
+    "Opened Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto aperte"
           }
         }
       }
@@ -1819,6 +1859,26 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ricette"
+          }
+        }
+      }
+    },
+    "Remove %lld Photos from Opened Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togli %lld foto da Foto aperte"
+          }
+        }
+      }
+    },
+    "Remove from Opened Photos" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Togli da Foto aperte"
           }
         }
       }
@@ -3325,12 +3385,32 @@
         }
       }
     },
+    "The photos opened on their own are no longer where they were." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le foto aperte da sole non sono più dove erano."
+          }
+        }
+      }
+    },
     "The photos that received it keep their adjustments, and the files it wrote stay where they are." : {
       "localizations" : {
         "it" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le foto che l’hanno ricevuta conservano le loro regolazioni, e i file che ha scritto restano dove sono."
+          }
+        }
+      }
+    },
+    "The photos you opened outside the library's folders" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le foto che hai aperto fuori dalle cartelle della libreria"
           }
         }
       }

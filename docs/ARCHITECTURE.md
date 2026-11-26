@@ -106,3 +106,4 @@ defaults, and unknown keys are errors.
 | [0023](adr/0023-a-preview-looks-like-the-photo-seen-at-its-size.md) | A preview looks like the developed photo seen at its size | Accepted |
 | [0024](adr/0024-the-dropper-makes-the-point-clicked-gray.md) | The dropper makes the point clicked gray | Proposed |
 | [0025](adr/0025-the-grid-shows-a-photo-as-it-was-developed.md) | The grid shows a photo as it was developed | Accepted |
+| [0026](adr/0026-photos-opened-on-their-own-are-remembered.md) | Photos opened on their own are remembered | Accepted |

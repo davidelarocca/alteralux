@@ -253,7 +253,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
      back in its place. The View menu's command (Command-Delete) discards the photo on screen. A
      photo that is not of the folder on screen cannot be discarded: for it alone the command is
      still "Remove from Strip".
-   - A sidebar entry for photos opened one by one, outside any folder.
+   - Done on 2026-11-26, chosen by the user: photos opened outside the library's folders (from the
+     Finder, the Open panel or a drop) are remembered and shown under Opened Photos, the sidebar's
+     first entry while there are any; their menu leaves out what needs their folder
+     ([ADR 0026](adr/0026-photos-opened-on-their-own-are-remembered.md)).
    - Recipe and export for a selection come with step 7.
 7. **Recipes** (the looks of earlier notes): save and apply, copy between photos, export several
    photos, adaptive to exposure and temperature. Done, the first part

@@ -23,7 +23,7 @@ or adding something the user creates or organizes.
 |---|---|---|---|
 | | `File.swift:line` | `DetailView` (`File.swift:line`) or none | the navigation call, e.g. `router.open(.entity(id))` |
 | Recipe | `apple/AlteraluxKit/Sources/AlteraluxKit/Recipe.swift`, with the files it writes (`RecipeFiles.swift`) | the recipes window (`RecipesWindow`, `RecipesWindow.swift`), the recipe chosen in its list | Manage Recipes… in the Recipe menu, or the Window menu; the window shows the first recipe until another is chosen |
-| Photo | a file of a folder of the library (`apple/AlteraluxKit/Sources/AlteraluxUI/Model/LibraryModel.swift`) | the develop screen (`DevelopScreen`, `MainScreen.swift`) | `AppModel.develop(_:)`: a double-click, Return, or Develop in its menu |
+| Photo | a file of a folder of the library, or one opened on its own outside them (`apple/AlteraluxKit/Sources/AlteraluxUI/Model/LibraryModel.swift`, `OpenedPhotos.swift`) | the develop screen (`DevelopScreen`, `MainScreen.swift`) | `AppModel.develop(_:)`: a double-click, Return, or Develop in its menu |
 
 ## Relations
 
@@ -46,6 +46,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Recipe | The Finder's panel for photos sent from "Develop with alteralux…" (`FinderPanel.swift`, `AppModel+HandedOver.swift`): which recipe, and only the settings it leaves open | n/a | n/a | Develop with only: see Exceptions |
 | Recipe | The Shortcuts action "Develop Photos" (`apple/Alteralux/Shortcuts/DevelopPhotosIntent.swift`), by name with what it writes | n/a, outside the app | n/a | Develop with only: see Exceptions |
 | Photo | A tile of the library's grid (`LibraryGrid.swift`), developed with its adjustments and in the shape of its frame when it has any, the camera's preview otherwise | ✓ double-click, Return, Develop in its menu | ✓ its folder is the one on screen; Show in Finder | ✓ the bar of the selection and the tile's menu |
+| Photo | A tile of the grid under the sidebar's Opened Photos (`LibraryGrid.swift`), for photos opened from the Finder, the Open panel or a drop outside the library's folders | ✓ double-click, Return, Develop in its menu | ✓ Show in Finder | The folder's set without Move to, Duplicate, Rename and Move to Trash, with Remove from Opened Photos in their place: see Exceptions |
 | Photo | The photo being developed (`PhotoStage`, from `MainScreen.swift`) | n/a, it is the destination | ✓ Show in Finder; the way back to the library in the toolbar and Escape | ✓ the photo's menu, the toolbar and the menus |
 | Photo | A thumbnail of the strip under the photo being developed (`FilmstripView.swift`), developed as the grid's tile is, with the grid's marks and its colored tags as dots | ✓ a click shows it | ✓ Show in Finder; the way back to its folder in the toolbar | Its menu (`StripPhotoMenu`) acts on the thumbnail's photo, the one on screen stays: Show in Finder, give a Recipe, Export, Share, Tags, Copy, Paste and Reset Adjustments, Discard, which also takes the photo out of the strip as it takes it out of the grid (Take Back for a photo opened from the discarded ones; Remove from Strip in its place for a photo that is not of the folder on screen, which cannot be discarded), and Move to Trash. The View menu's command for the photo on screen is the same Discard. The rest: see Exceptions |
 
@@ -62,6 +63,7 @@ One row per place an entity is displayed. ✓ = offered, — = missing (a gap), 
 | Collection | Create | Rename | Reorder | Delete | Undo |
 |---|---|---|---|---|---|
 | Recipes | ✓ Save as New Recipe…, Duplicate… | ✓ in Edit… | — see Exceptions | ✓ after a confirmation | — see Exceptions |
+| Opened Photos | ✓ opening a photo outside the library's folders adds it | n/a, the sidebar names it | — see Exceptions | ✓ Remove from Opened Photos in a photo's menu, Clear Opened Photos on the entry; the files stay | — see Exceptions |
 
 ## Exceptions
 
@@ -76,6 +78,8 @@ Deliberate departures from the rules, so they are not reported again.
 | Recipe, in the Develop with… list of the library's selection bar, a photo's menu, the sheet and the Finder's panel that develop with it | Give, Edit, Duplicate, Delete, opening its page | These develop photos with a recipe; what it leaves open is asked there, and the rest is changed in `RecipesWindow` |
 | Recipe, in the toolbar's Recipe menu while developing | Develop with | The photo on screen is exported with its own adjustments (Export…); developing with a recipe is for photos that keep theirs, from the library and the Finder |
 | Recipe, in the Shortcuts action | everything but Develop with | Shortcuts only chooses one, kept by id; recipes are made and changed in the app |
+| Photo, under Opened Photos | Move to, Duplicate, Rename, Move to Trash, in the tile's menu and the selection bar | The sandbox lets the app read and write a photo opened on its own, not its folder: these would fail (ADR 0026). Copy to a folder of the library works |
+| Opened Photos | Reorder, Undo | They are shown by name or by the toolbar's order, as a folder's photos; forgetting one changes nothing on disk, and opening the photo again brings it back |
 | Recipes | Undo of create, rename and delete | The window's undo is the history of the photos' adjustments; deleting asks first, and a recipe deleted by mistake is saved again from any photo that has its look |
 
 ## Known gaps
