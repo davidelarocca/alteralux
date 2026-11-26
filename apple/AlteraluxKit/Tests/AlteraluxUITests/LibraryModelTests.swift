@@ -32,6 +32,7 @@ struct LibraryModelTests {
                 storeURL: root.appendingPathComponent("support/folders.plist"), cacheDirectory: nil,
                 discards: DiscardStore(fallbackDirectory: root.appendingPathComponent("support/discarded")),
                 hasAdjustments: { [store] in store.hasAdjustments(for: $0) },
+                look: { [store] in store.load(for: $0) },
             )
         }
 
@@ -126,6 +127,29 @@ struct LibraryModelTests {
         try await fixture.store.save(DevelopSettings(exposureEV: 1), for: fixture.photo("IMG_10.jpg"))
         model.noteAdjustments(of: fixture.photo("IMG_10.jpg"))
         #expect(model.adjusted.count == 2)
+    }
+
+    @Test func aPhotoWithAdjustmentsIsShownDevelopedInItsFrame() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        var look = DevelopSettings(exposureEV: 0.5)
+        look.crop = PhotoCrop(left: 0.25, top: 0, width: 0.5, height: 1, angle: 0)
+        try await fixture.store.save(look, for: fixture.photo("IMG_2.jpg"))
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let adjusted = try #require(model.photos.first { $0.lastPathComponent == "IMG_2.jpg" })
+        let untouched = try #require(model.photos.first { $0.lastPathComponent == "IMG_1.jpg" })
+
+        // The grid develops it with what was kept, and gives it the shape of its frame.
+        #expect(model.looks == [adjusted: look])
+        let whole = model.shownAspectRatio(of: untouched)
+        #expect(abs(model.shownAspectRatio(of: adjusted) - whole * 0.5) < 1e-9)
+
+        // Its adjustments taken away, it is the camera's photo again, whole.
+        try await fixture.store.remove(for: adjusted)
+        model.noteAdjustments(of: adjusted)
+        #expect(model.looks.isEmpty)
+        #expect(model.shownAspectRatio(of: adjusted) == whole)
     }
 
     @Test func aClickSelectsAndTheKeysMoveThroughThePhotos() async throws {

@@ -87,22 +87,7 @@ public actor ThumbnailProvider {
     /// main thread.
     public nonisolated func pruneDiskCache(toAtMost limit: Int64) {
         guard let cacheDirectory else { return }
-        let keys: Set<URLResourceKey> = [.fileSizeKey, .contentModificationDateKey]
-        guard let files = try? FileManager.default.contentsOfDirectory(
-            at: cacheDirectory, includingPropertiesForKeys: Array(keys),
-        ) else { return }
-        var thumbnails = files.filter { $0.pathExtension == "jpg" }.map { file in
-            let values = try? file.resourceValues(forKeys: keys)
-            return (file: file, size: Int64(values?.fileSize ?? 0), date: values?.contentModificationDate ?? .distantPast)
-        }
-        var total = thumbnails.reduce(0) { $0 + $1.size }
-        guard total > limit else { return }
-        thumbnails.sort { $0.date < $1.date }
-        for thumbnail in thumbnails where total > limit {
-            if (try? FileManager.default.removeItem(at: thumbnail.file)) != nil {
-                total -= thumbnail.size
-            }
-        }
+        ThumbnailFiles.prune(cacheDirectory, toAtMost: limit)
     }
 
     /// Removes all cached images and waits for outstanding cache writes to finish.
@@ -325,16 +310,7 @@ public actor ThumbnailProvider {
     }
 
     private func fileIdentity(for url: URL, maxDimension: Int) -> String? {
-        guard let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey]),
-              let modificationDate = values.contentModificationDate,
-              let fileSize = values.fileSize
-        else {
-            return nil
-        }
-
-        let path = Data(url.path.utf8).base64EncodedString()
-        let dateBits = String(modificationDate.timeIntervalSince1970.bitPattern, radix: 16)
-        return "v1|\(path)|\(dateBits)|\(fileSize)|\(maxDimension)"
+        ThumbnailFiles.identity(of: url).map { "v1|\($0)|\(maxDimension)" }
     }
 
     private func identityFromDiskIndex(for request: RequestKey) -> String? {
@@ -377,16 +353,7 @@ public actor ThumbnailProvider {
     }
 
     private static func cachedImage(at url: URL) -> CGImage? {
-        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
-              let image = CGImageSourceCreateImageAtIndex(
-                  source,
-                  0,
-                  [kCGImageSourceShouldCacheImmediately: true] as CFDictionary,
-              )
-        else {
-            return nil
-        }
-        return image
+        ThumbnailFiles.read(url)
     }
 
     private static func writeThumbnail(
@@ -399,24 +366,10 @@ public actor ThumbnailProvider {
         let fileManager = FileManager.default
         do {
             try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
-            let data = NSMutableData()
-            guard let destination = CGImageDestinationCreateWithData(
-                data,
-                UTType.jpeg.identifier as CFString,
-                1,
-                nil,
-            ) else {
-                return
-            }
-            CGImageDestinationAddImage(
-                destination,
-                image.image,
-                [kCGImageDestinationLossyCompressionQuality: 0.8] as CFDictionary,
-            )
-            guard CGImageDestinationFinalize(destination), !Task.isCancelled else { return }
+            guard let data = ThumbnailFiles.jpegData(of: image.image), !Task.isCancelled else { return }
 
             let imageURL = directory.appendingPathComponent(cacheName(for: identity))
-            try (data as Data).write(to: imageURL, options: .atomic)
+            try data.write(to: imageURL, options: .atomic)
             let indexURL = directory.appendingPathComponent(indexName(for: request))
             try identity.write(to: indexURL, atomically: true, encoding: .utf8)
         } catch {
@@ -433,12 +386,6 @@ public actor ThumbnailProvider {
     }
 
     private static func stableHash(_ value: String) -> String {
-        var first: UInt64 = 14_695_981_039_346_656_037
-        var second: UInt64 = 7_809_847_782_465_536_322
-        for byte in value.utf8 {
-            first = (first ^ UInt64(byte)) &* 1_099_511_628_211
-            second = (second ^ UInt64(byte)) &* 1_403_555_449_261_977_603
-        }
-        return String(first, radix: 16) + String(second, radix: 16)
+        ThumbnailFiles.stableHash(value)
     }
 }
