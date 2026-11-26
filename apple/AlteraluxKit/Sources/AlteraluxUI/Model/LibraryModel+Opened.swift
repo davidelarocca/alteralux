@@ -3,8 +3,8 @@ import Foundation
 
 /// The photos opened on their own, outside the library's folders (ADR 0026).
 extension LibraryModel {
-    /// Whether the photos on screen can be moved, duplicated, renamed and put in the Trash: not
-    /// those opened on their own, whose folder the sandbox does not give the app.
+    /// Whether the photos on screen can be moved, duplicated and renamed: not those opened on
+    /// their own, whose folder the sandbox does not give the app. The Trash takes them all.
     var arrangesFiles: Bool {
         place != .opened
     }

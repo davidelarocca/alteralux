@@ -34,5 +34,11 @@ struct OpenedPhotosTests {
         try FileManager.default.removeItem(at: photos[2])
         let later = OpenedPhotos(storeURL: store)
         #expect(await later.load().map(\.lastPathComponent) == ["A.jpg"])
+
+        // Put in the Trash from the Finder: the bookmark follows it there, the app does not.
+        let trash = root.appendingPathComponent(".Trash")
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: photos[1], to: trash.appendingPathComponent("A.jpg"))
+        #expect(await OpenedPhotos(storeURL: store).load().isEmpty)
     }
 }

@@ -50,7 +50,7 @@ struct LibraryPhotoMenu: View {
         Button("Share…") { act { share(targets) } }
         Divider()
         // A photo opened on its own can be read and written, but not its folder: it cannot be
-        // moved, duplicated, renamed or put in the Trash from there.
+        // moved, duplicated or renamed from there. The Trash takes it.
         if model.library.arrangesFiles {
             Menu("Move to") {
                 ForEach(destinations, id: \.url) { folder in
@@ -88,11 +88,10 @@ struct LibraryPhotoMenu: View {
         Button("Rotate Right") { act { model.turnSelection(clockwise: true) } }
         Divider()
         discardButton(count: count)
-        if model.library.arrangesFiles {
-            Button { act { ask(.trash(targets)) } } label: {
-                count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
-            }
-        } else {
+        Button { act { ask(.trash(targets)) } } label: {
+            count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
+        }
+        if !model.library.arrangesFiles {
             Button { act { Task { await model.library.forgetOpened(targets) } } } label: {
                 count > 1 ? Text("Remove \(count) Photos from Opened Photos") : Text("Remove from Opened Photos")
             }
