@@ -328,3 +328,106 @@ struct PhotoSourcesTests {
         #expect(first.source === second.source)
     }
 }
+
+/// The dropper of the white balance: a click on the photo makes that point gray.
+@MainActor
+struct NeutralPointPickerTests {
+    private func openedModel(_ raws: [URL]) async throws -> AppModel {
+        let model = AppModel(dataDirectory: WindowedTests.engineData)
+        await model.start()
+        let undoManager = UndoManager()
+        undoManager.groupsByEvent = false
+        model.history.undoManager = undoManager
+        model.open(raws)
+        try await wait("the preview") { model.preview != nil }
+        return model
+    }
+
+    private func wait(_ what: String, until condition: () -> Bool) async throws {
+        let deadline = ContinuousClock.now + .seconds(60)
+        while !condition() {
+            try #require(ContinuousClock.now < deadline, "Waited 60 seconds for \(what).")
+            try await Task.sleep(for: .milliseconds(5))
+        }
+    }
+
+    @Test func aClickOnTheWarmRampChoosesAWarmerLightAsOneStepOfUndo() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = try await openedModel(raws)
+        model.isWhiteBalanceAutomatic = true
+        model.settingsDidChange()
+        model.settleChange()
+        let asShot = try #require(model.asShotWhiteBalance)
+
+        model.setPickingNeutral(true)
+        #expect(model.isPickingNeutralOnPhoto)
+        // The warm ramp, on the right half of the photo.
+        model.pickNeutral(at: CGPoint(x: 0.75, y: 0.5))
+        try await wait("the white balance picked") { !model.isPickingNeutral }
+        #expect(!model.missedNeutral)
+        #expect(!model.settings.autoWhiteBalance)
+        let picked = try #require(model.settings.temperature)
+        #expect(picked < asShot.temperature - 500)
+
+        try await wait("something to undo") { model.canUndo }
+        model.undo()
+        #expect(model.settings.autoWhiteBalance && model.settings.temperature == nil)
+    }
+
+    @Test func aClickOnTheGrayCardKeepsTheCamerasWhiteBalance() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = try await openedModel(raws)
+        model.setPickingNeutral(true)
+        model.pickNeutral(at: CGPoint(x: 0.25, y: 0.5))
+        try await wait("the white balance picked") { !model.isPickingNeutral }
+        // Within a step of the sliders of what the camera recorded: "as shot".
+        #expect(model.settings.temperature == nil && model.settings.tint == nil)
+    }
+
+    @Test func aClickOutsideTheDropperDoesNothing() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = try await openedModel(raws)
+        let before = model.settings
+        model.pickNeutral(at: CGPoint(x: 0.75, y: 0.5))
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(model.settings == before)
+    }
+
+    @Test func theDropperIsOnlyForARawOnScreen() async throws {
+        let model = AppModel(dataDirectory: WindowedTests.engineData)
+        await model.start()
+        model.setPickingNeutral(true)
+        #expect(!model.isPickingNeutral)
+
+        let pictures = try WindowedTests.writeTestPictures(count: 1)
+        defer { try? FileManager.default.removeItem(at: pictures[0].deletingLastPathComponent()) }
+        model.open(pictures)
+        try await wait("the preview") { model.preview != nil }
+        model.setPickingNeutral(true)
+        #expect(!model.canPickNeutral && !model.isPickingNeutral)
+    }
+
+    @Test func anotherPhotoPutsTheDropperAway() async throws {
+        let raws = try writeTestRaws(count: 2)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = try await openedModel(raws)
+        model.setPickingNeutral(true)
+        #expect(model.isPickingNeutral)
+        try model.select(#require(model.photos.last))
+        #expect(!model.isPickingNeutral)
+    }
+
+    @Test func comparingWithTheOriginalHoldsTheDropper() async throws {
+        let raws = try writeTestRaws(count: 1)
+        defer { try? FileManager.default.removeItem(at: raws[0].deletingLastPathComponent()) }
+        let model = try await openedModel(raws)
+        model.setPickingNeutral(true)
+        model.showsOriginal = true
+        #expect(model.isPickingNeutral && !model.isPickingNeutralOnPhoto)
+        model.showsOriginal = false
+        #expect(model.isPickingNeutralOnPhoto)
+    }
+}

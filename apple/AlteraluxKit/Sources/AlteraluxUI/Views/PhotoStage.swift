@@ -15,6 +15,13 @@ struct PhotoStage: View {
         return model.preview?.cgImage
     }
 
+    /// What a click on the photo does while the dropper waits for one.
+    private var pick: (@MainActor (CGPoint) -> Void)? {
+        guard model.isPickingNeutralOnPhoto else { return nil }
+        let model = model
+        return { model.pickNeutral(at: $0) }
+    }
+
     var body: some View {
         ZStack {
             // A fixed neutral grey to judge colors against.
@@ -43,6 +50,7 @@ struct PhotoStage: View {
                     command: model.zoomCommand,
                     commandID: model.zoomRequestID,
                     onZoomChange: { model.viewerDidChange($0) },
+                    onPick: pick,
                 )
                 .accessibilityLabel(
                     model.showsOriginal ? Text("Original photo") : Text("Developed photo"),
@@ -67,6 +75,15 @@ struct PhotoStage: View {
                     .padding(Spacing.m)
             }
         }
+        // While the dropper waits for its click, a line over the photo says what to click.
+        .overlay(alignment: .top) {
+            if model.isPickingNeutralOnPhoto, displayedImage != nil {
+                GlassEffectContainer {
+                    NeutralPointPrompt()
+                }
+                .padding(Spacing.l)
+            }
+        }
         .overlay(alignment: .topTrailing) {
             if model.isRendering || model.isExporting {
                 ProgressView()
@@ -84,5 +101,30 @@ struct PhotoStage: View {
                 .padding(Spacing.l)
             }
         }
+    }
+}
+
+/// What the dropper waits for, or why the last point did not do: with a button that puts the
+/// dropper away, which Escape presses.
+private struct NeutralPointPrompt: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        GlassGroup {
+            Label {
+                if model.missedNeutral {
+                    Text("That point is too bright or too dark: click another one.")
+                } else {
+                    Text("Click a point that should be gray, white or black.")
+                }
+            } icon: {
+                Image(systemName: "eyedropper")
+            }
+            .accessibilityAddTraits(.updatesFrequently)
+            Button("Cancel") { model.setPickingNeutral(false) }
+                .keyboardShortcut(.cancelAction)
+                .help("Leave the white balance as it is")
+        }
+        .fixedSize()
     }
 }

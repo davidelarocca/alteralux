@@ -24,14 +24,14 @@ enum AutomaticWhiteBalance {
     static let temperatures = 2000.0 ... 12000.0
     static let tints = -150.0 ... 150.0
 
-    private static let space = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)!
-    private static let context = CIContext(options: [
+    static let space = CGColorSpace(name: CGColorSpace.extendedLinearSRGB)!
+    static let context = CIContext(options: [
         .workingColorSpace: space,
         .workingFormat: NSNumber(value: CIFormat.RGBAf.rawValue),
         .cacheIntermediates: false,
     ])
     /// The white point of linear sRGB, D65, as xy.
-    private static let whitePoint = CGPoint(x: 0.3127, y: 0.3290)
+    static let whitePoint = CGPoint(x: 0.3127, y: 0.3290)
 
     /// The white balance to start the photo from: the camera's, unless the one measured is far
     /// from it. `nil` when the photo cannot be measured.
@@ -117,7 +117,7 @@ enum AutomaticWhiteBalance {
     }
 
     /// The xy chromaticity of a linear sRGB color (red, green, blue).
-    private static func chromaticity(_ rgb: SIMD3<Double>) -> CGPoint {
+    static func chromaticity(_ rgb: SIMD3<Double>) -> CGPoint {
         let tristimulus = SIMD3(
             (SIMD3(0.4124, 0.3576, 0.1805) * rgb).sum(),
             (SIMD3(0.2126, 0.7152, 0.0722) * rgb).sum(),

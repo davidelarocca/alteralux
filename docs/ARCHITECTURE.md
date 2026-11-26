@@ -104,3 +104,4 @@ defaults, and unknown keys are errors.
 | [0021](adr/0021-a-recipe-holds-its-files.md) | A recipe holds the look and the files it writes; workflows go | Accepted |
 | [0022](adr/0022-the-automatic-modes-read-the-photo-as-shot.md) | The automatic exposure and white balance read the photo as it was shot | Accepted |
 | [0023](adr/0023-a-preview-looks-like-the-photo-seen-at-its-size.md) | A preview looks like the developed photo seen at its size | Accepted |
+| [0024](adr/0024-the-dropper-makes-the-point-clicked-gray.md) | The dropper makes the point clicked gray | Proposed |

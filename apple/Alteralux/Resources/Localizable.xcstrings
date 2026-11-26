@@ -961,6 +961,26 @@
         }
       }
     },
+    "Click a point of the photo that should be gray, white or black: the white balance makes it so." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fai clic su un punto della foto che dovrebbe essere grigio, bianco o nero: il bilanciamento del bianco lo rende tale."
+          }
+        }
+      }
+    },
+    "Click a point that should be gray, white or black." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fai clic su un punto che dovrebbe essere grigio, bianco o nero."
+          }
+        }
+      }
+    },
     "Color" : {
       "localizations" : {
         "it" : {
@@ -1573,6 +1593,16 @@
         }
       }
     },
+    "Leave the white balance as it is" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lascia il bilanciamento del bianco com'è"
+          }
+        }
+      }
+    },
     "Lens correction" : {
       "localizations" : {
         "it" : {
@@ -1769,6 +1799,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nome della foto e pellicola"
+          }
+        }
+      }
+    },
+    "Pick a gray point" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scegli un punto grigio"
           }
         }
       }
@@ -3191,6 +3231,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Testo"
+          }
+        }
+      }
+    },
+    "That point is too bright or too dark: click another one." : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quel punto è troppo chiaro o troppo scuro: fai clic su un altro."
           }
         }
       }

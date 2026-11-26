@@ -1,4 +1,5 @@
 import AlteraluxKit
+import CoreGraphics
 import Foundation
 
 // The white balance of the selected photo as the inspector reads and sets it.
@@ -112,5 +113,82 @@ extension AppModel {
                 automaticWhiteBalance = measured
             }
         }
+    }
+}
+
+// The dropper: a click on the photo chooses the white balance that makes that point gray.
+
+/// The white balance's dropper while it is on: for the photo it was turned on for alone, so
+/// another photo, or none, puts it away.
+struct NeutralPicker {
+    weak var sources: PhotoSources?
+    /// Whether the last point clicked had no color to make gray (clipped, or nearly black): the
+    /// dropper stays, waiting for another point.
+    var missed = false
+}
+
+extension AppModel {
+    /// Whether a click on the photo chooses the white balance that makes that point gray.
+    var isPickingNeutral: Bool {
+        guard let sources, let picked = neutralPicker?.sources else { return false }
+        return picked === sources
+    }
+
+    /// Whether the last point clicked with the dropper had no color to make gray.
+    var missedNeutral: Bool {
+        isPickingNeutral && neutralPicker?.missed == true
+    }
+
+    /// Whether the dropper can be used: a RAW is open and shown, not while it is being cropped.
+    var canPickNeutral: Bool {
+        canAdjustWhiteBalance && !isCropping
+    }
+
+    /// Whether the photo on screen is waiting for the dropper's click.
+    var isPickingNeutralOnPhoto: Bool {
+        isPickingNeutral && canPickNeutral && !showsOriginal
+    }
+
+    /// Turns the dropper on or off.
+    func setPickingNeutral(_ isOn: Bool) {
+        neutralPicker = isOn && canPickNeutral ? NeutralPicker(sources: sources) : nil
+    }
+
+    /// Chooses the white balance under which `point` of the photo on screen is gray, as one
+    /// chosen by hand: the automatic white balance lets go of it. `point` is in the photo as it is
+    /// framed on screen, from its top left corner, 0 to 1 across and down. A point that is clipped
+    /// or nearly black changes nothing and leaves the dropper on.
+    func pickNeutral(at point: CGPoint) {
+        guard isPickingNeutralOnPhoto, let sources else { return }
+        let settings = settings
+        Task {
+            do {
+                let picked = try await sources.decoder.whiteBalance(neutralAt: point, settings: settings)
+                guard self.sources === sources else { return }
+                if let picked {
+                    chooseWhiteBalance(picked)
+                }
+                neutralPicker = nil
+            } catch {
+                guard self.sources === sources, neutralPicker != nil else { return }
+                neutralPicker?.missed = true
+            }
+        }
+    }
+
+    /// Sets the white balance chosen by hand, as one step of undo of its own, as a frame kept is.
+    private func chooseWhiteBalance(_ chosen: WhiteBalance) {
+        let neutral = neutralWhiteBalance
+        var next = settings
+        next.autoWhiteBalance = false
+        next.temperature = abs(chosen.temperature - neutral.temperature) < Self.temperatureStep / 2
+            ? nil : chosen.temperature
+        next.tint = abs(chosen.tint - neutral.tint) < Self.tintStep / 2 ? nil : chosen.tint
+        guard next != settings else { return }
+        // A slider still moving becomes its own step first.
+        settleChange()
+        settings = next
+        settingsDidChange()
+        settleChange()
     }
 }

@@ -202,6 +202,51 @@ public actor PhotoDecoder {
         return pixels
     }
 
+    /// The white balance under which the point `point` of the photo, framed and decoded as
+    /// `settings` ask, is gray. `point` is in the framed picture, from its top left corner, 0 to
+    /// 1 across and down: where the user clicked it on screen. `nil` for a file that is not a
+    /// RAW, whose white balance cannot be chosen again.
+    ///
+    /// - Throws: `NeutralPoint.Problem.unmeasurable` when the point is clipped or nearly black.
+    public func whiteBalance(neutralAt point: CGPoint, settings: DevelopSettings) throws -> WhiteBalance? {
+        guard let asShotWhiteBalance else { return nil }
+        // From the white balance on screen: a point already nearly gray needs one round.
+        var balance = whiteBalance(for: settings) ?? asShotWhiteBalance
+        for _ in 0 ..< NeutralPoint.rounds {
+            let picture = try image(
+                maxDimension: NeutralPoint.measuredSide, whiteBalance: balance, lensCorrection: settings.lensCorrection,
+                crop: settings.crop, rawDecoding: settings.rawDecoding,
+            )
+            guard let color = NeutralPoint.color(of: picture, at: point) else {
+                throw NeutralPoint.Problem.unmeasurable
+            }
+            let cast = NeutralPoint.cast(of: color)
+            guard hypot(cast.x, cast.y) > NeutralPoint.tolerance else { break }
+            guard let moved = movingNeutral(of: balance, by: cast) else { return nil }
+            balance = moved
+        }
+        return WhiteBalance(
+            temperature: min(
+                max(balance.temperature, AutomaticWhiteBalance.temperatures.lowerBound),
+                AutomaticWhiteBalance.temperatures.upperBound,
+            ),
+            tint: min(max(balance.tint, AutomaticWhiteBalance.tints.lowerBound), AutomaticWhiteBalance.tints.upperBound),
+        )
+    }
+
+    /// `balance` with the decoder's neutral moved by `cast`, as xy. `nil` for a file that is not
+    /// a RAW.
+    private func movingNeutral(of balance: WhiteBalance, by cast: CGPoint) -> WhiteBalance? {
+        guard let rawFilter else { return nil }
+        rawFilter.neutralTemperature = Float(balance.temperature)
+        rawFilter.neutralTint = Float(balance.tint)
+        var neutral = rawFilter.neutralChromaticity
+        neutral.x += cast.x
+        neutral.y += cast.y
+        rawFilter.neutralChromaticity = neutral
+        return WhiteBalance(temperature: Double(rawFilter.neutralTemperature), tint: Double(rawFilter.neutralTint))
+    }
+
     /// The photo as Core Image decodes it: with its white balance, its lens corrected, framed.
     private func image(
         maxDimension: Int?, whiteBalance: WhiteBalance?, lensCorrection: Bool?, crop: PhotoCrop?,

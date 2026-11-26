@@ -196,8 +196,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    - The temperature slider is linear in kelvin, so the warm end is cramped: to judge in the app.
    - The original shown for the comparison is the system's rendering, with the camera's white balance
      and at 2048 px at most.
-   - A picker on the photo for the neutral point, and an automatic white balance (the vision's open
-     question for adaptive recipes).
+   - Done: the automatic white balance (ADR 0011, 0020, 0022) and, on 2026-11-26, the dropper on the
+     White balance title ([ADR 0024](adr/0024-the-dropper-makes-the-point-clicked-gray.md)): a click
+     on the photo makes that point gray, as a white balance chosen by hand, one step of undo. Not yet
+     seen picking a point in the built app.
 5. **Edits that persist**, with undo and redo. Done: each photo's adjustments are kept in the photo
    itself, as an extended attribute, and in a folder of the app's when the photo cannot be written
    ([ADR 0008](adr/0008-keep-edits-in-the-photo.md)); they are read back when the photo is opened;
