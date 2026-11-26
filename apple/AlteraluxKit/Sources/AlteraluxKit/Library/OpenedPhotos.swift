@@ -5,7 +5,7 @@ import Foundation
 ///
 /// A photo opened from the Finder or dropped on the window can be read and written in the
 /// sandbox until the app quits; its bookmark gives it back at the next launch. Its folder is
-/// not given: the photo cannot be renamed, duplicated or moved from there.
+/// not given: the photo cannot be renamed, duplicated or moved from there; the Trash takes it.
 public actor OpenedPhotos {
     private struct Stored: Codable {
         var bookmark: FolderBookmark
@@ -27,8 +27,8 @@ public actor OpenedPhotos {
         }
     }
 
-    /// The photos remembered, found again where they are now; the ones that cannot be found are
-    /// forgotten.
+    /// The photos remembered, found again where they are now; the ones that cannot be found, or
+    /// that a bookmark followed into a Trash, are forgotten.
     public func load() -> [URL] {
         guard !didLoad else { return photos }
         didLoad = true
@@ -36,7 +36,9 @@ public actor OpenedPhotos {
               let read = try? PropertyListDecoder().decode([Stored].self, from: data)
         else { return [] }
         for entry in read {
-            guard let url = entry.bookmark.resolve(), FileManager.default.fileExists(atPath: url.path) else { continue }
+            guard let url = entry.bookmark.resolve(), FileManager.default.fileExists(atPath: url.path),
+                  !url.pathComponents.contains(where: Self.trashNames.contains)
+            else { continue }
             if entry.bookmark.isSecurityScoped, url.startAccessingSecurityScopedResource() {
                 accessed.append(url)
             }
@@ -77,6 +79,9 @@ public actor OpenedPhotos {
         save()
         return photos
     }
+
+    /// The folders the Finder keeps the Trash in: the home folder's, and each disk's.
+    private static let trashNames: Set<String> = [".Trash", ".Trashes"]
 
     private func save() {
         try? FileManager.default.createDirectory(at: storeURL.deletingLastPathComponent(), withIntermediateDirectories: true)

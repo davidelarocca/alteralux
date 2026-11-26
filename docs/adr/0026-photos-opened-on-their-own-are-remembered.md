@@ -12,7 +12,8 @@ agreed to the plan below.
 
 The app is sandboxed with `files.user-selected.read-write`: such a photo can be read and written (its
 adjustments go into it), and a security-scoped bookmark of it gives it back at the next launch, but its
-folder is not given, so the photo cannot be renamed, duplicated, moved or put in the Trash from there.
+folder is not given, so the photo cannot be renamed or duplicated there. Moving it to the Trash works:
+tried in the built app on 2026-11-26 from the strip's menu.
 
 ## Decision
 
@@ -22,7 +23,9 @@ folder is not given, so the photo cannot be renamed, duplicated, moved or put in
 - The sidebar shows **Opened Photos** above the folders while there are any, with their count. The grid
   shows them as a folder's photos (`LibraryPlace.opened`), with the same filters, order and strip.
 - A photo in a folder of the library never goes there; adding the folder that holds one takes it out.
-- Their menu and the selection bar leave out Move to, Duplicate, Rename and Move to Trash. Remove from
+- Their menu and the selection bar leave out Move to, Duplicate and Rename (Move to was not tried; it
+  takes the photo out of its folder). Move to Trash stays; a photo put in the Trash leaves the entry, and
+  one a bookmark finds in a Trash at launch is forgotten. Remove from
   Opened Photos, and Clear Opened Photos on the entry, forget them; the files stay.
 
 ## Alternatives considered

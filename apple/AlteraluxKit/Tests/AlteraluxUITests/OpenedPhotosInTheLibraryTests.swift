@@ -76,6 +76,24 @@ struct OpenedPhotosInTheLibraryTests {
         #expect(FileManager.default.fileExists(atPath: fixture.loose.appendingPathComponent("a.jpg").path))
     }
 
+    @Test func aPhotoOpenedOnItsOwnGoesToTheTrashAndLeavesTheEntry() async throws {
+        let fixture = try Fixture()
+        defer { fixture.remove() }
+        let model = fixture.model()
+        try await model.add(fixture.shoot)
+        let photo = fixture.loose.appendingPathComponent("a.jpg")
+        await model.noteOpened([photo])
+        await model.selectOpened()
+
+        let results = await model.trash([photo])
+        #expect(results.count == 1 && results.allSatisfy(\.succeeded))
+        #expect(model.opened.isEmpty && model.place == .folder(fixture.shoot))
+        // The test's own file does not stay in the Trash.
+        for trashed in results.compactMap(\.destination) {
+            try? FileManager.default.removeItem(at: trashed)
+        }
+    }
+
     @Test func theNextLaunchShowsThemWhenNoFolderWasAdded() async throws {
         let fixture = try Fixture()
         defer { fixture.remove() }

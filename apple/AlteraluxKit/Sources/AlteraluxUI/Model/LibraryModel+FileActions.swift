@@ -9,7 +9,7 @@ extension LibraryModel {
     func emptyDiscarded() async -> [FileActionResult] {
         let files = photos.filter(discarded.contains)
         let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
-        await refresh()
+        await forgetTrashed(results)
         return results
     }
 
@@ -60,8 +60,22 @@ extension LibraryModel {
     /// Moves photos to the Trash.
     func trash(_ files: [URL]) async -> [FileActionResult] {
         let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
-        await refresh()
+        await forgetTrashed(results)
         return results
+    }
+
+    /// Reads the folder again once photos went to the Trash: those opened on their own are
+    /// forgotten, and with none left the grid shows a folder.
+    private func forgetTrashed(_ results: [FileActionResult]) async {
+        let trashed = results.filter(\.succeeded).map(\.source)
+        if !trashed.isEmpty, !opened.isEmpty {
+            opened = await openedStore.remove(trashed)
+        }
+        if place == .opened, opened.isEmpty {
+            await showFirstPlace()
+        } else {
+            await refresh()
+        }
     }
 
     /// Makes these photos the selection, those of them the grid shows.
