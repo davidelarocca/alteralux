@@ -356,6 +356,8 @@ private struct LibraryTile: View {
     /// Asks for a name before one of the menu's actions.
     let ask: (PhotoQuestion) -> Void
     @State private var image: CGImage?
+    /// What the menu's Share… shares, until the picker opens over the tile.
+    @State private var sharing: [URL]?
 
     /// Thumbnails are asked for in two sizes, in pixels, so the ones kept can be used again
     /// whatever the slider says: enough for the smaller tiles, and for the larger ones.
@@ -387,7 +389,8 @@ private struct LibraryTile: View {
             .frame(width: size.width)
         }
         .contentShape(.rect)
-        .contextMenu { LibraryPhotoMenu(photo: photo, ask: ask) }
+        .contextMenu { LibraryPhotoMenu(photo: photo, ask: ask) { sharing = $0 } }
+        .sharePicker(items: $sharing)
         .onTapGesture(count: 2) { model.develop(photo) }
         .gesture(TapGesture().modifiers(.command).onEnded { model.library.click(photo, toggling: true) })
         .gesture(TapGesture().modifiers(.shift).onEnded { model.library.click(photo, extending: true) })

@@ -2914,6 +2914,16 @@
         }
       }
     },
+    "Share…" : {
+      "localizations" : {
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Condividi…"
+          }
+        }
+      }
+    },
     "Sharpening" : {
       "localizations" : {
         "it" : {

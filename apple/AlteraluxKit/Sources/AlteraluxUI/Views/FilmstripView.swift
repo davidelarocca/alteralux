@@ -67,6 +67,8 @@ private struct StripThumbnail: View {
     let item: PhotoItem
     /// Asks before one of the menu's actions.
     let ask: (PhotoQuestion) -> Void
+    /// What the menu's Share… shares, until the picker opens over the thumbnail.
+    @State private var sharing: [URL]?
 
     var body: some View {
         let tags = model.tags(of: item)
@@ -92,7 +94,8 @@ private struct StripThumbnail: View {
         .accessibilityLabel(label(isDiscarded: isDiscarded))
         .accessibilityValue(Text(verbatim: tags.map(\.name).joined(separator: ", ")))
         .accessibilityAddTraits(model.isOnScreen(item) ? .isSelected : [])
-        .contextMenu { StripPhotoMenu(item: item, ask: ask) }
+        .contextMenu { StripPhotoMenu(item: item, ask: ask) { sharing = $0 } }
+        .sharePicker(items: $sharing)
     }
 
     /// The photo's name, and what its marks say, as the library's grid says it.

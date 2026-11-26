@@ -23,6 +23,8 @@ struct LibraryPhotoMenu: View {
     let photo: URL
     /// Asks for a name before acting: for a new tag or a new name of the photo.
     let ask: (PhotoQuestion) -> Void
+    /// Opens the system's share picker for these photos, pointing at the one clicked.
+    let share: ([URL]) -> Void
 
     var body: some View {
         let count = targets.count
@@ -45,7 +47,7 @@ struct LibraryPhotoMenu: View {
             }
         }
         .disabled(model.recipes.isEmpty)
-        ShareLink(items: targets)
+        Button("Share…") { act { share(targets) } }
         Divider()
         Menu("Move to") {
             ForEach(destinations, id: \.url) { folder in
@@ -163,6 +165,8 @@ struct StripPhotoMenu: View {
     let item: PhotoItem
     /// Asks before acting: the name of a new tag, whether to move the photo to the Trash.
     let ask: (PhotoQuestion) -> Void
+    /// Opens the system's share picker for the photo, pointing at its thumbnail.
+    let share: ([URL]) -> Void
 
     var body: some View {
         Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([item.url]) }
@@ -175,7 +179,7 @@ struct StripPhotoMenu: View {
         .disabled(model.recipes.isEmpty)
         Button("Export…") { model.presentExport(of: item) }
             .disabled(!model.canPresentExport(of: item))
-        ShareLink(item: item.url)
+        Button("Share…") { share([item.url]) }
         Divider()
         PhotoTagMenu(photos: [item.url], ask: ask)
         Divider()
