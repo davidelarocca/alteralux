@@ -42,6 +42,16 @@ extension AppModel {
         isFolderImporterPresented = true
     }
 
+    /// Adds photos to the strip and selects the first new one.
+    func open(_ urls: [URL]) {
+        // Found again in the library: in its folder, or among the photos opened on their own.
+        Task { await library.noteOpened(urls) }
+        if let first = add(urls) {
+            select(first)
+            showsLibrary = false
+        }
+    }
+
     /// Takes what was dropped on the window, chosen in a panel or opened from the Finder: photos
     /// are opened at once, folders are added to the library.
     func take(_ urls: [URL]) {

@@ -30,6 +30,14 @@ enum LibraryKinds: String, Hashable, CaseIterable {
     case other
 }
 
+/// What the grid shows: a folder of the library, or the photos opened on their own.
+enum LibraryPlace: Hashable {
+    /// The photos the user opened outside the library's folders.
+    case opened
+    /// A folder the user added, or one inside it.
+    case folder(URL)
+}
+
 /// What was read of a folder: its photos, which carry adjustments and the discarded mark, and
 /// what each says about itself.
 private struct FolderListing: Sendable {
@@ -60,8 +68,20 @@ struct LibraryRoot: Identifiable {
 @Observable
 final class LibraryModel {
     private(set) var roots: [LibraryRoot] = []
+    /// What the grid shows: a folder, or the photos opened on their own.
+    private(set) var place: LibraryPlace?
     /// The folder whose photos the grid shows: one the user added, or one inside it.
-    private(set) var selectedFolder: URL?
+    var selectedFolder: URL? {
+        if case let .folder(folder) = place {
+            return folder
+        }
+        return nil
+    }
+
+    /// The photos opened on their own, outside the library's folders, in the order they were
+    /// opened: the sidebar's first entry while there are any. Changed through
+    /// `LibraryModel+Opened.swift`.
+    var opened: [URL] = []
     /// The photos directly in `selectedFolder`, in the Finder's order.
     private(set) var photos: [URL] = []
     /// Those of `photos` that have adjustments.
@@ -118,6 +138,7 @@ final class LibraryModel {
     /// The photos with adjustments developed small, for the grid and the strip.
     @ObservationIgnored let developedThumbnails: DevelopedThumbnails
     @ObservationIgnored private let folders: LibraryFolders
+    @ObservationIgnored let openedStore: OpenedPhotos
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
     @ObservationIgnored private let look: @Sendable (URL) -> DevelopSettings?
     @ObservationIgnored private let discards: DiscardStore
@@ -138,7 +159,8 @@ final class LibraryModel {
     @ObservationIgnored private var generation = 0
 
     /// - Parameters:
-    ///   - storeURL: the file where the added folders are remembered.
+    ///   - storeURL: the file where the added folders are remembered; the photos opened on their
+    ///     own are remembered beside it.
     ///   - cacheDirectory: where thumbnails are kept between launches, the developed ones in a
     ///     folder beside it; `nil` keeps none on disk.
     ///   - hasAdjustments: whether a photo has adjustments kept for it.
@@ -150,6 +172,7 @@ final class LibraryModel {
         look: @escaping @Sendable (URL) -> DevelopSettings? = { _ in nil },
     ) {
         folders = LibraryFolders(storeURL: storeURL)
+        openedStore = OpenedPhotos(storeURL: storeURL.deletingLastPathComponent().appending(path: "opened-photos.plist"))
         thumbnails = ThumbnailProvider(cacheDirectory: cacheDirectory)
         developedThumbnails = DevelopedThumbnails(
             cacheDirectory: cacheDirectory?.deletingLastPathComponent().appending(path: "Developed"),
@@ -165,9 +188,9 @@ final class LibraryModel {
         tagFilter = preferences?.string(forKey: Self.tagFilterKey)
     }
 
-    /// Whether the user has added any folder.
+    /// Whether the library has nothing: no folder, no photo opened on its own.
     var isEmpty: Bool {
-        roots.isEmpty
+        roots.isEmpty && opened.isEmpty
     }
 
     /// The photos the grid shows: those of the folder that pass the filters, in the order asked.
@@ -276,8 +299,12 @@ final class LibraryModel {
         for root in roots {
             watch(root.folder)
         }
-        if selectedFolder == nil, let first = roots.first(where: { $0.tree != nil }) {
+        opened = await openedStore.load()
+        await forgetOpenedInFolders()
+        if place == nil, let first = roots.first(where: { $0.tree != nil }) {
             await select(first.folder.url)
+        } else if place == nil, !opened.isEmpty {
+            await selectOpened()
         }
     }
 
@@ -288,6 +315,8 @@ final class LibraryModel {
             await roots.append(Self.root(for: folder))
             watch(folder)
         }
+        // Its photos are found in it now.
+        await forgetOpenedInFolders()
         await select(folder.url)
     }
 
@@ -302,8 +331,15 @@ final class LibraryModel {
             removed.folder.url == shown || removed.tree.flatMap { Self.node(at: shown, in: $0) } != nil
         } ?? false
         guard wasOnScreen else { return }
+        await showFirstPlace()
+    }
+
+    /// Shows the first folder that can be read, or the photos opened on their own, or nothing.
+    func showFirstPlace() async {
         if let next = roots.first(where: { $0.tree != nil }) {
             await select(next.folder.url)
+        } else if !opened.isEmpty {
+            await selectOpened()
         } else {
             generation += 1
             show(nil, FolderListing())
@@ -312,13 +348,23 @@ final class LibraryModel {
 
     /// Shows the photos of `folder`: one the user added, or one inside it.
     func select(_ folder: URL) async {
+        await select(.folder(folder))
+    }
+
+    /// Shows the photos opened on their own.
+    func selectOpened() async {
+        await select(.opened)
+    }
+
+    /// Shows a folder or the photos opened on their own.
+    func select(_ place: LibraryPlace) async {
         generation += 1
         let current = generation
-        selectedFolder = folder
+        self.place = place
         selection = []
-        let listing = await contents(of: folder)
+        let listing = await contents(of: place)
         guard current == generation else { return }
-        show(folder, listing)
+        show(place, listing)
     }
 
     /// Reads the folders again: something changed on disk, or the app changed it.
@@ -326,11 +372,11 @@ final class LibraryModel {
         for index in roots.indices {
             roots[index] = await Self.root(for: roots[index].folder)
         }
-        guard let folder = selectedFolder else { return }
+        guard let place else { return }
         let current = generation
-        let listing = await contents(of: folder)
+        let listing = await contents(of: place)
         guard current == generation else { return }
-        show(folder, listing)
+        show(place, listing)
     }
 
     /// Notes that a photo now has adjustments, or no longer: the mark in the grid follows without
@@ -437,39 +483,6 @@ final class LibraryModel {
         return changed
     }
 
-    /// Moves the discarded photos of the folder on screen to the Trash, and returns what
-    /// happened to each.
-    func emptyDiscarded() async -> [FileActionResult] {
-        let files = photos.filter(discarded.contains)
-        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
-        await refresh()
-        return results
-    }
-
-    /// Moves photos into a folder of the library.
-    func move(_ files: [URL], to folder: URL) async -> [FileActionResult] {
-        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.move(files, to: folder) }.value
-        await refresh()
-        return results
-    }
-
-    /// Copies photos into a folder of the library.
-    func copy(_ files: [URL], to folder: URL) async -> [FileActionResult] {
-        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.copy(files, to: folder) }.value
-        await refresh()
-        return results
-    }
-
-    /// The Finder tags of the selected photos, each with the number of them that carry it.
-    func tagsOfSelection() -> [String: Int] {
-        tags(of: Array(selection))
-    }
-
-    /// The Finder tags of some photos, each with the number of them that carry it.
-    func tags(of chosen: [URL]) -> [String: Int] {
-        PhotoFileActions.tags(ofAll: chosen)
-    }
-
     /// Width over height of a photo as the grid shows it: developed, so framed as its
     /// adjustments frame it.
     func shownAspectRatio(of photo: URL) -> Double {
@@ -478,39 +491,6 @@ final class LibraryModel {
         let framed = crop.framedSize(of: CGSize(width: ratio, height: 1))
         guard framed.width > 0, framed.height > 0 else { return ratio }
         return framed.width / framed.height
-    }
-
-    /// Duplicates photos beside themselves, and selects the copies, as the Finder does.
-    func duplicate(_ files: [URL], suffix: String) async -> [FileActionResult] {
-        let results = await Task.detached(priority: .userInitiated) {
-            PhotoFileActions.duplicate(files, suffix: suffix)
-        }.value
-        await refresh()
-        selectPhotos(results.compactMap(\.destination))
-        return results
-    }
-
-    /// Gives a photo a new name, its extension kept; the photo stays selected.
-    func rename(_ file: URL, to name: String) async -> FileActionResult {
-        let result = await Task.detached(priority: .userInitiated) { PhotoFileActions.rename(file, to: name) }.value
-        await refresh()
-        if let renamed = result.destination {
-            selectPhotos([renamed])
-        }
-        return result
-    }
-
-    /// Moves photos to the Trash.
-    func trash(_ files: [URL]) async -> [FileActionResult] {
-        let results = await Task.detached(priority: .userInitiated) { PhotoFileActions.trash(files) }.value
-        await refresh()
-        return results
-    }
-
-    /// Makes these photos the selection, those of them the grid shows.
-    private func selectPhotos(_ chosen: [URL]) {
-        let files = Set(chosen.map(\.standardizedFileURL))
-        selection = Set(visiblePhotos.filter { files.contains($0.standardizedFileURL) })
     }
 
     /// Puts a Finder tag on photos, or takes it off.
@@ -530,8 +510,8 @@ final class LibraryModel {
 
     // MARK: - Reading
 
-    private func show(_ folder: URL?, _ listing: FolderListing) {
-        selectedFolder = folder
+    private func show(_ place: LibraryPlace?, _ listing: FolderListing) {
+        self.place = place
         photos = listing.photos
         adjusted = listing.adjusted
         discarded = listing.discarded
@@ -545,11 +525,16 @@ final class LibraryModel {
         selection.formIntersection(visiblePhotos)
     }
 
-    /// The photos of a folder with their marks, read off the main actor.
-    private func contents(of folder: URL) async -> FolderListing {
-        let (hasAdjustments, discards, look) = (hasAdjustments, discards, look)
+    /// The photos of a folder, or those opened on their own that are still there, with their
+    /// marks, read off the main actor.
+    private func contents(of place: LibraryPlace) async -> FolderListing {
+        let (hasAdjustments, discards, look, opened) = (hasAdjustments, discards, look, opened)
         return await Task.detached(priority: .userInitiated) {
-            let found = (try? FolderContents.photos(in: folder)) ?? []
+            let found = switch place {
+            case let .folder(folder): (try? FolderContents.photos(in: folder)) ?? []
+            case .opened: opened.filter { FileManager.default.fileExists(atPath: $0.path) }
+                .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
+            }
             let adjusted = found.filter(hasAdjustments)
             var (looks, crops): ([URL: DevelopSettings], [URL: PhotoCrop]) = ([:], [:])
             for photo in adjusted {

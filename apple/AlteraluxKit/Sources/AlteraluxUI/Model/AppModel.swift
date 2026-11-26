@@ -243,16 +243,8 @@ public final class AppModel {
 
     // MARK: - Opening and selecting
 
-    /// Adds photos to the strip and selects the first new one.
-    func open(_ urls: [URL]) {
-        if let first = add(urls) {
-            select(first)
-            showsLibrary = false
-        }
-    }
-
     /// Adds photos to the strip, and returns the first of them: new, or already there.
-    private func add(_ urls: [URL]) -> PhotoItem? {
+    func add(_ urls: [URL]) -> PhotoItem? {
         var first: PhotoItem?
         for url in urls {
             if let existing = photos.first(where: { $0.url == url }) {

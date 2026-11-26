@@ -109,8 +109,10 @@ struct LibraryGrid: View {
             ContentUnavailableView {
                 Label("No Photos", systemImage: "photo.on.rectangle")
             } description: {
-                if library.selectedFolder == nil {
+                if library.place == nil {
                     Text("Choose a folder.")
+                } else if library.place == .opened {
+                    openedPhotosDescription
                 } else if library.filter == .adjusted {
                     Text("No photo in this folder has adjustments yet.")
                 } else if library.filter == .discarded {
@@ -121,6 +123,15 @@ struct LibraryGrid: View {
             }
         } else {
             grid
+        }
+    }
+
+    /// Why none of the photos opened on their own is shown.
+    private var openedPhotosDescription: Text {
+        switch model.library.filter {
+        case .adjusted: Text("None of the photos opened on their own has adjustments yet.")
+        case .discarded: Text("None of the photos opened on their own is discarded.")
+        case .all: Text("The photos opened on their own are no longer where they were.")
         }
     }
 

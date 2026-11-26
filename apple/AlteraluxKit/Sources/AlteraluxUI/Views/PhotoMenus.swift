@@ -49,23 +49,29 @@ struct LibraryPhotoMenu: View {
         .disabled(model.recipes.isEmpty)
         Button("Share…") { act { share(targets) } }
         Divider()
-        Menu("Move to") {
-            ForEach(destinations, id: \.url) { folder in
-                Button(folder.name) { act { Task { await model.moveSelection(to: folder.url) } } }
+        // A photo opened on its own can be read and written, but not its folder: it cannot be
+        // moved, duplicated, renamed or put in the Trash from there.
+        if model.library.arrangesFiles {
+            Menu("Move to") {
+                ForEach(destinations, id: \.url) { folder in
+                    Button(folder.name) { act { Task { await model.moveSelection(to: folder.url) } } }
+                }
             }
+            .disabled(destinations.isEmpty)
         }
-        .disabled(destinations.isEmpty)
         Menu("Copy to") {
             ForEach(destinations, id: \.url) { folder in
                 Button(folder.name) { act { Task { await model.copySelection(to: folder.url) } } }
             }
         }
         .disabled(destinations.isEmpty)
-        Button { act { Task { await model.duplicateSelection() } } } label: {
-            count > 1 ? Text("Duplicate \(count) Photos") : Text("Duplicate")
-        }
-        if count == 1 {
-            Button("Rename…") { act { ask(.rename(photo)) } }
+        if model.library.arrangesFiles {
+            Button { act { Task { await model.duplicateSelection() } } } label: {
+                count > 1 ? Text("Duplicate \(count) Photos") : Text("Duplicate")
+            }
+            if count == 1 {
+                Button("Rename…") { act { ask(.rename(photo)) } }
+            }
         }
         Divider()
         PhotoTagMenu(photos: targets, act: act, ask: ask)
@@ -82,8 +88,14 @@ struct LibraryPhotoMenu: View {
         Button("Rotate Right") { act { model.turnSelection(clockwise: true) } }
         Divider()
         discardButton(count: count)
-        Button { act { ask(.trash(targets)) } } label: {
-            count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
+        if model.library.arrangesFiles {
+            Button { act { ask(.trash(targets)) } } label: {
+                count > 1 ? Text("Move \(count) Photos to Trash") : Text("Move to Trash")
+            }
+        } else {
+            Button { act { Task { await model.library.forgetOpened(targets) } } } label: {
+                count > 1 ? Text("Remove \(count) Photos from Opened Photos") : Text("Remove from Opened Photos")
+            }
         }
     }
 

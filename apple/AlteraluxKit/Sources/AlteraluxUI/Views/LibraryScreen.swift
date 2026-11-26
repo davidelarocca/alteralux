@@ -18,11 +18,19 @@ struct LibraryScreen: View {
     /// Under the folder's name: how many photos it has, or how many of them the filters show.
     private var subtitle: Text {
         let library = model.library
-        guard library.selectedFolder != nil else { return Text(verbatim: "") }
+        guard library.place != nil else { return Text(verbatim: "") }
         if library.hasFilters {
             return Text("\(library.visiblePhotos.count) of \(library.filteredCount) photos")
         }
         return Text("\(library.photos.count) photos")
+    }
+
+    /// The folder's name, or the name of the photos opened on their own.
+    private var title: String {
+        if model.library.place == .opened {
+            return String(localized: "Opened Photos")
+        }
+        return model.library.selectedNode?.name ?? String(localized: "Library")
     }
 
     var body: some View {
@@ -37,7 +45,7 @@ struct LibraryScreen: View {
         } detail: {
             LibraryGrid(isAddingFolder: $model.isFolderImporterPresented)
         }
-        .navigationTitle(model.library.selectedNode?.name ?? String(localized: "Library"))
+        .navigationTitle(title)
         .navigationSubtitle(subtitle)
         .toolbar {
             // In the middle of the toolbar: which photos of the folder are shown.
@@ -49,7 +57,7 @@ struct LibraryScreen: View {
                 }
                 .pickerStyle(.segmented)
                 .help("Choose which photos of the folder are shown")
-                .disabled(model.library.selectedFolder == nil)
+                .disabled(model.library.place == nil)
             }
         }
         .toolbar {
@@ -82,7 +90,7 @@ private struct LibraryFilterMenu: View {
                 .foregroundStyle(library.hasFilters ? AnyShapeStyle(.tint) : AnyShapeStyle(.primary))
         }
         .help("Sort the photos of the folder, and choose which kinds and tags are shown")
-        .disabled(library.selectedFolder == nil)
+        .disabled(library.place == nil)
     }
 
     /// The menu, made when it opens: four groups of choices, then clearing the filters.
@@ -124,7 +132,18 @@ struct LibrarySidebar: View {
     @Binding var isAddingFolder: Bool
 
     var body: some View {
-        List(selection: selectedFolder) {
+        List(selection: selectedPlace) {
+            if !model.library.opened.isEmpty {
+                Label("Opened Photos", systemImage: "photo.on.rectangle")
+                    .badge(model.library.opened.count)
+                    .tag(LibraryPlace.opened)
+                    .help("The photos you opened outside the library's folders")
+                    .contextMenu {
+                        Button("Clear Opened Photos") {
+                            Task { await model.library.forgetOpened(model.library.opened) }
+                        }
+                    }
+            }
             Section("Folders") {
                 ForEach(model.library.roots) { root in
                     if let tree = root.tree {
@@ -157,6 +176,7 @@ struct LibrarySidebar: View {
     private func row(_ node: FolderNode, of root: LibraryRoot) -> some View {
         Label(node.name, systemImage: "folder")
             .badge(node.photoCount)
+            .tag(LibraryPlace.folder(node.url))
             .contextMenu {
                 // Only a folder the user added can be taken out: the ones inside come with it.
                 if node.url == root.tree?.url {
@@ -171,13 +191,13 @@ struct LibrarySidebar: View {
         }
     }
 
-    /// The folder on screen. Choosing a row reads that folder.
-    private var selectedFolder: Binding<URL?> {
+    /// The folder on screen, or the photos opened on their own. Choosing a row reads it.
+    private var selectedPlace: Binding<LibraryPlace?> {
         Binding(
-            get: { model.library.selectedFolder },
-            set: { folder in
-                if let folder {
-                    Task { await model.library.select(folder) }
+            get: { model.library.place },
+            set: { place in
+                if let place {
+                    Task { await model.library.select(place) }
                 }
             },
         )
