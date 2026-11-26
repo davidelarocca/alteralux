@@ -92,7 +92,9 @@ struct WhiteBalanceControls: View {
                     switchLabel: "Automatic white balance",
                     note: model.isWhiteBalanceAutomatic && model.cameraChoseWhiteBalance
                         ? "The camera chose this white balance itself, from the scene: it is kept." : nil,
-                )
+                ) {
+                    NeutralPointDropper()
+                }
                 .help("On, it starts from the light measured in the photo where the camera's white balance is far from it.")
                 if !model.isWhiteBalanceAutomatic {
                     ParameterSlider(
@@ -111,6 +113,23 @@ struct WhiteBalanceControls: View {
             }
             .disabled(!model.canAdjustWhiteBalance)
         }
+    }
+}
+
+/// The dropper of the white balance: on, a click on the photo makes that point gray.
+private struct NeutralPointDropper: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        Toggle(
+            "Pick a gray point", systemImage: "eyedropper",
+            isOn: Binding(get: { model.isPickingNeutral }, set: { model.setPickingNeutral($0) }),
+        )
+        .toggleStyle(.button)
+        .labelStyle(.iconOnly)
+        .buttonStyle(.borderless)
+        .disabled(!model.canPickNeutral)
+        .help("Click a point of the photo that should be gray, white or black: the white balance makes it so.")
     }
 }
 

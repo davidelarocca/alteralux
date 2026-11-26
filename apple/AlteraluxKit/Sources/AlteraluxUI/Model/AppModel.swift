@@ -28,6 +28,8 @@ public final class AppModel {
     private(set) var sources: PhotoSources?
     /// The automatic white balance of the selected photo, once it was measured.
     var automaticWhiteBalance: WhiteBalance?
+    /// The white balance's dropper, while it is on (see `isPickingNeutral`).
+    var neutralPicker: NeutralPicker?
     /// What the engine's meter adds to a photo, in stops, once it was read, and the photo it was
     /// read for (see `meteredExposure`). Not watched by the views.
     @ObservationIgnored var meterReading: (sources: PhotoSources, stops: Double)?

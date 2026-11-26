@@ -120,7 +120,7 @@ struct DevelopScreen: View {
         // Escape goes back to the library, as in Photos. A sheet or a list over the window
         // takes its own Escape first, and so do the crop controls.
         .background {
-            if model.hasLibrary, !model.isCropping {
+            if model.hasLibrary, !model.isCropping, !model.isPickingNeutralOnPhoto {
                 Button("Library") { model.showLibrary() }
                     .keyboardShortcut(.cancelAction)
                     .opacity(0)

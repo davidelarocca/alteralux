@@ -20,6 +20,9 @@ struct ZoomableImageView: NSViewRepresentable {
     let commandID: Int
     /// Reports how the photo is scaled, whenever that changes.
     let onZoomChange: @MainActor (ViewerZoom) -> Void
+    /// While set, a click on the photo reports the point clicked, from its top left corner, 0 to
+    /// 1 across and down, instead of moving it; the pointer is a crosshair.
+    var onPick: (@MainActor (CGPoint) -> Void)?
 
     func makeNSView(context _: Context) -> ImageScrollView {
         ImageScrollView()
@@ -27,6 +30,7 @@ struct ZoomableImageView: NSViewRepresentable {
 
     func updateNSView(_ view: ImageScrollView, context: Context) {
         view.onZoomChange = onZoomChange
+        view.onPick = onPick
         view.setImage(image, pixelSize: pixelSize)
         if context.coordinator.lastCommandID != commandID {
             context.coordinator.lastCommandID = commandID
@@ -45,6 +49,18 @@ struct ZoomableImageView: NSViewRepresentable {
 
 final class ImageScrollView: NSScrollView {
     var onZoomChange: (@MainActor (ViewerZoom) -> Void)?
+    /// See `ZoomableImageView.onPick`.
+    var onPick: (@MainActor (CGPoint) -> Void)? {
+        didSet {
+            let isPicking = onPick != nil
+            guard isPicking != (oldValue != nil) else { return }
+            // A double-click would zoom between the two clicks of two points.
+            doubleClick.isEnabled = !isPicking
+            window?.invalidateCursorRects(for: self)
+        }
+    }
+
+    private let doubleClick = NSClickGestureRecognizer()
 
     private let imageView = ImageLayerView()
     private var pixelSize = CGSize.zero
@@ -91,7 +107,8 @@ final class ImageScrollView: NSScrollView {
             name: NSScrollView.didEndLiveMagnifyNotification, object: self,
         )
 
-        let doubleClick = NSClickGestureRecognizer(target: self, action: #selector(didDoubleClick))
+        doubleClick.target = self
+        doubleClick.action = #selector(didDoubleClick)
         doubleClick.numberOfClicksRequired = 2
         addGestureRecognizer(doubleClick)
     }
@@ -276,12 +293,20 @@ final class ImageScrollView: NSScrollView {
 
     override func resetCursorRects() {
         super.resetCursorRects()
-        if canPan {
+        if onPick != nil {
+            addCursorRect(contentView.frame, cursor: .crosshair)
+        } else if canPan {
             addCursorRect(contentView.frame, cursor: .openHand)
         }
     }
 
     override func mouseDown(with event: NSEvent) {
+        if let onPick {
+            if let point = pickedPoint(of: event) {
+                onPick(point)
+            }
+            return
+        }
         guard canPan else {
             super.mouseDown(with: event)
             return
@@ -315,6 +340,16 @@ final class ImageScrollView: NSScrollView {
         }
         dragStart = nil
         NSCursor.pop()
+    }
+
+    /// Where `event` is on the photo, from its top left corner, 0 to 1 across and down; `nil`
+    /// outside it.
+    private func pickedPoint(of event: NSEvent) -> CGPoint? {
+        let bounds = imageView.bounds
+        let point = imageView.convert(event.locationInWindow, from: nil)
+        guard bounds.width > 0, bounds.height > 0, bounds.contains(point) else { return nil }
+        let down = (point.y - bounds.minY) / bounds.height
+        return CGPoint(x: (point.x - bounds.minX) / bounds.width, y: imageView.isFlipped ? down : 1 - down)
     }
 
     @objc private func willStartMagnify(_: Notification) {

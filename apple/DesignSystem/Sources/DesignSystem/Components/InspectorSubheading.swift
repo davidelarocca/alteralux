@@ -6,11 +6,13 @@ import SwiftUI
 ///
 /// With a switch on its row, the title is the mode's own: the switch says whether the group
 /// takes care of itself ("Exposure … Auto"), and the caller shows the controls under it only
-/// while it is off, so the switch is seen to belong to them.
-public struct InspectorSubheading: View {
+/// while it is off, so the switch is seen to belong to them. A small control of the group's own
+/// can stand before the switch (the white balance's dropper).
+public struct InspectorSubheading<Accessory: View>: View {
     private let title: LocalizedStringKey
     private let note: LocalizedStringKey?
     private let mode: Mode?
+    private let accessory: Accessory
 
     /// A switch on the title's row.
     private struct Mode {
@@ -21,27 +23,23 @@ public struct InspectorSubheading: View {
         let label: LocalizedStringKey
     }
 
-    /// - Parameter note: why the controls under it are disabled, when they are.
-    public init(_ title: LocalizedStringKey, note: LocalizedStringKey? = nil) {
-        self.title = title
-        self.note = note
-        mode = nil
-    }
-
-    /// A title with a switch on its row for the mode that governs the group.
+    /// A title with a switch on its row for the mode that governs the group, and a small control
+    /// before the switch.
     ///
     /// - Parameters:
     ///   - isOn: whether the mode is on.
     ///   - switchTitle: the word beside the switch, short ("Auto").
     ///   - switchLabel: the switch as assistive technologies read it, whole ("Automatic exposure").
     ///   - note: a line under the title.
+    ///   - accessory: one small control, its symbol alone (a borderless button).
     public init(
         _ title: LocalizedStringKey, isOn: Binding<Bool>, switchTitle: LocalizedStringKey, switchLabel: LocalizedStringKey,
-        note: LocalizedStringKey? = nil,
+        note: LocalizedStringKey? = nil, @ViewBuilder accessory: () -> Accessory,
     ) {
         self.title = title
         self.note = note
         mode = Mode(isOn: isOn, title: switchTitle, label: switchLabel)
+        self.accessory = accessory()
     }
 
     public var body: some View {
@@ -50,6 +48,7 @@ public struct InspectorSubheading: View {
                 HStack(spacing: Spacing.s) {
                     heading
                     Spacer(minLength: Spacing.s)
+                    accessory
                     Text(mode.title)
                         .font(Typography.caption)
                         .foregroundStyle(.secondary)
@@ -82,6 +81,30 @@ public struct InspectorSubheading: View {
     }
 }
 
+public extension InspectorSubheading where Accessory == EmptyView {
+    /// - Parameter note: why the controls under it are disabled, when they are.
+    init(_ title: LocalizedStringKey, note: LocalizedStringKey? = nil) {
+        self.title = title
+        self.note = note
+        mode = nil
+        accessory = EmptyView()
+    }
+
+    /// A title with a switch on its row for the mode that governs the group.
+    ///
+    /// - Parameters:
+    ///   - isOn: whether the mode is on.
+    ///   - switchTitle: the word beside the switch, short ("Auto").
+    ///   - switchLabel: the switch as assistive technologies read it, whole ("Automatic exposure").
+    ///   - note: a line under the title.
+    init(
+        _ title: LocalizedStringKey, isOn: Binding<Bool>, switchTitle: LocalizedStringKey, switchLabel: LocalizedStringKey,
+        note: LocalizedStringKey? = nil,
+    ) {
+        self.init(title, isOn: isOn, switchTitle: switchTitle, switchLabel: switchLabel, note: note) { EmptyView() }
+    }
+}
+
 #Preview("Inspector subheadings") {
     Form {
         Section {
@@ -104,7 +127,14 @@ public struct InspectorSubheading: View {
             if !isAutomatic {
                 Toggle("A control it governs", isOn: .constant(true))
             }
-            InspectorSubheading("White balance", isOn: .constant(false), switchTitle: "Auto", switchLabel: "Automatic white balance")
+            InspectorSubheading(
+                "White balance", isOn: .constant(false), switchTitle: "Auto", switchLabel: "Automatic white balance",
+            ) {
+                Toggle("Pick a gray point", systemImage: "eyedropper", isOn: .constant(false))
+                    .toggleStyle(.button)
+                    .labelStyle(.iconOnly)
+                    .buttonStyle(.borderless)
+            }
             Toggle("A control shown while it is off", isOn: .constant(true))
             InspectorSubheading(
                 "A long title for a group of controls with a switch", isOn: .constant(true), switchTitle: "Auto",

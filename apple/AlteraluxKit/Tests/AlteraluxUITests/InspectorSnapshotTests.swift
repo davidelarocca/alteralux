@@ -96,5 +96,28 @@ extension WindowedTests {
                 .formStyle(.grouped)
             } == [])
         }
+
+        /// A small control of the group's own before the switch: the white balance's dropper,
+        /// off and on.
+        @Test func withAControlBeforeTheSwitch() {
+            #expect(Snapshot.verify("InspectorSubheading", sizes: sizes, state: "accessory", source: source) {
+                Form {
+                    Section {
+                        ForEach([false, true], id: \.self) { isPicking in
+                            InspectorSubheading(
+                                "White balance", isOn: .constant(!isPicking), switchTitle: "Auto",
+                                switchLabel: "Automatic white balance",
+                            ) {
+                                Toggle("Pick a gray point", systemImage: "eyedropper", isOn: .constant(isPicking))
+                                    .toggleStyle(.button)
+                                    .labelStyle(.iconOnly)
+                                    .buttonStyle(.borderless)
+                            }
+                        }
+                    }
+                }
+                .formStyle(.grouped)
+            } == [])
+        }
     }
 }
