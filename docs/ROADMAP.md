@@ -235,8 +235,10 @@ pull request per step, or per part of a long one; a merged branch is deleted.
    can be undone. Still open:
    - Moving and copying go only to folders of the library: a destination outside it has to be added
      first. Copying and tagging are not steps of undo.
-   - The grid shows the camera's own preview, not the developed look: that needs a render per photo
-     and a cache.
+   - Done on 2026-11-26, chosen by the user: a photo with adjustments is shown in the grid and in
+     the strip developed with them, in the shape of its frame, and kept on disk
+     (`DevelopedThumbnails`, [ADR 0025](adr/0025-the-grid-shows-a-photo-as-it-was-developed.md)); a
+     photo never developed keeps the camera's preview.
    - Fixed on 2026-11-20: the arrow keys move in every direction, a folder that cannot be added
      says why, and the thumbnails kept on disk are pruned at launch to 512 MB, oldest first.
    - Done on 2026-11-24, asked by the user: the strip marks the photos that have adjustments, with

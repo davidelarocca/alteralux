@@ -191,7 +191,7 @@ public final class AppModel {
             discards: DiscardStore(fallbackDirectory: edits.appending(path: "Discarded")),
             preferences: isApp ? .standard : nil,
             hasAdjustments: { store.hasAdjustments(for: $0) },
-            crop: { store.load(for: $0)?.crop },
+            look: { store.load(for: $0) },
         )
         recipeStore = RecipeStore(
             directory: isApp ? URL.applicationSupportDirectory.appending(path: "Recipes") : beside.appending(path: "recipes"),

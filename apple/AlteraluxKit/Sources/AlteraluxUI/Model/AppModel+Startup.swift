@@ -5,7 +5,8 @@ import Foundation
 // the folders the user let it write into.
 
 extension AppModel {
-    /// The most the thumbnails kept on disk take, in bytes: thousands of photos' worth.
+    /// The most the camera's thumbnails kept on disk take, in bytes: thousands of photos' worth.
+    /// The developed ones take half of it.
     private nonisolated static let thumbnailCacheLimit: Int64 = 512 * 1024 * 1024
 
     /// Where the folders the user let the app write into are remembered: in the app's folders,
@@ -22,8 +23,9 @@ extension AppModel {
         await loadRecipes()
         await library.load()
         _ = await writableFolders.load()
-        Task.detached(priority: .background) { [thumbnails = library.thumbnails] in
+        Task.detached(priority: .background) { [thumbnails = library.thumbnails, developed = library.developedThumbnails] in
             thumbnails.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit)
+            developed.pruneDiskCache(toAtMost: Self.thumbnailCacheLimit / 2)
         }
         // The library is where the app opens, unless it was started on a photo.
         if photos.isEmpty, !library.isEmpty {

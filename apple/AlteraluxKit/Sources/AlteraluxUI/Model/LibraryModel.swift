@@ -38,6 +38,7 @@ private struct FolderListing: Sendable {
     var discarded: Set<URL> = []
     var infos: [URL: PhotoInfo] = [:]
     var crops: [URL: PhotoCrop] = [:]
+    var looks: [URL: DevelopSettings] = [:]
 }
 
 /// A folder the user added, with what is in it.
@@ -71,6 +72,8 @@ final class LibraryModel {
     private(set) var infos: [URL: PhotoInfo] = [:]
     /// The frames of those of `photos` that are turned or mirrored: their thumbnails turn too.
     private(set) var crops: [URL: PhotoCrop] = [:]
+    /// The adjustments of those of `photos` that have them: the grid shows them developed.
+    private(set) var looks: [URL: DevelopSettings] = [:]
     /// Which photos are shown. Kept between launches, as the order, the kinds and the tag are.
     var filter = LibraryFilter.all {
         didSet {
@@ -112,9 +115,11 @@ final class LibraryModel {
 
     /// The thumbnails of the grid and of the strip.
     @ObservationIgnored let thumbnails: ThumbnailProvider
+    /// The photos with adjustments developed small, for the grid and the strip.
+    @ObservationIgnored let developedThumbnails: DevelopedThumbnails
     @ObservationIgnored private let folders: LibraryFolders
     @ObservationIgnored private let hasAdjustments: @Sendable (URL) -> Bool
-    @ObservationIgnored private let crop: @Sendable (URL) -> PhotoCrop?
+    @ObservationIgnored private let look: @Sendable (URL) -> DevelopSettings?
     @ObservationIgnored private let discards: DiscardStore
     /// Where the order and the filters are kept; `nil` keeps them for this run only.
     @ObservationIgnored private let preferences: UserDefaults?
@@ -134,21 +139,25 @@ final class LibraryModel {
 
     /// - Parameters:
     ///   - storeURL: the file where the added folders are remembered.
-    ///   - cacheDirectory: where thumbnails are kept between launches; `nil` keeps none on disk.
+    ///   - cacheDirectory: where thumbnails are kept between launches, the developed ones in a
+    ///     folder beside it; `nil` keeps none on disk.
     ///   - hasAdjustments: whether a photo has adjustments kept for it.
-    ///   - crop: the frame kept with a photo that has adjustments, if any.
+    ///   - look: the adjustments kept with a photo, if any.
     ///   - discards: where the discarded mark of a photo is kept.
     init(
         storeURL: URL, cacheDirectory: URL?, discards: DiscardStore, preferences: UserDefaults? = nil,
         hasAdjustments: @escaping @Sendable (URL) -> Bool,
-        crop: @escaping @Sendable (URL) -> PhotoCrop? = { _ in nil },
+        look: @escaping @Sendable (URL) -> DevelopSettings? = { _ in nil },
     ) {
         folders = LibraryFolders(storeURL: storeURL)
         thumbnails = ThumbnailProvider(cacheDirectory: cacheDirectory)
+        developedThumbnails = DevelopedThumbnails(
+            cacheDirectory: cacheDirectory?.deletingLastPathComponent().appending(path: "Developed"),
+        )
         self.discards = discards
         self.preferences = preferences
         self.hasAdjustments = hasAdjustments
-        self.crop = crop
+        self.look = look
         sort = preferences?.string(forKey: Self.sortKey).flatMap(LibrarySort.init) ?? .name
         sortsAscending = preferences?.object(forKey: Self.ascendingKey) as? Bool ?? true
         kinds = preferences?.string(forKey: Self.kindsKey).flatMap(LibraryKinds.init) ?? .all
@@ -336,7 +345,8 @@ final class LibraryModel {
         } else {
             adjusted.remove(listed)
         }
-        crops[listed] = adjusted.contains(listed) ? Self.reorienting(crop(listed)) : nil
+        looks[listed] = adjusted.contains(listed) ? look(listed) : nil
+        crops[listed] = Self.reorienting(looks[listed]?.crop)
     }
 
     // MARK: - Selection
@@ -460,10 +470,14 @@ final class LibraryModel {
         PhotoFileActions.tags(ofAll: chosen)
     }
 
-    /// Width over height of a photo as the grid shows it: turned when its frame turns it.
+    /// Width over height of a photo as the grid shows it: developed, so framed as its
+    /// adjustments frame it.
     func shownAspectRatio(of photo: URL) -> Double {
         let ratio = infos[photo]?.aspectRatio ?? PhotoInfo.unknownAspectRatio
-        return crops[photo]?.swapsSides == true ? 1 / ratio : ratio
+        guard let crop = looks[photo]?.crop else { return ratio }
+        let framed = crop.framedSize(of: CGSize(width: ratio, height: 1))
+        guard framed.width > 0, framed.height > 0 else { return ratio }
+        return framed.width / framed.height
     }
 
     /// Duplicates photos beside themselves, and selects the copies, as the Finder does.
@@ -523,6 +537,7 @@ final class LibraryModel {
         discarded = listing.discarded
         infos = listing.infos
         crops = listing.crops
+        looks = listing.looks
         // A tag no photo of this folder carries would hide them all.
         if let tagFilter, !tagsInFolder.contains(where: { $0.name == tagFilter }) {
             self.tagFilter = nil
@@ -532,18 +547,19 @@ final class LibraryModel {
 
     /// The photos of a folder with their marks, read off the main actor.
     private func contents(of folder: URL) async -> FolderListing {
-        let (hasAdjustments, discards, crop) = (hasAdjustments, discards, crop)
+        let (hasAdjustments, discards, look) = (hasAdjustments, discards, look)
         return await Task.detached(priority: .userInitiated) {
             let found = (try? FolderContents.photos(in: folder)) ?? []
             let adjusted = found.filter(hasAdjustments)
-            var crops: [URL: PhotoCrop] = [:]
+            var (looks, crops): ([URL: DevelopSettings], [URL: PhotoCrop]) = ([:], [:])
             for photo in adjusted {
-                crops[photo] = Self.reorienting(crop(photo))
+                looks[photo] = look(photo)
+                crops[photo] = Self.reorienting(looks[photo]?.crop)
             }
             return FolderListing(
                 photos: found, adjusted: Set(adjusted),
                 discarded: Set(found.filter(discards.isDiscarded)),
-                infos: PhotoInfoReader.infos(of: found), crops: crops,
+                infos: PhotoInfoReader.infos(of: found), crops: crops, looks: looks,
             )
         }.value
     }

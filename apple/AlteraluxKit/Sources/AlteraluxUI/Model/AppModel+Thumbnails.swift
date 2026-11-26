@@ -1,7 +1,8 @@
 import AlteraluxKit
 import CoreGraphics
 
-/// The thumbnails of the strip: the library's own at first, then the photo's developed look.
+/// The thumbnails of the strip and the grid: the camera's own at first, then, for a photo with
+/// adjustments, the photo developed with them.
 extension AppModel {
     func loadThumbnail(for item: PhotoItem) {
         let url = item.url
@@ -12,31 +13,34 @@ extension AppModel {
                 item.thumbnail = image
             }
         }
+        if item.hasAdjustments {
+            redrawThumbnail(of: item)
+        }
     }
 
     /// Develops a photo of the strip that is not on screen at the size of its thumbnail, with its
     /// settings, and shows it in the strip. Decoded small, a RAW included, it takes a fraction of
     /// a second; a newer change to the photo's settings wins.
     func redrawThumbnail(of item: PhotoItem) {
-        guard let renderer else { return }
-        let url = item.url
-        let settings = item.settings
-        let dimension = Self.thumbnailDimension
-        let lenses = lenses
+        let request = DevelopedThumbnails.Request(
+            photo: item.url, settings: item.settings, maxDimension: Self.thumbnailDimension,
+        )
         Task {
-            let developed = await Task.detached(priority: .utility) { () -> SendableImage in
-                guard let decoder = try? PhotoDecoder(url: url, lenses: lenses),
-                      let loaded = try? await decoder.decode(maxDimension: dimension, settings: settings),
-                      let image = try? await renderer.render(
-                          loaded, settings: settings, quality: .preview(maxDimension: dimension),
-                          photoLongSide: decoder.longSide(framedBy: settings.crop),
-                      )
-                else { return SendableImage(nil) }
-                return SendableImage(image.cgImage)
-            }.value
-            guard item.settings == settings, let image = developed.image else { return }
+            guard let image = await developedThumbnail(request), item.settings == request.settings else { return }
             item.thumbnail = image
         }
+    }
+
+    /// A photo developed small with `request`'s adjustments, when it is already made; at once.
+    func keptDevelopedThumbnail(_ request: DevelopedThumbnails.Request) async -> CGImage? {
+        await library.developedThumbnails.kept(request)
+    }
+
+    /// A photo developed small with `request`'s adjustments, made now when it is not kept.
+    /// `nil` until the engine has started.
+    func developedThumbnail(_ request: DevelopedThumbnails.Request) async -> CGImage? {
+        guard let renderer else { return nil }
+        return await library.developedThumbnails.thumbnail(request, renderer: renderer, lenses: lenses)
     }
 
     /// Updates the strip thumbnail with the developed look.

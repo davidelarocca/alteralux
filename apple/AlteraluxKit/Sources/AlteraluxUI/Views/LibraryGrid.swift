@@ -146,6 +146,7 @@ struct LibraryGrid: View {
                                     isDiscarded: library.discarded.contains(item.photo),
                                     tags: library.infos[item.photo]?.tags ?? [],
                                     crop: library.crops[item.photo],
+                                    look: library.looks[item.photo],
                                     ask: { question = $0 },
                                 )
                                 .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(Self.space)) } action: {
@@ -351,8 +352,10 @@ private struct LibraryTile: View {
     let hasAdjustments: Bool
     let isDiscarded: Bool
     let tags: [FinderTag]
-    /// The photo's frame when it turns or mirrors it: the thumbnail turns too.
+    /// The photo's frame when it turns or mirrors it: the camera's thumbnail turns too.
     let crop: PhotoCrop?
+    /// The photo's adjustments, when it has any: the tile shows it developed with them.
+    let look: DevelopSettings?
     /// Asks for a name before one of the menu's actions.
     let ask: (PhotoQuestion) -> Void
     @State private var image: CGImage?
@@ -402,20 +405,39 @@ private struct LibraryTile: View {
         .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
         .accessibilityAction { model.library.click(photo) }
         .accessibilityAction(named: "Develop") { model.develop(photo) }
-        .task(id: ThumbnailRequest(pixels: pixels, crop: crop)) {
-            let thumbnail = await model.library.thumbnails.thumbnail(for: photo, maxDimension: pixels)
-            guard let thumbnail, let crop else {
-                image = thumbnail
-                return
-            }
-            image = await Task.detached(priority: .userInitiated) { ImageLoader.oriented(thumbnail, by: crop) }.value
+        .task(id: ThumbnailRequest(pixels: pixels, crop: crop, look: look)) {
+            await loadThumbnail()
         }
     }
 
-    /// What a tile's thumbnail is made from: asked again when either changes.
+    /// The camera's thumbnail, then, for a photo with adjustments, the photo developed with
+    /// them; the developed one at once when it is kept. A tile already developed keeps its
+    /// image until the new one is made, so new adjustments do not flash the camera's back.
+    private func loadThumbnail() async {
+        let developed = look.map { DevelopedThumbnails.Request(photo: photo, settings: $0, maxDimension: pixels) }
+        if let developed, let kept = await model.keptDevelopedThumbnail(developed) {
+            image = kept
+            return
+        }
+        if developed == nil || image == nil {
+            let thumbnail = await model.library.thumbnails.thumbnail(for: photo, maxDimension: pixels)
+            if let thumbnail, let crop {
+                image = await Task.detached(priority: .userInitiated) { ImageLoader.oriented(thumbnail, by: crop) }.value
+            } else {
+                image = thumbnail
+            }
+        }
+        guard let developed, !Task.isCancelled else { return }
+        if let made = await model.developedThumbnail(developed), !Task.isCancelled {
+            image = made
+        }
+    }
+
+    /// What a tile's thumbnail is made from: asked again when any of it changes.
     private struct ThumbnailRequest: Equatable {
         let pixels: Int
         let crop: PhotoCrop?
+        let look: DevelopSettings?
     }
 
     /// A small mark in a corner of the thumbnail.
