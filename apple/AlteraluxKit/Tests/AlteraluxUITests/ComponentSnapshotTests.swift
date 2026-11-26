@@ -74,6 +74,18 @@ extension WindowedTests {
             } == [])
         }
 
+        /// The temperature on its reciprocal scale: the camera's 6500 K stands far to the right,
+        /// where 4500 K would stand in the middle of a scale even in kelvin.
+        @Test func reciprocalScale() {
+            #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "reciprocal", locale: english, source: source) {
+                ParameterSlider(
+                    "Temperature", value: .constant(4500), in: 2000 ... 12000, step: 50, defaultValue: 6500,
+                    fractionDigits: 0, unit: "K", ends: SliderEnds("Cooler", "Warmer"), scale: .reciprocal,
+                )
+                .padding(Spacing.m)
+            } == [])
+        }
+
         /// Disabled by a mode, with the line that says why.
         @Test func governedByAMode() {
             #expect(Snapshot.verify("ParameterSlider", sizes: sizes, state: "governed", locale: english, source: source) {
